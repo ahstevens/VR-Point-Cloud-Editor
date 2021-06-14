@@ -4,6 +4,12 @@
 [Bb]uild/
 [Bb]uilds/
 Assets/AssetStoreTools*
+Assets/PointClouds*
+TEST.txt
+testThread.txt
+Octree*.txt
+File_Load_Log.txt
+DLL_START.txt
 
 # Visual Studio cache directory
 .vs/

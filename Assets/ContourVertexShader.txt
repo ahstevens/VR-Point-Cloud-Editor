@@ -1,0 +1,31 @@
+uniform int drawShading;
+uniform float lightPosX;
+uniform float lightPosY;
+varying vec3 P;
+
+void main (void)
+{
+	P = gl_Vertex.xyz;
+	gl_TexCoord[0] = gl_MultiTexCoord0;
+
+    // Do fixed functionality vertex transform
+    gl_Position = ftransform();
+    vec3 transformedNormal = normalize(gl_NormalMatrix * gl_Normal);
+    			
+	float nDotVP;       // normal . light direction
+	vec3  VP;           // direction from surface to light position
+
+	
+	if (drawShading == 1)
+		//nDotVP = max(0.0, dot(transformedNormal, vec3(lightPosX, lightPosY, 1))); //gl_LightSource[0].position.xyz));
+		nDotVP = max(0.0, dot(gl_Normal, vec3(lightPosX, lightPosY, 1))); //gl_LightSource[0].position.xyz));
+	else
+		nDotVP = 1.0;
+   
+	vec4 color;
+    color = (gl_LightSource[0].ambient  * gl_Color) + (gl_LightSource[0].diffuse * nDotVP  * gl_Color); //gl color material mod
+
+    color = clamp( color, 0.0, 1.0 );
+    gl_FrontColor = color;
+    
+}

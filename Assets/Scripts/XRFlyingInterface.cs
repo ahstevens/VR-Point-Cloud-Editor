@@ -2,15 +2,18 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.XR.Interaction.Toolkit;
 
-public class FlyingInterface : MonoBehaviour
+public class XRFlyingInterface : MonoBehaviour
 {
-    public float translationMultiplier;
-    public float rotationMultiplier;
+    public bool desktopFlyingMode;
+
+    public float translationMultiplier = 100f;
+    public float rotationMultiplier = 0.05f;
+
+    public GameObject XRRigOrMainCamera;
 
     public GameObject bat;
-
-    public Camera mainCamera;
 
     public InputAction setReferenceAction;
     public InputAction flyAction;
@@ -19,19 +22,21 @@ public class FlyingInterface : MonoBehaviour
     private GameObject trackingReference;
     private GameObject flyingOrigin;
 
-    void Awake()
-    {
+
+    // Start is called before the first frame update
+    void Start()
+    {        
         setReferenceAction.started += ctx => OnSetReference();
         flyAction.started += ctx => OnBeginFly();
         flyAction.canceled += ctx => OnEndFly();
 
         flying = false;
-    }
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
+        if (!desktopFlyingMode)
+        {
+            trackingReference = new GameObject("Tracking Reference");
+            trackingReference.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
+        }
     }
 
     // Update is called once per frame
@@ -46,10 +51,10 @@ public class FlyingInterface : MonoBehaviour
             float displacementCubed = Mathf.Pow(relativeTranslation.magnitude, 3);
 
             Vector3 cameraOffset = trackingReference.transform.InverseTransformDirection(relativeTranslation);
-            cameraOffset = mainCamera.transform.TransformDirection(cameraOffset).normalized;
-            mainCamera.transform.position = mainCamera.transform.position + cameraOffset * displacementCubed * translationMultiplier;
-
-            mainCamera.transform.rotation = mainCamera.transform.rotation * Quaternion.Slerp(Quaternion.identity, relativeRotation, rotationMultiplier);
+            cameraOffset = XRRigOrMainCamera.transform.TransformDirection(cameraOffset).normalized;
+            
+            XRRigOrMainCamera.transform.position = XRRigOrMainCamera.transform.position + cameraOffset * displacementCubed * translationMultiplier;
+            XRRigOrMainCamera.transform.rotation = XRRigOrMainCamera.transform.rotation * Quaternion.Slerp(Quaternion.identity, relativeRotation, rotationMultiplier);
         }
     }
 

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System;
 using System.IO;
+using UnityEditor;
 using UnityEngine.InputSystem;
 
 //public class pointCloudRawDataContainer : MonoBehaviour
@@ -105,6 +106,12 @@ public class pointCloudManager : MonoBehaviour
     static public extern void RequestLODInfoFromUnity(IntPtr maxDistance, IntPtr targetPercentOFPoints, int LODIndex, int pointCloudIndex);
     [DllImport("PointCloudPlugin")]
     static public extern void setLODInfo(IntPtr values, int LODIndex, int pointCloudIndex);
+    [DllImport("PointCloudPlugin")]
+    static public extern void RequestClosestPointToPointFromUnity(IntPtr initialPointPosition);
+    [DllImport("PointCloudPlugin")]
+    static public extern bool RequestIsAtleastOnePointInSphereFromUnity(IntPtr center, float size);
+    [DllImport("PointCloudPlugin")]
+    static public extern void RequestClosestPointInSphereFromUnity(IntPtr center, float size);
 
     List<Vector3> vertexData;
     List<Color32> vertexColors;
@@ -127,6 +134,7 @@ public class pointCloudManager : MonoBehaviour
     public static string filePathForAsyncLoad = "";
     public static GameObject reInitializationForAsyncLoad = null;
     public static float localLODTransitionDistance = 3500.0f;
+    public static bool isLookingForClosestPoint = false;
 
     public static void loadLAZFile(string filePath, GameObject reinitialization = null)
     {
@@ -516,7 +524,10 @@ public class pointCloudManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        var kb = Keyboard.current;
+        Keyboard kb = Keyboard.current;
+
+        if (isLookingForClosestPoint)
+            getPointGameObjectForSearch_Fast();
 
         if (Camera.onPostRender != OnPostRenderCallback && pointClouds == null)
         {
@@ -546,28 +557,28 @@ public class pointCloudManager : MonoBehaviour
             }
         }
 
-        if (kb.leftArrowKey.isPressed)
+        if (kb.leftArrowKey.wasReleasedThisFrame)
         {
             Vector3 position = transform.position;
             position.z += 1.0f;
             transform.SetPositionAndRotation(position, transform.rotation);
         }
 
-        if (kb.rightArrowKey.isPressed)
+        if (kb.rightArrowKey.wasReleasedThisFrame)
         {
             Vector3 position = transform.position;
             position.z -= 1.0f;
             transform.SetPositionAndRotation(position, transform.rotation);
         }
 
-        if (kb.upArrowKey.isPressed)
+        if (kb.upArrowKey.wasReleasedThisFrame)
         {
             Vector3 position = transform.position;
             position.x += 1.0f;
             transform.SetPositionAndRotation(position, transform.rotation);
         }
 
-        if (kb.downArrowKey.isPressed)
+        if (kb.downArrowKey.wasReleasedThisFrame)
         {
             Vector3 position = transform.position;
             position.x -= 1.0f;
@@ -681,5 +692,238 @@ public class pointCloudManager : MonoBehaviour
         GCHandle valuePointer = GCHandle.Alloc(valuesArray, GCHandleType.Pinned);
         setLODInfo(valuePointer.AddrOfPinnedObject(), LODIndex, pointCloudIndex);
         valuePointer.Free();
+    }
+
+    public static LineRenderer lineToClosestPoint;
+    public static Vector3 closestPointPosition;
+    public static GameObject getPointGameObjectForSearch()
+    {
+        GameObject pointRepresentation = GameObject.Find("PointRepresentation_PointCloudPlugin");
+        if (pointRepresentation == null && EditorApplication.isPlaying)
+        {
+            pointRepresentation = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            pointRepresentation.name = "PointRepresentation_PointCloudPlugin";
+            pointRepresentation.GetComponent<Renderer>().material.SetColor("_Color", Color.blue);
+        }
+
+        closestPointPosition = new Vector3(10.0f, 10.0f, 10.0f);
+
+        float[] initialPointPosition = new float[3];
+        initialPointPosition[0] = pointRepresentation.transform.position.x;
+        initialPointPosition[1] = pointRepresentation.transform.position.y;
+        initialPointPosition[2] = pointRepresentation.transform.position.z;
+
+        GCHandle initialPointPositionPointer = GCHandle.Alloc(initialPointPosition, GCHandleType.Pinned);
+        RequestClosestPointToPointFromUnity(initialPointPositionPointer.AddrOfPinnedObject());
+
+        float[] closestPointPositionFromDLL = new float[3];
+        Marshal.Copy(initialPointPositionPointer.AddrOfPinnedObject(), closestPointPositionFromDLL, 0, 3);
+        closestPointPosition.x = closestPointPositionFromDLL[0];
+        closestPointPosition.y = closestPointPositionFromDLL[1];
+        closestPointPosition.z = closestPointPositionFromDLL[2];
+
+        initialPointPositionPointer.Free();
+
+        if (lineToClosestPoint == null && EditorApplication.isPlaying)
+        {
+            GameObject gObject = new GameObject("lineToClosestPoint_LineRenderer");
+            lineToClosestPoint = gObject.AddComponent<LineRenderer>();
+            lineToClosestPoint.material = new Material(Shader.Find("Sprites/Default"));
+            lineToClosestPoint.startColor = Color.green;
+            lineToClosestPoint.endColor = Color.green;
+
+            lineToClosestPoint.widthMultiplier = 2.0f;
+            lineToClosestPoint.positionCount = 2;
+        }
+
+        lineToClosestPoint.SetPosition(0, pointRepresentation.transform.position);
+        lineToClosestPoint.SetPosition(1, closestPointPosition);
+
+        return pointRepresentation;
+    }
+
+    public static GameObject getTestSphereGameObject()
+    {
+        GameObject testSphereGameObject = GameObject.Find("TestSphereGameObject_PointCloudPlugin");
+        if (testSphereGameObject == null && EditorApplication.isPlaying)
+        {
+            testSphereGameObject = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            testSphereGameObject.name = "TestSphereGameObject_PointCloudPlugin";
+            testSphereGameObject.GetComponent<Renderer>().material.SetColor("_Color", Color.green);
+        }
+
+        GameObject pointRepresentation = GameObject.Find("PointRepresentation_PointCloudPlugin");
+        if (pointRepresentation != null)
+            testSphereGameObject.transform.position = pointRepresentation.transform.position;
+
+        return testSphereGameObject;
+    }
+
+    public static bool testIsAtleastOnePointInSphere()
+    {
+        GameObject testSphereGameObject = getTestSphereGameObject();
+
+        float[] center = new float[3];
+        center[0] = testSphereGameObject.transform.position.x;
+        center[1] = testSphereGameObject.transform.position.y;
+        center[2] = testSphereGameObject.transform.position.z;
+
+        GCHandle toDelete = GCHandle.Alloc(center.ToArray(), GCHandleType.Pinned);
+
+        if (RequestIsAtleastOnePointInSphereFromUnity(toDelete.AddrOfPinnedObject(), testSphereGameObject.transform.localScale.x / 2.0f))
+        {
+            Debug.Log("Atleast one point found in sphere!");
+            return true;
+        }
+        else
+        {
+            Debug.Log("No points found!");
+            return false;
+        }
+    }
+
+    public static GameObject getPointGameObjectForSearch_Fast()
+    {
+        GameObject pointRepresentation = GameObject.Find("PointRepresentation_PointCloudPlugin");
+        if (pointRepresentation == null && EditorApplication.isPlaying)
+        {
+            pointRepresentation = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            pointRepresentation.name = "PointRepresentation_PointCloudPlugin";
+            pointRepresentation.GetComponent<Renderer>().material.SetColor("_Color", Color.blue);
+        }
+
+        closestPointPosition = new Vector3(10.0f, 10.0f, 10.0f);
+
+        float[] initialPointPosition = new float[3];
+        initialPointPosition[0] = pointRepresentation.transform.position.x;
+        initialPointPosition[1] = pointRepresentation.transform.position.y;
+        initialPointPosition[2] = pointRepresentation.transform.position.z;
+
+        GCHandle initialPointPositionPointer = GCHandle.Alloc(initialPointPosition, GCHandleType.Pinned);
+        RequestClosestPointInSphereFromUnity(initialPointPositionPointer.AddrOfPinnedObject(), 0.0f);
+
+        float[] closestPointPositionFromDLL = new float[3];
+        Marshal.Copy(initialPointPositionPointer.AddrOfPinnedObject(), closestPointPositionFromDLL, 0, 3);
+        closestPointPosition.x = closestPointPositionFromDLL[0];
+        closestPointPosition.y = closestPointPositionFromDLL[1];
+        closestPointPosition.z = closestPointPositionFromDLL[2];
+
+        initialPointPositionPointer.Free();
+
+        if (lineToClosestPoint == null && EditorApplication.isPlaying)
+        {
+            GameObject gObject = new GameObject("lineToClosestPoint_LineRenderer");
+            lineToClosestPoint = gObject.AddComponent<LineRenderer>();
+            lineToClosestPoint.material = new Material(Shader.Find("Sprites/Default"));
+            lineToClosestPoint.startColor = Color.green;
+            lineToClosestPoint.endColor = Color.green;
+
+            lineToClosestPoint.widthMultiplier = 2.0f;
+            lineToClosestPoint.positionCount = 2;
+        }
+
+        lineToClosestPoint.SetPosition(0, pointRepresentation.transform.position);
+        lineToClosestPoint.SetPosition(1, closestPointPosition);
+
+        return pointRepresentation;
+
+        //GameObject pointRepresentation = GameObject.Find("PointRepresentation_PointCloudPlugin_Fast");
+        //if (pointRepresentation == null && EditorApplication.isPlaying)
+        //{
+        //    pointRepresentation = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        //    pointRepresentation.name = "PointRepresentation_PointCloudPlugin_Fast";
+        //    pointRepresentation.GetComponent<Renderer>().material.SetColor("_Color", Color.blue);
+        //}
+
+        //closestPointPosition = new Vector3(10.0f, 10.0f, 10.0f);
+
+        //float[] centerPosition = new float[3];
+        //centerPosition[0] = pointRepresentation.transform.position.x;
+        //centerPosition[1] = pointRepresentation.transform.position.y;
+        //centerPosition[2] = pointRepresentation.transform.position.z;
+
+        //GCHandle centerPositionPointer = GCHandle.Alloc(centerPosition, GCHandleType.Pinned);
+        //RequestClosestPointInSphereFromUnity(centerPositionPointer.AddrOfPinnedObject(), 0.0f);
+
+        //float[] closestPointPositionFromDLL = new float[3];
+        //Marshal.Copy(centerPositionPointer.AddrOfPinnedObject(), closestPointPositionFromDLL, 0, 3);
+        //closestPointPosition.x = closestPointPositionFromDLL[0];
+        //closestPointPosition.y = closestPointPositionFromDLL[1];
+        //closestPointPosition.z = closestPointPositionFromDLL[2];
+
+        //centerPositionPointer.Free();
+        //pointRepresentation.transform.position = closestPointPosition;
+
+        //if (lineToClosestPoint == null && EditorApplication.isPlaying)
+        //{
+        //    GameObject gObject = new GameObject("lineToClosestPoint_LineRenderer");
+        //    lineToClosestPoint = gObject.AddComponent<LineRenderer>();
+        //    lineToClosestPoint.material = new Material(Shader.Find("Sprites/Default"));
+        //    lineToClosestPoint.startColor = Color.green;
+        //    lineToClosestPoint.endColor = Color.green;
+
+        //    lineToClosestPoint.widthMultiplier = 2.0f;
+        //    lineToClosestPoint.positionCount = 2;
+        //}
+
+        //lineToClosestPoint.SetPosition(0, pointRepresentation.transform.position);
+        //lineToClosestPoint.SetPosition(1, closestPointPosition);
+
+        //return pointRepresentation;
+    }
+
+    public static bool test_Closest_Point()
+    {
+        float[] initialPointPosition = new float[3];
+        GCHandle initialPointPositionPointer = GCHandle.Alloc(initialPointPosition, GCHandleType.Pinned);
+
+        float lastInterval = 0.0f;
+        float firstAlgTime = 0.0f;
+        float secondAlgTime = 0.0f;
+
+        for (int i = 0; i < 100; i++)
+        {
+            Vector3 randomPoint = new Vector3(UnityEngine.Random.value * 2000.0f - 1000.0f, UnityEngine.Random.value * 2000.0f - 1000.0f, UnityEngine.Random.value * 2000.0f - 1000.0f);
+
+            initialPointPosition[0] = randomPoint.x;
+            initialPointPosition[1] = randomPoint.y;
+            initialPointPosition[2] = randomPoint.z;
+
+            lastInterval = Time.realtimeSinceStartup;
+            RequestClosestPointInSphereFromUnity(initialPointPositionPointer.AddrOfPinnedObject(), 0.0f);
+            Debug.Log("delta time: " + (Time.realtimeSinceStartup - lastInterval) * 1000 + " ms.");
+            firstAlgTime += (Time.realtimeSinceStartup - lastInterval) * 1000;
+            
+            float[] closestPointPositionFromDLL_Fast = new float[3];
+            Marshal.Copy(initialPointPositionPointer.AddrOfPinnedObject(), closestPointPositionFromDLL_Fast, 0, 3);
+
+            initialPointPosition[0] = randomPoint.x;
+            initialPointPosition[1] = randomPoint.y;
+            initialPointPosition[2] = randomPoint.z;
+
+            lastInterval = Time.realtimeSinceStartup;
+            RequestClosestPointToPointFromUnity(initialPointPositionPointer.AddrOfPinnedObject());
+            secondAlgTime += (Time.realtimeSinceStartup - lastInterval) * 1000;
+
+            float[] closestPointPositionFromDLL = new float[3];
+            Marshal.Copy(initialPointPositionPointer.AddrOfPinnedObject(), closestPointPositionFromDLL, 0, 3);
+
+            if (closestPointPositionFromDLL_Fast[0] != closestPointPositionFromDLL[0] ||
+                closestPointPositionFromDLL_Fast[1] != closestPointPositionFromDLL[1] ||
+                closestPointPositionFromDLL_Fast[2] != closestPointPositionFromDLL[2])
+            {
+                initialPointPositionPointer.Free();
+                return false;
+            }
+        }
+
+        Debug.Log("naive algorithm time: " + secondAlgTime + " ms.");
+        Debug.Log("Octree with binary search area decrease time: " + firstAlgTime + " ms.");
+
+        initialPointPositionPointer.Free();
+
+        Debug.Log("Both algorithms produced same results!");
+
+        return true;
     }
 }

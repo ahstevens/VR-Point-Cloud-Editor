@@ -21,6 +21,13 @@ public class pointCloudManagerWindow : EditorWindow
     private string PrevScene;
     private bool benchmarkFinishedLoadPrevScene = false;
 
+    private bool downScale = true;
+    private float sizeDifference = 0.0f;
+    private float workingRange = 0.0f;
+    private bool pointInRange = false;
+    private bool pointInRangeLastStep = false;
+    private float lastScaleWithPoints = 0.0f;
+
     [MenuItem("Point cloud manager/show main window")]
     public static void ShowWindow()
     {
@@ -130,7 +137,7 @@ public class pointCloudManagerWindow : EditorWindow
             GUI.enabled = false;
         }
 
-        if (GUILayout.Button("Lunch benchmark"))
+        if (GUILayout.Button("Launch benchmark"))
         {
             if (FPSvalues == null)
                 FPSvalues = new List<float>();
@@ -243,6 +250,77 @@ public class pointCloudManagerWindow : EditorWindow
         }
 
         GUI.enabled = true;
+
+        if (GUILayout.Button("Test isAtleastOnePointInSphere"))
+            pointCloudManager.testIsAtleastOnePointInSphere();
+
+        if (GUILayout.Button("Test search sphere size"))
+        {
+            float minDistance = float.MaxValue;
+            int pointCloudIndex = -1;
+            for (int i = 0; i < pointCloudManager.pointClouds.Count; i++)
+            {
+                float currentDistance = Vector3.Distance(pointCloudManager.getTestSphereGameObject().transform.position, pointCloudManager.pointClouds[i].inSceneRepresentation.transform.position);
+                if (currentDistance < minDistance)
+                {
+                    minDistance = currentDistance;
+                    pointCloudIndex = i;
+                }
+            }
+
+            // Multiplying by 4 to decrease chance that we will not "caught" any points.
+            workingRange = minDistance * 4.0f;
+            pointCloudManager.getTestSphereGameObject().transform.localScale = new Vector3(workingRange, workingRange, workingRange);
+            downScale = true;
+            sizeDifference = workingRange / 2.0f;
+            pointInRange = pointCloudManager.testIsAtleastOnePointInSphere();
+            if (pointInRange)
+                lastScaleWithPoints = workingRange;
+
+            pointInRangeLastStep = pointInRange;
+
+            for (int i = 0; i < 50; i++)
+            {
+                workingRange += downScale ? -sizeDifference : sizeDifference;
+                pointCloudManager.getTestSphereGameObject().transform.localScale = new Vector3(workingRange, workingRange, workingRange);
+                pointInRange = pointCloudManager.testIsAtleastOnePointInSphere();
+                if (pointInRange)
+                    lastScaleWithPoints = workingRange;
+
+                if (pointInRange != pointInRangeLastStep)
+                {
+                    pointInRangeLastStep = pointInRange;
+                    downScale = !downScale;
+                    sizeDifference = sizeDifference / 2.0f;
+                }
+            }
+
+            //Debug.Log("lastScaleWithPoints: " + lastScaleWithPoints / 2.0f);
+            //Debug.Log("closestPointDistance: " + Vector3.Distance(pointCloudManager.lineToClosestPoint.GetPosition(0), pointCloudManager.lineToClosestPoint.GetPosition(1)));
+
+            //Debug.Log("pointCloudManager.getTestSphereGameObject().transform.position: " + pointCloudManager.getTestSphereGameObject().transform.position);
+
+            //GameObject closestPoint_Fast = pointCloudManager.getPointGameObjectForSearch_Fast(pointCloudManager.getTestSphereGameObject().transform.position, 0.0f/*lastScaleWithPoints / 2.0f*/);
+            //Debug.Log("closestPointDistance_Fast: " + Vector3.Distance(pointCloudManager.lineToClosestPoint.GetPosition(0), closestPoint_Fast.transform.position));
+            //Debug.Log("closestPoint_Fast: " + closestPoint_Fast.transform.position);
+        }
+
+        pointCloudManager.isLookingForClosestPoint = GUILayout.Toggle(pointCloudManager.isLookingForClosestPoint, "isLookingForClosestPoint");
+        if (!pointCloudManager.isLookingForClosestPoint)
+        {
+            var tempGameObject = GameObject.Find("PointRepresentation_PointCloudPlugin");
+            if (tempGameObject != null)
+                GameObject.Destroy(tempGameObject);
+
+            tempGameObject = GameObject.Find("lineToClosestPoint_LineRenderer");
+            if (tempGameObject != null)
+                GameObject.Destroy(tempGameObject);
+        }
+
+        if (GUILayout.Button("Test closest point algorithms"))
+        {
+            pointCloudManager.test_Closest_Point();
+        }
 
         timePassed += Time.unscaledDeltaTime;
         if (timePassed > 2.0f)

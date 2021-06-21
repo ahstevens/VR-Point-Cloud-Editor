@@ -1,11 +1,16 @@
-using System.Collections;
-using System.Collections.Generic;
+
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.XR.Interaction.Toolkit;
+using System;
+using System.Linq;
+using System.Runtime.InteropServices;
 
 public class XRFlyingInterface : MonoBehaviour
 {
+    [DllImport("PointCloudPlugin")]
+    private static extern void RequestToDeleteFromUnity(IntPtr center, float size);
+
     public bool desktopFlyingMode;
 
     public float translationMultiplier = 100f;
@@ -15,10 +20,14 @@ public class XRFlyingInterface : MonoBehaviour
 
     public GameObject bat;
 
+    public GameObject deletionSphere;
+
     public InputAction setReferenceAction;
     public InputAction flyAction;
+    public InputAction deleteSphereAction;
 
     private bool flying;
+    private bool editing;
     private GameObject trackingReference;
     private GameObject flyingOrigin;
 
@@ -29,8 +38,11 @@ public class XRFlyingInterface : MonoBehaviour
         setReferenceAction.started += ctx => OnSetReference();
         flyAction.started += ctx => OnBeginFly();
         flyAction.canceled += ctx => OnEndFly();
+        deleteSphereAction.started += ctx => OnBeginDeleteSphere();
+        deleteSphereAction.canceled += ctx => OnEndDeleteSphere();
 
         flying = false;
+        editing = false;
 
         if (!desktopFlyingMode)
         {
@@ -56,18 +68,33 @@ public class XRFlyingInterface : MonoBehaviour
             XRRigOrMainCamera.transform.position = XRRigOrMainCamera.transform.position + cameraOffset * displacementCubed * translationMultiplier;
             XRRigOrMainCamera.transform.rotation = XRRigOrMainCamera.transform.rotation * Quaternion.Slerp(Quaternion.identity, relativeRotation, rotationMultiplier);
         }
+
+        if (editing)
+        {
+            Debug.Log("DELETE " + deletionSphere.transform.position + " | " + deletionSphere.transform.localScale);
+
+            float[] center = new float[3];
+            center[0] = deletionSphere.transform.position.x;
+            center[1] = deletionSphere.transform.position.y;
+            center[2] = deletionSphere.transform.position.z;
+
+            GCHandle toDelete = GCHandle.Alloc(center.ToArray(), GCHandleType.Pinned);
+            RequestToDeleteFromUnity(toDelete.AddrOfPinnedObject(), deletionSphere.transform.localScale.x / 2.0f);
+        }
     }
 
     void OnEnable()
     {
         setReferenceAction.Enable();
         flyAction.Enable();
+        deleteSphereAction.Enable();
     }
 
     void OnDisable()
     {
         setReferenceAction.Disable();
         flyAction.Disable();
+        deleteSphereAction.Disable();
     }
 
     void OnSetReference()
@@ -103,6 +130,24 @@ public class XRFlyingInterface : MonoBehaviour
 
             flying = false;
             Debug.Log("Flying ended");
+        }
+    }
+
+    void OnBeginDeleteSphere()
+    {
+        if (deletionSphere == null)
+            return;
+
+        editing = true;
+        Debug.Log("Editing Started");
+    }
+
+    void OnEndDeleteSphere()
+    {
+        if (editing)
+        {
+            editing = false;
+            Debug.Log("Editing Finished");
         }
     }
 }

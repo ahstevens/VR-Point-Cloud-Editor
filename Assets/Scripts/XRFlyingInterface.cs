@@ -26,8 +26,9 @@ public class XRFlyingInterface : MonoBehaviour
     public InputAction flyAction;
     public InputAction deleteSphereAction;
 
+    public float deleteRate = 0.25f;
+
     private bool flying;
-    private bool editing;
     private GameObject trackingReference;
     private GameObject flyingOrigin;
 
@@ -42,7 +43,6 @@ public class XRFlyingInterface : MonoBehaviour
         deleteSphereAction.canceled += ctx => OnEndDeleteSphere();
 
         flying = false;
-        editing = false;
 
         if (!desktopFlyingMode)
         {
@@ -67,19 +67,6 @@ public class XRFlyingInterface : MonoBehaviour
             
             XRRigOrMainCamera.transform.position = XRRigOrMainCamera.transform.position + cameraOffset * displacementCubed * translationMultiplier;
             XRRigOrMainCamera.transform.rotation = XRRigOrMainCamera.transform.rotation * Quaternion.Slerp(Quaternion.identity, relativeRotation, rotationMultiplier);
-        }
-
-        if (editing)
-        {
-            Debug.Log("DELETE " + deletionSphere.transform.position + " | " + deletionSphere.transform.localScale);
-
-            float[] center = new float[3];
-            center[0] = deletionSphere.transform.position.x;
-            center[1] = deletionSphere.transform.position.y;
-            center[2] = deletionSphere.transform.position.z;
-
-            GCHandle toDelete = GCHandle.Alloc(center.ToArray(), GCHandleType.Pinned);
-            RequestToDeleteFromUnity(toDelete.AddrOfPinnedObject(), deletionSphere.transform.localScale.x / 2.0f);
         }
     }
 
@@ -138,16 +125,26 @@ public class XRFlyingInterface : MonoBehaviour
         if (deletionSphere == null)
             return;
 
-        editing = true;
+        InvokeRepeating("deleteInSphere", 0, deleteRate);
         Debug.Log("Editing Started");
     }
 
     void OnEndDeleteSphere()
+    {       
+        CancelInvoke("deleteInSphere");
+        Debug.Log("Editing Finished");        
+    }
+
+    void deleteInSphere()
     {
-        if (editing)
-        {
-            editing = false;
-            Debug.Log("Editing Finished");
-        }
+        Debug.Log("DELETE " + deletionSphere.transform.position + " | " + deletionSphere.transform.localScale);
+
+        float[] center = new float[3];
+        center[0] = deletionSphere.transform.position.x;
+        center[1] = deletionSphere.transform.position.y;
+        center[2] = deletionSphere.transform.position.z;
+
+        GCHandle toDelete = GCHandle.Alloc(center.ToArray(), GCHandleType.Pinned);
+        RequestToDeleteFromUnity(toDelete.AddrOfPinnedObject(), deletionSphere.transform.localScale.x / 2.0f);
     }
 }

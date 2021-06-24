@@ -58,7 +58,7 @@ public class XRFlyingInterface : MonoBehaviour
         {
             Debug.Log("Flying...");
             Vector3 relativeTranslation = bat.transform.position - flyingOrigin.transform.position;
-            Quaternion relativeRotation = bat.transform.rotation * Quaternion.Inverse(flyingOrigin.transform.rotation);
+            Quaternion relativeRotation = Quaternion.Inverse(flyingOrigin.transform.rotation) * bat.transform.localRotation;
 
             float displacementCubed = Mathf.Pow(relativeTranslation.magnitude, 3);
 
@@ -89,7 +89,7 @@ public class XRFlyingInterface : MonoBehaviour
         if (trackingReference == null)
             trackingReference = new GameObject("Tracking Reference");
 
-        trackingReference.transform.SetPositionAndRotation(bat.transform.position, bat.transform.rotation);
+        trackingReference.transform.SetPositionAndRotation(bat.transform.position, bat.transform.localRotation);
         
         Debug.Log("Tracking Reference Set!");
     }

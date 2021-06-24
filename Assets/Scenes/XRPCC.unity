@@ -136,6 +136,7 @@ GameObject:
   - component: {fileID: 24970791}
   - component: {fileID: 24970790}
   - component: {fileID: 24970789}
+  - component: {fileID: 24970794}
   m_Layer: 0
   m_Name: deleteSphere
   m_TagString: Untagged
@@ -235,6 +236,35 @@ Transform:
   m_Father: {fileID: 1163329447}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &24970794
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 24970788}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 30e3b7d7b5a51354e9f33471e4025b35, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  deleteSphereAction:
+    m_Name: Delete Sphere
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: e2351f37-6d88-4c58-9f36-c3b0113ad21e
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings:
+    - m_Name: 
+      m_Id: 99a5fcbc-9992-427d-90e8-aaefc332edb6
+      m_Path: <XRController>{LeftHand}/triggerPressed
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Delete Sphere
+      m_Flags: 0
+  deleteRate: 0.25
 --- !u!1 &149632820
 GameObject:
   m_ObjectHideFlags: 0
@@ -251,7 +281,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &149632821
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -308,7 +338,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 149632820}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 55.5, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -904,7 +934,6 @@ MonoBehaviour:
   rotationMultiplier: 0.05
   XRRigOrMainCamera: {fileID: 598687394}
   bat: {fileID: 382267808}
-  deletionSphere: {fileID: 24970788}
   setReferenceAction:
     m_Name: Set Reference
     m_Type: 0
@@ -937,23 +966,6 @@ MonoBehaviour:
       m_Groups: 
       m_Action: Fly
       m_Flags: 0
-  deleteSphereAction:
-    m_Name: Delete Sphere
-    m_Type: 0
-    m_ExpectedControlType: 
-    m_Id: a099e245-67ea-44fe-ae3d-cf3e95459ef8
-    m_Processors: 
-    m_Interactions: 
-    m_SingletonActionBindings:
-    - m_Name: 
-      m_Id: b1494cf2-c809-4861-9c6e-b58e7e1907b1
-      m_Path: <XRController>{LeftHand}/triggerPressed
-      m_Interactions: 
-      m_Processors: 
-      m_Groups: 
-      m_Action: Delete Sphere
-      m_Flags: 0
-  deleteRate: 0.25
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
@@ -1825,6 +1837,7 @@ GameObject:
   - component: {fileID: 1098134746}
   - component: {fileID: 1098134745}
   - component: {fileID: 1098134749}
+  - component: {fileID: 1098134750}
   m_Layer: 0
   m_Name: deleteSphere
   m_TagString: Untagged
@@ -1841,7 +1854,7 @@ SphereCollider:
   m_GameObject: {fileID: 1098134744}
   m_Material: {fileID: 0}
   m_IsTrigger: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 2
   m_Radius: 0.5
   m_Center: {x: 0, y: 0, z: 0}
@@ -1924,6 +1937,35 @@ MonoBehaviour:
     type: 3}
   pointCloudGameObject: {fileID: 0}
   vizualizedDepth: -1
+--- !u!114 &1098134750
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1098134744}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 30e3b7d7b5a51354e9f33471e4025b35, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  deleteSphereAction:
+    m_Name: Delete Sphere
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: b8b5a712-df66-4a36-a116-6adf00640fb6
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings:
+    - m_Name: 
+      m_Id: f475e1f4-6190-4777-96df-04f0080c7f47
+      m_Path: <XRController>/gripPressed
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Delete Sphere
+      m_Flags: 0
+  deleteRate: 0.25
 --- !u!1 &1163329446
 GameObject:
   m_ObjectHideFlags: 0
@@ -2490,6 +2532,8 @@ GameObject:
   - component: {fileID: 1580300683}
   - component: {fileID: 1580300682}
   - component: {fileID: 1580300686}
+  - component: {fileID: 1580300685}
+  - component: {fileID: 1580300687}
   m_Layer: 0
   m_Name: Camera
   m_TagString: MainCamera
@@ -2514,7 +2558,7 @@ Camera:
   m_GameObject: {fileID: 1580300681}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 2
+  m_ClearFlags: 1
   m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
@@ -2563,6 +2607,19 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 13
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!135 &1580300685
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1580300681}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.5
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &1580300686
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2577,10 +2634,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   desktopFlyingMode: 1
   translationMultiplier: 100
-  rotationMultiplier: 0.05
+  rotationMultiplier: 0.025
   XRRigOrMainCamera: {fileID: 1580300681}
   bat: {fileID: 382267808}
-  deletionSphere: {fileID: 1098134744}
   setReferenceAction:
     m_Name: Set Reference
     m_Type: 0
@@ -2591,7 +2647,7 @@ MonoBehaviour:
     m_SingletonActionBindings:
     - m_Name: 
       m_Id: d19c15e0-c7d3-421c-8584-44368f244170
-      m_Path: <XRController>{RightHand}/menu
+      m_Path: <XRController>/menu
       m_Interactions: 
       m_Processors: 
       m_Groups: 
@@ -2607,29 +2663,40 @@ MonoBehaviour:
     m_SingletonActionBindings:
     - m_Name: 
       m_Id: cd27eedc-0c39-4dca-8057-db6b04f56d38
-      m_Path: <XRController>{RightHand}/triggerPressed
+      m_Path: <XRController>/triggerPressed
       m_Interactions: 
       m_Processors: 
       m_Groups: 
       m_Action: Fly
       m_Flags: 0
-  deleteSphereAction:
-    m_Name: Delete Sphere
-    m_Type: 0
-    m_ExpectedControlType: 
-    m_Id: eed30a27-ec4e-4dce-a52f-2afca175bc31
-    m_Processors: 
-    m_Interactions: 
-    m_SingletonActionBindings:
-    - m_Name: 
-      m_Id: 3f57d366-7054-48c4-ab30-0a74de30d89b
-      m_Path: <XRController>{RightHand}/gripPressed
-      m_Interactions: 
-      m_Processors: 
-      m_Groups: 
-      m_Action: Delete Sphere
-      m_Flags: 0
-  deleteRate: 0.25
+--- !u!114 &1580300687
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1580300681}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: da05aab3ba773644eb187d19c55bb05a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _reflectionLayers:
+    serializedVersion: 2
+    m_Bits: 1
+  _disablePixelLights: 1
+  _disableShadows: 0
+  _textureSize: 256
+  _clipPlaneOffset: 0.07
+  _hdr: 1
+  _stencil: 0
+  _hideCameraGameobject: 1
+  _allowMSAA: 0
+  _farClipPlane: 1000
+  _forceForwardRenderingPath: 1
+  _clearFlags: 2
+  RefreshPerFrames: 1
+  _frameRefreshOffset: 0
 --- !u!1 &1592612350
 GameObject:
   m_ObjectHideFlags: 0

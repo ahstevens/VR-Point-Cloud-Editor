@@ -112,6 +112,10 @@ public class pointCloudManager : MonoBehaviour
     static public extern bool RequestIsAtleastOnePointInSphereFromUnity(IntPtr center, float size);
     [DllImport("PointCloudPlugin")]
     static public extern void RequestClosestPointInSphereFromUnity(IntPtr center, float size);
+    [DllImport("PointCloudPlugin")]
+    static public extern void setHighlightDeletedPointsActive(bool active);
+    [DllImport("PointCloudPlugin")]
+    static public extern void UpdateDeletionSpherePositionFromUnity(IntPtr center, float size);
 
     List<Vector3> vertexData;
     List<Color32> vertexColors;
@@ -135,6 +139,7 @@ public class pointCloudManager : MonoBehaviour
     public static GameObject reInitializationForAsyncLoad = null;
     public static float localLODTransitionDistance = 3500.0f;
     public static bool isLookingForClosestPoint = false;
+    public static bool highlightDeletedPoints = false;
 
     public static void loadLAZFile(string filePath, GameObject reinitialization = null)
     {
@@ -596,6 +601,11 @@ public class pointCloudManager : MonoBehaviour
             GCHandle toDelete = GCHandle.Alloc(center.ToArray(), GCHandleType.Pinned);
             RequestToDeleteFromUnity(toDelete.AddrOfPinnedObject(), transform.localScale.x / 2.0f);
         }
+
+        if (highlightDeletedPoints)
+        {
+            UpdateDeletionSpherePositionFromUnity(transform.position, transform.localScale.x / 2.0f);
+        }
     }
 
     void OnPostRenderCallback(Camera cam)
@@ -872,58 +882,75 @@ public class pointCloudManager : MonoBehaviour
         //return pointRepresentation;
     }
 
-    public static bool test_Closest_Point()
-    {
-        float[] initialPointPosition = new float[3];
-        GCHandle initialPointPositionPointer = GCHandle.Alloc(initialPointPosition, GCHandleType.Pinned);
+    //public static bool test_Closest_Point()
+    //{
+    //    float[] initialPointPosition = new float[3];
+    //    GCHandle initialPointPositionPointer = GCHandle.Alloc(initialPointPosition, GCHandleType.Pinned);
 
-        float lastInterval = 0.0f;
-        float firstAlgTime = 0.0f;
-        float secondAlgTime = 0.0f;
+    //    float lastInterval = 0.0f;
+    //    float firstAlgTime = 0.0f;
+    //    float secondAlgTime = 0.0f;
 
-        for (int i = 0; i < 100; i++)
-        {
-            Vector3 randomPoint = new Vector3(UnityEngine.Random.value * 2000.0f - 1000.0f, UnityEngine.Random.value * 2000.0f - 1000.0f, UnityEngine.Random.value * 2000.0f - 1000.0f);
+    //    for (int i = 0; i < 100; i++)
+    //    {
+    //        Vector3 randomPoint = new Vector3(UnityEngine.Random.value * 2000.0f - 1000.0f, UnityEngine.Random.value * 2000.0f - 1000.0f, UnityEngine.Random.value * 2000.0f - 1000.0f);
 
-            initialPointPosition[0] = randomPoint.x;
-            initialPointPosition[1] = randomPoint.y;
-            initialPointPosition[2] = randomPoint.z;
+    //        initialPointPosition[0] = randomPoint.x;
+    //        initialPointPosition[1] = randomPoint.y;
+    //        initialPointPosition[2] = randomPoint.z;
 
-            lastInterval = Time.realtimeSinceStartup;
-            RequestClosestPointInSphereFromUnity(initialPointPositionPointer.AddrOfPinnedObject(), 0.0f);
-            Debug.Log("delta time: " + (Time.realtimeSinceStartup - lastInterval) * 1000 + " ms.");
-            firstAlgTime += (Time.realtimeSinceStartup - lastInterval) * 1000;
+    //        lastInterval = Time.realtimeSinceStartup;
+    //        RequestClosestPointInSphereFromUnity(initialPointPositionPointer.AddrOfPinnedObject(), 0.0f);
+    //        Debug.Log("delta time: " + (Time.realtimeSinceStartup - lastInterval) * 1000 + " ms.");
+    //        firstAlgTime += (Time.realtimeSinceStartup - lastInterval) * 1000;
             
-            float[] closestPointPositionFromDLL_Fast = new float[3];
-            Marshal.Copy(initialPointPositionPointer.AddrOfPinnedObject(), closestPointPositionFromDLL_Fast, 0, 3);
+    //        float[] closestPointPositionFromDLL_Fast = new float[3];
+    //        Marshal.Copy(initialPointPositionPointer.AddrOfPinnedObject(), closestPointPositionFromDLL_Fast, 0, 3);
 
-            initialPointPosition[0] = randomPoint.x;
-            initialPointPosition[1] = randomPoint.y;
-            initialPointPosition[2] = randomPoint.z;
+    //        initialPointPosition[0] = randomPoint.x;
+    //        initialPointPosition[1] = randomPoint.y;
+    //        initialPointPosition[2] = randomPoint.z;
 
-            lastInterval = Time.realtimeSinceStartup;
-            RequestClosestPointToPointFromUnity(initialPointPositionPointer.AddrOfPinnedObject());
-            secondAlgTime += (Time.realtimeSinceStartup - lastInterval) * 1000;
+    //        lastInterval = Time.realtimeSinceStartup;
+    //        RequestClosestPointToPointFromUnity(initialPointPositionPointer.AddrOfPinnedObject());
+    //        secondAlgTime += (Time.realtimeSinceStartup - lastInterval) * 1000;
 
-            float[] closestPointPositionFromDLL = new float[3];
-            Marshal.Copy(initialPointPositionPointer.AddrOfPinnedObject(), closestPointPositionFromDLL, 0, 3);
+    //        float[] closestPointPositionFromDLL = new float[3];
+    //        Marshal.Copy(initialPointPositionPointer.AddrOfPinnedObject(), closestPointPositionFromDLL, 0, 3);
 
-            if (closestPointPositionFromDLL_Fast[0] != closestPointPositionFromDLL[0] ||
-                closestPointPositionFromDLL_Fast[1] != closestPointPositionFromDLL[1] ||
-                closestPointPositionFromDLL_Fast[2] != closestPointPositionFromDLL[2])
-            {
-                initialPointPositionPointer.Free();
-                return false;
-            }
-        }
+    //        if (closestPointPositionFromDLL_Fast[0] != closestPointPositionFromDLL[0] ||
+    //            closestPointPositionFromDLL_Fast[1] != closestPointPositionFromDLL[1] ||
+    //            closestPointPositionFromDLL_Fast[2] != closestPointPositionFromDLL[2])
+    //        {
+    //            initialPointPositionPointer.Free();
+    //            return false;
+    //        }
+    //    }
 
-        Debug.Log("naive algorithm time: " + secondAlgTime + " ms.");
-        Debug.Log("Octree with binary search area decrease time: " + firstAlgTime + " ms.");
+    //    Debug.Log("naive algorithm time: " + secondAlgTime + " ms.");
+    //    Debug.Log("Octree with binary search area decrease time: " + firstAlgTime + " ms.");
 
-        initialPointPositionPointer.Free();
+    //    initialPointPositionPointer.Free();
 
-        Debug.Log("Both algorithms produced same results!");
+    //    Debug.Log("Both algorithms produced same results!");
 
-        return true;
+    //    return true;
+    //}
+
+    public static void setHighlightDeletedPoints(bool active)
+    {
+        setHighlightDeletedPointsActive(active);
+    }
+
+    public static void UpdateDeletionSpherePositionFromUnity(Vector3 center, float size)
+    {
+        float[] deletionSpherePosition = new float[3];
+        
+        GCHandle deletionSpherePositionPointer = GCHandle.Alloc(deletionSpherePosition, GCHandleType.Pinned);
+        deletionSpherePosition[0] = center.x;
+        deletionSpherePosition[1] = center.y;
+        deletionSpherePosition[2] = center.z;
+
+        UpdateDeletionSpherePositionFromUnity(deletionSpherePositionPointer.AddrOfPinnedObject(), size);
     }
 }

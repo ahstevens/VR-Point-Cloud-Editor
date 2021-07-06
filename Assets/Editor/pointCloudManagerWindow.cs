@@ -279,7 +279,7 @@ public class pointCloudManagerWindow : EditorWindow
 
             pointInRangeLastStep = pointInRange;
 
-            for (int i = 0; i < 50; i++)
+            for (int i = 0; i < 20; i++)
             {
                 workingRange += downScale ? -sizeDifference : sizeDifference;
                 pointCloudManager.getTestSphereGameObject().transform.localScale = new Vector3(workingRange, workingRange, workingRange);
@@ -317,10 +317,13 @@ public class pointCloudManagerWindow : EditorWindow
                 GameObject.Destroy(tempGameObject);
         }
 
-        if (GUILayout.Button("Test closest point algorithms"))
-        {
-            pointCloudManager.test_Closest_Point();
-        }
+        pointCloudManager.highlightDeletedPoints = GUILayout.Toggle(pointCloudManager.highlightDeletedPoints, "Highlight points to delete");
+        pointCloudManager.setHighlightDeletedPoints(pointCloudManager.highlightDeletedPoints);
+
+        //if (GUILayout.Button("Test closest point algorithms"))
+        //{
+        //    pointCloudManager.test_Closest_Point();
+        //}
 
         timePassed += Time.unscaledDeltaTime;
         if (timePassed > 2.0f)

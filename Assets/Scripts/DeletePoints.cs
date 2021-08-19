@@ -8,6 +8,8 @@ public class DeletePoints : MonoBehaviour
 {
     [DllImport("PointCloudPlugin")]
     private static extern void RequestToDeleteFromUnity(IntPtr center, float size);
+    [DllImport("PointCloudPlugin")]
+    static public extern void setHighlightDeletedPointsActive(bool active);
 
     public InputAction deleteSphereAction;
 

@@ -11,6 +11,7 @@ testThread.txt
 Octree*.txt
 File_Load_Log.txt
 DLL_START.txt
+deleteEvents.txt
 
 *.log
 

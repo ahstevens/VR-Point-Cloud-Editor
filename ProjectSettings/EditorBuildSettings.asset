@@ -9,6 +9,8 @@ EditorBuildSettings:
     path: Assets/Scenes/XRPCC.unity
     guid: 47066ec805810ec4b8ef27cfa2851a09
   m_configObjects:
+    Unity.XR.OpenVR.Settings: {fileID: 11400000, guid: d344edc9348af4f44b3e4158989807fd,
+      type: 2}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: a3e3c167c3e88704cb859d2dc124a1ab,
       type: 2}
     com.unity.xr.openxr.settings4: {fileID: 11400000, guid: 1c3e6075d27e22c47bb74a7f539feb3a,

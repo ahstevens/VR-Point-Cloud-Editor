@@ -7,6 +7,7 @@ using System;
 using System.IO;
 using UnityEditor;
 using UnityEngine.InputSystem;
+using UnityEngine.XR.OpenXR;
 
 //public class pointCloudRawDataContainer : MonoBehaviour
 //{
@@ -141,7 +142,7 @@ public class pointCloudManager : MonoBehaviour
     public static bool isLookingForClosestPoint = false;
     public static bool highlightDeletedPoints = false;
 
-    public static void loadLAZFile(string filePath, GameObject reinitialization = null)
+    public static bool loadLAZFile(string filePath, GameObject reinitialization = null)
     {
         IntPtr strPtr = Marshal.StringToHGlobalAnsi(filePath);
         string LAZFileName = Path.GetFileNameWithoutExtension(filePath);
@@ -149,7 +150,7 @@ public class pointCloudManager : MonoBehaviour
         if (!OpenLAZFileFromUnity(strPtr))
         {
             Debug.Log("Loading of " + filePath + " failed!");
-            return;
+            return false;
         }
 
         isWaitingToLoad = true;
@@ -228,6 +229,7 @@ public class pointCloudManager : MonoBehaviour
         //pointClouds[pointClouds.Count - 1].inSceneRepresentation.transform.position = new Vector3((float)(pointClouds[pointClouds.Count - 1].initialXShift),
         //                                                                                          y,
         //                                                                                          (float)(pointClouds[pointClouds.Count - 1].initialZShift));
+        return true;
     }
 
     public static void SaveLAZFile(string filePath, int index)
@@ -358,6 +360,8 @@ public class pointCloudManager : MonoBehaviour
                 geoReference.transform.position = new Vector3(adjustmentResult[3],
                                                               pointClouds[pointClouds.Count - 1].UTMZone,
                                                               adjustmentResult[4]);
+
+                //geoReference.transform.parent = GameObject.Find("Point Clouds Root").transform;
             }
             else
             {
@@ -375,6 +379,8 @@ public class pointCloudManager : MonoBehaviour
             pointClouds[pointClouds.Count - 1].inSceneRepresentation.transform.position = new Vector3((float)(pointClouds[pointClouds.Count - 1].initialXShift),
                                                                                                       y,
                                                                                                       (float)(pointClouds[pointClouds.Count - 1].initialZShift));
+            
+            pointClouds[pointClouds.Count - 1].inSceneRepresentation.transform.parent = GameObject.Find("Point Clouds Root").transform;
 
             if (reInitializationObjectsAsync != null && reInitializationObjectsAsync.Count > 0)
             {
@@ -399,12 +405,17 @@ public class pointCloudManager : MonoBehaviour
 
         //pointClouds = new List<pointCloud>();
 
+        var pcRoot = GameObject.Find("Point Clouds Root");
+
+        if (pcRoot == null)
+            pcRoot = new GameObject("Point Clouds Root");
+                
+        pcRoot.transform.parent = GameObject.Find("Scaling Root").transform;
+
 
         reInitialize();
 
-
-
-
+        //loadLAZFile(Application.dataPath + "/../bridge.las");
 
 
         //double lastInterval = Time.realtimeSinceStartup;
@@ -531,8 +542,10 @@ public class pointCloudManager : MonoBehaviour
     {
         Keyboard kb = Keyboard.current;
 
+#if UNITY_EDITOR
         if (isLookingForClosestPoint)
             getPointGameObjectForSearch_Fast();
+#endif
 
         if (Camera.onPostRender != OnPostRenderCallback && pointClouds == null)
         {
@@ -704,6 +717,7 @@ public class pointCloudManager : MonoBehaviour
         valuePointer.Free();
     }
 
+#if UNITY_EDITOR
     public static LineRenderer lineToClosestPoint;
     public static Vector3 closestPointPosition;
     public static GameObject getPointGameObjectForSearch()
@@ -903,7 +917,7 @@ public class pointCloudManager : MonoBehaviour
     //        RequestClosestPointInSphereFromUnity(initialPointPositionPointer.AddrOfPinnedObject(), 0.0f);
     //        Debug.Log("delta time: " + (Time.realtimeSinceStartup - lastInterval) * 1000 + " ms.");
     //        firstAlgTime += (Time.realtimeSinceStartup - lastInterval) * 1000;
-            
+
     //        float[] closestPointPositionFromDLL_Fast = new float[3];
     //        Marshal.Copy(initialPointPositionPointer.AddrOfPinnedObject(), closestPointPositionFromDLL_Fast, 0, 3);
 
@@ -936,6 +950,8 @@ public class pointCloudManager : MonoBehaviour
 
     //    return true;
     //}
+
+#endif
 
     public static void setHighlightDeletedPoints(bool active)
     {

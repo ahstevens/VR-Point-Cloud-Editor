@@ -12,6 +12,11 @@ Octree*.txt
 File_Load_Log.txt
 DLL_START.txt
 deleteEvents.txt
+computeShader.txt
+DLL_ERRORS.txt
+testOutPut_BAG.txt
+undoActions.txt
+writeTest.txt
 
 *.log
 

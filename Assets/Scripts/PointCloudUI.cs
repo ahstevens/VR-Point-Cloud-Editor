@@ -26,6 +26,10 @@ public class PointCloudUI : MonoBehaviour
 
     public Button colorPickerButton;
 
+    public Button resetPointCloudTransforms;
+
+    public GameObject resettableObject;
+
     private bool colorPickerActive;
 
     private bool menuOpen;
@@ -62,31 +66,11 @@ public class PointCloudUI : MonoBehaviour
             Camera.main.backgroundColor = color;
         });
 
-        colorPickerButton.onClick.AddListener(() => {
-            if (colorPickerActive)
-            {
-                colorPickerActive = false;
-
-                ActivateLoadAndSaveUI(true);
-
-                colorPicker.gameObject.SetActive(false);
-                colorPickerButton.GetComponentInChildren<Text>().text = "Choose Environment Color";
-            }
-            else
-            {
-                colorPickerActive = true;
-
-                ActivateLoadAndSaveUI(false);
-
-                colorPicker.gameObject.SetActive(true);
-                colorPickerButton.GetComponentInChildren<Text>().text = "Close Color Picker";
-            }
-        });
-
         fileDropdown.SetActive(false);
         saveButton.SetActive(false);
         loadingText.SetActive(false);
         loadingIcon.SetActive(false);
+        resetPointCloudTransforms.gameObject.SetActive(false);
 
         fileBrowsing = false;
         loading = false;
@@ -239,6 +223,7 @@ public class PointCloudUI : MonoBehaviour
             {
                 saveButton.SetActive(true);
                 fileDropdown.SetActive(true);
+                resetPointCloudTransforms.gameObject.SetActive(true);
             }
         }
         else
@@ -246,6 +231,29 @@ public class PointCloudUI : MonoBehaviour
             loadButton.SetActive(false);
             saveButton.SetActive(false);
             fileDropdown.SetActive(false);
+            resetPointCloudTransforms.gameObject.SetActive(false);
+        }
+    }
+
+    public void ToggleColorPicker()
+    {
+        if (colorPickerActive)
+        {
+            colorPickerActive = false;
+
+            ActivateLoadAndSaveUI(true);
+
+            colorPicker.gameObject.SetActive(false);
+            colorPickerButton.GetComponentInChildren<Text>().text = "Choose Environment Color";
+        }
+        else
+        {
+            colorPickerActive = true;
+
+            ActivateLoadAndSaveUI(false);
+
+            colorPicker.gameObject.SetActive(true);
+            colorPickerButton.GetComponentInChildren<Text>().text = "Close Color Picker";
         }
     }
 
@@ -274,5 +282,12 @@ public class PointCloudUI : MonoBehaviour
             loadingText.SetActive(false);
             loadingIcon.SetActive(false);
         }
+    }
+
+    public void resetPointCloudsTransforms()
+    {
+        resettableObject.transform.position = Vector3.zero;
+        resettableObject.transform.rotation = Quaternion.identity;
+        resettableObject.transform.localScale = Vector3.one;
     }
 }

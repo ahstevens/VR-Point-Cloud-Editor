@@ -409,9 +409,6 @@ public class pointCloudManager : MonoBehaviour
 
         if (pcRoot == null)
             pcRoot = new GameObject("Point Clouds Root");
-                
-        pcRoot.transform.parent = GameObject.Find("Scaling Root").transform;
-
 
         reInitialize();
 

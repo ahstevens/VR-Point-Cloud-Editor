@@ -938,7 +938,15 @@ MonoBehaviour:
     m_Id: e222e27d-0311-46c0-8c00-52534d76ad22
     m_Processors: 
     m_Interactions: 
-    m_SingletonActionBindings: []
+    m_SingletonActionBindings:
+    - m_Name: 
+      m_Id: b375b9b6-944d-4253-8ad6-f761dc175c70
+      m_Path: <XRController>{RightHand}/secondaryTouched
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Show Scaling Marker
+      m_Flags: 0
   LeftHandController: {fileID: 1163329446}
   RightHandController: {fileID: 756557910}
   LeftControllerPosition:

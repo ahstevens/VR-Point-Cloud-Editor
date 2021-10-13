@@ -185,7 +185,7 @@ public class DeletePoints : MonoBehaviour
         if (pcRoot == null)
             return;
 
-        Debug.Log(thisController.SendHapticImpulse(0.7f, 2f));
+        //Debug.Log(thisController.SendHapticImpulse(0.7f, 2f));
 
         float[] center = new float[3];
         center[0] = deletionSphere.transform.position.x;

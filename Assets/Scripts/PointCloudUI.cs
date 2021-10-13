@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
 using SimpleFileBrowser;
-using System;
+using HSVPicker;
 
 public class PointCloudUI : MonoBehaviour
 {
@@ -22,6 +22,12 @@ public class PointCloudUI : MonoBehaviour
 
     private Dropdown dd;
 
+    public ColorPicker colorPicker;
+
+    public Button colorPickerButton;
+
+    private bool colorPickerActive;
+
     private bool menuOpen;
 
     private bool fileBrowsing;
@@ -35,14 +41,47 @@ public class PointCloudUI : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        menuOpen = false;
         openMenu.started += ctx => OpenMenu();
+        openMenu.canceled += ctx => CloseMenu();
+
+        menuOpen = false;
 
         thisCanvas = GetComponent<Canvas>();
 
         thisCanvas.enabled = false;
 
         dd = fileDropdown.GetComponent<Dropdown>();
+
+        colorPickerActive = false;
+        colorPicker.gameObject.SetActive(false);
+
+        colorPicker.CurrentColor = Camera.main.backgroundColor;
+
+        colorPicker.onValueChanged.AddListener(color =>
+        {
+            Camera.main.backgroundColor = color;
+        });
+
+        colorPickerButton.onClick.AddListener(() => {
+            if (colorPickerActive)
+            {
+                colorPickerActive = false;
+
+                ActivateLoadAndSaveUI(true);
+
+                colorPicker.gameObject.SetActive(false);
+                colorPickerButton.GetComponentInChildren<Text>().text = "Choose Environment Color";
+            }
+            else
+            {
+                colorPickerActive = true;
+
+                ActivateLoadAndSaveUI(false);
+
+                colorPicker.gameObject.SetActive(true);
+                colorPickerButton.GetComponentInChildren<Text>().text = "Close Color Picker";
+            }
+        });
 
         fileDropdown.SetActive(false);
         saveButton.SetActive(false);
@@ -63,32 +102,36 @@ public class PointCloudUI : MonoBehaviour
         if (loading && !pointCloudManager.isWaitingToLoad)
         {
             loading = false;
-            loadingText.SetActive(false);
-            loadingIcon.SetActive(false);
+
+            ActivateLoadingUI(false);
             UpdateDropdownFiles();
         }
 
-        if (fileBrowsing || loading || saving)
+        if (!loading && !menuOpen)
         {
-            loadButton.SetActive(false);
-            saveButton.SetActive(false);
-            fileDropdown.SetActive(false);
+            thisCanvas.enabled = false;
         }
-        else
-        {
-            loadButton.SetActive(true);
 
-            if (pointCloudManager.pointClouds.Count > 0)
+        if (!colorPickerActive)
+        {
+            if (fileBrowsing || loading || saving)
             {
-                saveButton.SetActive(true);
-                fileDropdown.SetActive(true);
+                ActivateColorPickerUI(false);
+
+                ActivateLoadAndSaveUI(false);
+            }
+            else
+            {
+                ActivateColorPickerUI(true);
+
+                ActivateLoadAndSaveUI(true);
             }
         }
     }
 
     private void OnEnable()
     {
-        openMenu.Enable();
+        openMenu.Enable();        
     }
 
     private void OnDisable()
@@ -98,21 +141,18 @@ public class PointCloudUI : MonoBehaviour
 
     private void OpenMenu()
     {
-        if (menuOpen)
-        {
-            thisCanvas.enabled = false;
-            menuOpen = false;
+        thisCanvas.enabled = true;
+        menuOpen = true;        
+    }
 
-            if (fileBrowsing)
-            {
-                fileBrowsing = false;
-                fileBrowserCanvas.SetActive(false);
-            }
-        }
-        else
+    private void CloseMenu()
+    {        
+        menuOpen = false;
+
+        if (fileBrowsing)
         {
-            thisCanvas.enabled = true;
-            menuOpen = true;
+            fileBrowsing = false;
+            fileBrowserCanvas.SetActive(false);
         }
     }
 
@@ -141,9 +181,7 @@ public class PointCloudUI : MonoBehaviour
             if (pointCloudManager.loadLAZFile(FileBrowser.Result[0]))
             {
                 loading = true;
-                loadButton.SetActive(false); 
-                loadingText.SetActive(true);
-                loadingIcon.SetActive(true);
+                ActivateLoadingUI(true);
             }
 
             lastLoadDirectory = Path.GetDirectoryName(FileBrowser.Result[0]);
@@ -189,5 +227,52 @@ public class PointCloudUI : MonoBehaviour
 
         foreach (var pcName in pointCloudManager.pointClouds)
             dd.options.Add(new Dropdown.OptionData(pcName.inSceneRepresentation.name));
+    }
+
+    private void ActivateLoadAndSaveUI(bool activate)
+    {
+        if (activate)
+        {
+            loadButton.SetActive(true);
+
+            if (pointCloudManager.pointClouds.Count > 0)
+            {
+                saveButton.SetActive(true);
+                fileDropdown.SetActive(true);
+            }
+        }
+        else
+        {
+            loadButton.SetActive(false);
+            saveButton.SetActive(false);
+            fileDropdown.SetActive(false);
+        }
+    }
+
+    private void ActivateColorPickerUI(bool activate)
+    {
+        if (activate)
+        {
+            colorPickerButton.gameObject.SetActive(true);
+        }
+        else
+        {
+            colorPickerButton.gameObject.SetActive(false);
+            colorPicker.gameObject.SetActive(false);
+        }
+    }
+
+    private void ActivateLoadingUI(bool activate)
+    {
+        if (activate)
+        {
+            loadingText.SetActive(true);
+            loadingIcon.SetActive(true);
+        }
+        else
+        {
+            loadingText.SetActive(false);
+            loadingIcon.SetActive(false);
+        }
     }
 }

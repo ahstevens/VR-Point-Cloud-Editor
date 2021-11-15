@@ -21,27 +21,37 @@ public class DeletePoints : MonoBehaviour
     public InputAction deleteSphereAction;
     public InputAction undoDeletionAction;
     public InputAction moveAndResizeSphereAction;
-    public float moveAndResizeDeadzone = 0.1f;
+    public float moveAndResizeThumbstickDeadzone = 0.1f;
+    public float moveAndResizeTouchpadDelta = 0.2f;
+    public float minimumSphereSize = 0.01f;
+    public float maximumSphereSize = 0.5f;
+    public float minimumSphereOffset = 0.1f;
+    public float maximumSphereOffset = 2f;
 
     public float deleteRate = 0.25f;
 
     private GameObject deletionSphere;
+    private GameObject connectingRod;
     private GameObject pcRoot;
 
-    private Vector3 sphereScaleAtResizeBegin;
-    private Vector2 positionAtMoveBegin;
-    private Vector3 spherePositionAtMoveBegin;
     private bool movingOrResizing;
     private bool resizing;
     private bool moving;
+
+    private bool thumbstick;
+    private bool touchpad;
+    private bool horizontalSwipe;
+    private bool verticalSwipe;
+    private Vector2 initialTouchpadTouchPoint;
+    private Vector2 initialTouchpadMeasurementPoint;
+    private float initialSphereSize;
+    private float initialSphereDistance;
 
     public Material CursorMaterial;
     private Color originalCursorColor;
 
     private List<int> deletionOps;
     private int currentDeletionOpCount;
-
-    private UnityEngine.XR.Interaction.Toolkit.ActionBasedController thisController;
 
     // Start is called before the first frame update
     void Start()
@@ -60,12 +70,13 @@ public class DeletePoints : MonoBehaviour
         resizing = false;
         moving = false;
 
+        touchpad = false;
+        thumbstick = false;
+
         deletionOps = new List<int>();
         currentDeletionOpCount = 0;
 
         setHighlightDeletedPointsActive(true);
-
-        thisController = this.transform.parent.gameObject.GetComponent<UnityEngine.XR.Interaction.Toolkit.ActionBasedController>();
     }
 
     // Update is called once per frame
@@ -78,60 +89,54 @@ public class DeletePoints : MonoBehaviour
         {
             var sample = moveAndResizeSphereAction.ReadValue<Vector2>();
 
-            if (Mathf.Abs(sample.x) > moveAndResizeDeadzone && Mathf.Abs(sample.x) > Mathf.Abs(sample.y))
+            if (touchpad)
             {
-                resizing = true;
-                movingOrResizing = false;
+                var delta = sample - initialTouchpadTouchPoint;
+
+                if (!(moving || resizing) && (delta.magnitude > moveAndResizeTouchpadDelta))
+                {
+                    initialTouchpadMeasurementPoint = sample;
+
+                    if (Mathf.Abs(delta.x) > Mathf.Abs(delta.y))
+                    {
+                        resizing = true; // horizontal swipe
+                        movingOrResizing = false;
+                        initialSphereSize = deletionSphere.transform.localScale.x;
+                    }
+                    else
+                    {
+                        moving = true; // vertical swipe
+                        movingOrResizing = false;
+                        initialSphereDistance = deletionSphere.transform.localPosition.z;
+                    }
+                }
             }
-            else if (Mathf.Abs(sample.y) > moveAndResizeDeadzone && Mathf.Abs(sample.x) < Mathf.Abs(sample.y))
+
+            if (thumbstick)
             {
-                moving = true;
-                movingOrResizing = false;
+                if (Mathf.Abs(sample.x) > moveAndResizeThumbstickDeadzone && Mathf.Abs(sample.x) > Mathf.Abs(sample.y))
+                {
+                    resizing = true;
+                    movingOrResizing = false;
+                }
+                else if (Mathf.Abs(sample.y) > moveAndResizeThumbstickDeadzone && Mathf.Abs(sample.x) < Mathf.Abs(sample.y))
+                {
+                    moving = true;
+                    movingOrResizing = false;
+                }
             }
         }
 
-        if (resizing)
+        if (moving || resizing)
         {
-            var delta = moveAndResizeSphereAction.ReadValue<Vector2>().x;
+            if (thumbstick)
+                ThumbstickMoveOrResize();
 
-            var scaleFactor = Mathf.Exp(delta * 0.1F);
-
-            deletionSphere.transform.localScale *= scaleFactor;
-
-            if (deletionSphere.transform.localScale.x < 0.01f)
-            {
-                deletionSphere.transform.localScale = Vector3.one * 0.01f;
-            }
-
-            if (Mathf.Abs(delta) <= moveAndResizeDeadzone)
-            {
-                resizing = false;
-                movingOrResizing = true;
-            }
+            if (touchpad)
+                TouchpadMoveOrResize();
         }
 
-        if (moving)
-        {
-            var delta = moveAndResizeSphereAction.ReadValue<Vector2>().y;// - positionAtMoveBegin.y;
-
-            var scaleFactor = delta * 0.1F;
-
-            deletionSphere.transform.localPosition += Vector3.forward * scaleFactor;
-
-            if (Mathf.Abs(delta) <= moveAndResizeDeadzone)
-            {
-                moving = false;
-                movingOrResizing = true;
-            }
-        }
-
-        // Keep sphere from getting too close to controller
-        var currentRadius = deletionSphere.transform.localScale.x;// * 0.5f;
-
-        if (deletionSphere.transform.localPosition.z < currentRadius)
-        {
-            deletionSphere.transform.localPosition = Vector3.forward * currentRadius;
-        }
+        MaintainSphereOffsetFromController();
 
         UpdateSpherePositionInPlugin();
     }
@@ -216,6 +221,16 @@ public class DeletePoints : MonoBehaviour
     private void OnBeginMoveAndResizeSphere()
     {
         movingOrResizing = true;
+
+        if (moveAndResizeSphereAction.activeControl.displayName == "trackpad" || moveAndResizeSphereAction.activeControl.displayName == "touchpad")
+        {
+            touchpad = true;
+            initialTouchpadTouchPoint = moveAndResizeSphereAction.ReadValue<Vector2>();
+        }
+        else
+        {
+            thumbstick = true;
+        }
     }
 
     private void OnEndMoveAndResizeSphere()
@@ -223,6 +238,8 @@ public class DeletePoints : MonoBehaviour
         movingOrResizing = false;
         moving = false;
         resizing = false;
+        thumbstick = false;
+        touchpad = false;
     }
 
     private void UpdateSpherePositionInPlugin()
@@ -235,5 +252,107 @@ public class DeletePoints : MonoBehaviour
         center[1] = deletionSphere.transform.position.y;
         center[2] = deletionSphere.transform.position.z;
         UpdateDeletionSpherePositionFromUnity(toDelete.AddrOfPinnedObject(), (deletionSphere.transform.localScale.x) / scalingRoot.transform.localScale.x);
+    }
+
+    private void ThumbstickMoveOrResize()
+    {
+        if (resizing)
+        {
+            var delta = moveAndResizeSphereAction.ReadValue<Vector2>().x;
+
+            var scaleFactor = Mathf.Exp(delta * 0.1F);
+
+            deletionSphere.transform.localScale *= scaleFactor;
+
+            if (deletionSphere.transform.localScale.x < minimumSphereSize)
+            {
+                deletionSphere.transform.localScale = Vector3.one * minimumSphereSize;
+            }
+
+            if (Mathf.Abs(delta) <= moveAndResizeThumbstickDeadzone)
+            {
+                resizing = false;
+                movingOrResizing = true;
+            }
+        }
+
+        if (moving)
+        {
+            var delta = moveAndResizeSphereAction.ReadValue<Vector2>().y;
+
+            var scaleFactor = delta * 0.1F;
+
+            deletionSphere.transform.localPosition += Vector3.forward * scaleFactor;
+
+            if (Mathf.Abs(delta) <= moveAndResizeThumbstickDeadzone)
+            {
+                moving = false;
+                movingOrResizing = true;
+            }
+        }
+    }
+
+    private void TouchpadMoveOrResize()
+    {
+        var sample = moveAndResizeSphereAction.ReadValue<Vector2>();
+
+        if (moving)
+        {
+            float dy = (sample - initialTouchpadMeasurementPoint).y;
+
+            float range = maximumSphereOffset - minimumSphereOffset;
+
+            var offset = initialSphereDistance + dy * range * 0.5f;
+
+            if (offset > maximumSphereOffset)
+            {
+                offset = maximumSphereOffset;
+                initialSphereDistance = maximumSphereOffset;
+                initialTouchpadMeasurementPoint.y = sample.y;
+            }
+            else if (offset < minimumSphereOffset)
+            {
+                offset = minimumSphereOffset;
+                initialSphereDistance = minimumSphereOffset;
+                initialTouchpadMeasurementPoint.y = sample.y;
+            }
+
+            deletionSphere.transform.localPosition = Vector3.forward * offset;
+        }
+
+        if (resizing)
+        {
+            float dx = sample.x - initialTouchpadMeasurementPoint.x;
+
+            float range = maximumSphereSize - minimumSphereSize;
+
+            var size = initialSphereSize + dx * range;
+
+            if (size > maximumSphereSize)
+            {
+                size = maximumSphereSize;
+                initialSphereSize = maximumSphereSize;
+                initialTouchpadMeasurementPoint.x = sample.x;
+            }
+            else if (size < minimumSphereSize)
+            {
+                size = minimumSphereSize;
+                initialSphereSize = minimumSphereSize;
+                initialTouchpadMeasurementPoint.x = sample.x;
+            }
+
+            deletionSphere.transform.localScale = Vector3.one * size;
+        }
+    }
+    
+    private void MaintainSphereOffsetFromController()
+    {
+        // Keep sphere from getting too close to controller
+        var currentRadius = deletionSphere.transform.localScale.x;// * 0.5f;
+
+        if (deletionSphere.transform.localPosition.z < currentRadius)
+        {
+            deletionSphere.transform.localPosition = Vector3.forward * currentRadius;
+        }
     }
 }

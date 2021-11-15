@@ -276,6 +276,102 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 296325406}
   m_CullTransparentMesh: 1
+--- !u!1 &329111747
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 329111748}
+  - component: {fileID: 329111751}
+  - component: {fileID: 329111750}
+  - component: {fileID: 329111749}
+  m_Layer: 0
+  m_Name: connector
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &329111748
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 329111747}
+  m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 0.010000001, y: 0.10000001, z: 0.010000001}
+  m_Children: []
+  m_Father: {fileID: 751590838}
+  m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
+--- !u!136 &329111749
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 329111747}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  m_Radius: 0.5000001
+  m_Height: 2
+  m_Direction: 1
+  m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
+--- !u!23 &329111750
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 329111747}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!33 &329111751
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 329111747}
+  m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!1 &329261446
 GameObject:
   m_ObjectHideFlags: 0
@@ -558,7 +654,23 @@ MonoBehaviour:
     m_SingletonActionBindings:
     - m_Name: 
       m_Id: a05571a3-21f7-4311-b89c-c214586acbd3
-      m_Path: <XRController>{LeftHand}/secondaryButton
+      m_Path: <ValveIndexController>{LeftHand}/secondaryButton
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Open Menu
+      m_Flags: 0
+    - m_Name: 
+      m_Id: bac19315-c66f-402f-9c84-47d4b618ab79
+      m_Path: <ViveController>{LeftHand}/trackpadTouched
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Open Menu
+      m_Flags: 0
+    - m_Name: 
+      m_Id: 78a68f5c-07e5-4727-a55e-b24cb2179eb8
+      m_Path: <WMRSpatialController>{LeftHand}/touchpadTouched
       m_Interactions: 
       m_Processors: 
       m_Groups: 
@@ -574,6 +686,7 @@ MonoBehaviour:
   colorPickerButton: {fileID: 1103691904}
   resetPointCloudTransforms: {fileID: 2023643300}
   resettableObject: {fileID: 417516343}
+  editingCursor: {fileID: 751590837}
 --- !u!114 &486264992
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -822,7 +935,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 598687394}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d56f254a93476424aa3df058172dbaff, type: 3}
   m_Name: 
@@ -925,12 +1038,60 @@ MonoBehaviour:
     m_SingletonActionBindings:
     - m_Name: 
       m_Id: ac2026f8-40d2-4888-bf5c-98b71894425a
-      m_Path: <XRController>{RightHand}/secondaryButton
+      m_Path: <ValveIndexController>{RightHand}/secondaryButton
       m_Interactions: 
       m_Processors: 
       m_Groups: 
       m_Action: Scale
       m_Flags: 0
+    - m_Name: vive wand bimanual grip
+      m_Id: 25401acf-257a-47df-9ab5-0098b9b80abb
+      m_Path: ButtonWithOneModifier
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Scale
+      m_Flags: 4
+    - m_Name: button
+      m_Id: 4687ce13-f7bf-4606-b573-d5b687eef571
+      m_Path: <ViveController>{LeftHand}/gripPressed
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Scale
+      m_Flags: 8
+    - m_Name: modifier
+      m_Id: 339f886a-195b-47b2-8bdf-3c7bbcbe510e
+      m_Path: <ViveController>{RightHand}/gripPressed
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Scale
+      m_Flags: 8
+    - m_Name: windows mr bimanual grip
+      m_Id: 8aafadbc-5091-411c-8de3-be52fa1d8b77
+      m_Path: ButtonWithOneModifier
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Scale
+      m_Flags: 4
+    - m_Name: modifier
+      m_Id: 3d653178-5265-4a4d-b8db-1c7206a76497
+      m_Path: <WMRSpatialController>{RightHand}/gripPressed
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Scale
+      m_Flags: 8
+    - m_Name: button
+      m_Id: 66707a33-606e-430e-89c1-7445a51e35df
+      m_Path: <WMRSpatialController>{LeftHand}/gripPressed
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Scale
+      m_Flags: 8
   showScalingMarker:
     m_Name: Show Scaling Marker
     m_Type: 0
@@ -942,6 +1103,22 @@ MonoBehaviour:
     - m_Name: 
       m_Id: b375b9b6-944d-4253-8ad6-f761dc175c70
       m_Path: <XRController>{RightHand}/secondaryTouched
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Show Scaling Marker
+      m_Flags: 0
+    - m_Name: 
+      m_Id: a739bad3-4f2e-478e-b966-aef4167fd304
+      m_Path: <ViveController>/gripPressed
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Show Scaling Marker
+      m_Flags: 0
+    - m_Name: 
+      m_Id: 1c1b28f4-d9d6-49f0-9023-6b81c319c888
+      m_Path: <WMRSpatialController>/gripPressed
       m_Interactions: 
       m_Processors: 
       m_Groups: 
@@ -2116,7 +2293,23 @@ MonoBehaviour:
     m_SingletonActionBindings:
     - m_Name: 
       m_Id: 402789f5-cf2c-4817-b17e-64842949c496
-      m_Path: <XRController>{LeftHand}/primaryButton
+      m_Path: <ValveIndexController>{LeftHand}/primaryButton
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Undo Deletion
+      m_Flags: 0
+    - m_Name: 
+      m_Id: 31bee514-aec7-4333-882d-a03e4638b7fc
+      m_Path: <ViveController>{RightHand}/trackpadClicked
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Undo Deletion
+      m_Flags: 0
+    - m_Name: 
+      m_Id: eea6f372-dcf4-4b4a-a208-41fb6410e438
+      m_Path: <WMRSpatialController>{RightHand}/touchpadClicked
       m_Interactions: 
       m_Processors: 
       m_Groups: 
@@ -2132,13 +2325,34 @@ MonoBehaviour:
     m_SingletonActionBindings:
     - m_Name: 
       m_Id: 67e5fe80-2ff4-4e2e-b158-56e6439c43c2
-      m_Path: <XRController>{RightHand}/thumbstick
+      m_Path: <ValveIndexController>{RightHand}/thumbstick
       m_Interactions: 
       m_Processors: 
       m_Groups: 
       m_Action: Move And Resize Sphere
       m_Flags: 0
-  moveAndResizeDeadzone: 0.1
+    - m_Name: 
+      m_Id: 480936b9-5100-4192-bd07-6fbd70ab2c11
+      m_Path: <ViveController>{RightHand}/trackpad
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Move And Resize Sphere
+      m_Flags: 0
+    - m_Name: 
+      m_Id: a6f27e93-3a41-47e8-9536-ce257f71df17
+      m_Path: <WMRSpatialController>{RightHand}/touchpad
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Move And Resize Sphere
+      m_Flags: 0
+  moveAndResizeThumbstickDeadzone: 0.1
+  moveAndResizeTouchpadDelta: 0.2
+  minimumSphereSize: 0.01
+  maximumSphereSize: 0.5
+  minimumSphereOffset: 0.1
+  maximumSphereOffset: 2
   deleteRate: 0.1
   CursorMaterial: {fileID: 2100000, guid: 9d1e6f75ab4598b4681297af1d3e027e, type: 2}
 --- !u!1 &756557910

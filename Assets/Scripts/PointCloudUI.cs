@@ -30,6 +30,8 @@ public class PointCloudUI : MonoBehaviour
 
     public GameObject resettableObject;
 
+    public GameObject editingCursor;
+
     private bool colorPickerActive;
 
     private bool menuOpen;
@@ -126,7 +128,9 @@ public class PointCloudUI : MonoBehaviour
     private void OpenMenu()
     {
         thisCanvas.enabled = true;
-        menuOpen = true;        
+        menuOpen = true;
+
+        editingCursor.SetActive(false);
     }
 
     private void CloseMenu()
@@ -138,6 +142,8 @@ public class PointCloudUI : MonoBehaviour
             fileBrowsing = false;
             fileBrowserCanvas.SetActive(false);
         }
+
+        editingCursor.SetActive(true);
     }
 
     public void LoadFile()

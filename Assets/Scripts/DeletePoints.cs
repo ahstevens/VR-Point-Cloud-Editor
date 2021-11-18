@@ -21,7 +21,7 @@ public class DeletePoints : MonoBehaviour
     public InputAction deleteSphereAction;
     public InputAction undoDeletionAction;
     public InputAction moveAndResizeSphereAction;
-    public float moveAndResizeThumbstickDeadzone = 0.1f;
+    public float moveAndResizeThumbstickDeadzone = 0.2f;
     public float moveAndResizeTouchpadDelta = 0.2f;
     public float minimumSphereSize = 0.01f;
     public float maximumSphereSize = 0.5f;
@@ -114,12 +114,12 @@ public class DeletePoints : MonoBehaviour
 
             if (thumbstick)
             {
-                if (Mathf.Abs(sample.x) > moveAndResizeThumbstickDeadzone && Mathf.Abs(sample.x) > Mathf.Abs(sample.y))
+                if ((Mathf.Abs(sample.x) > moveAndResizeThumbstickDeadzone) && (Mathf.Abs(sample.x) > Mathf.Abs(sample.y)))
                 {
                     resizing = true;
                     movingOrResizing = false;
                 }
-                else if (Mathf.Abs(sample.y) > moveAndResizeThumbstickDeadzone && Mathf.Abs(sample.x) < Mathf.Abs(sample.y))
+                else if ((Mathf.Abs(sample.y) > moveAndResizeThumbstickDeadzone) && (Mathf.Abs(sample.x) < Mathf.Abs(sample.y)))
                 {
                     moving = true;
                     movingOrResizing = false;

@@ -580,6 +580,14 @@ MonoBehaviour:
       m_Groups: 
       m_Action: Open Menu
       m_Flags: 0
+    - m_Name: 
+      m_Id: e91883ef-4ecc-452a-be0c-b9b21c96d609
+      m_Path: <OculusTouchController>{LeftHand}/secondaryButton
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Open Menu
+      m_Flags: 0
   fileBrowserCanvas: {fileID: 1220974824}
   loadButton: {fileID: 1476899111}
   saveButton: {fileID: 329261446}
@@ -942,7 +950,7 @@ MonoBehaviour:
     m_SingletonActionBindings:
     - m_Name: 
       m_Id: ac2026f8-40d2-4888-bf5c-98b71894425a
-      m_Path: <ValveIndexController>{RightHand}/secondaryButton
+      m_Path: <ValveIndexController>{RightHand}/primaryButton
       m_Interactions: 
       m_Processors: 
       m_Groups: 
@@ -996,6 +1004,14 @@ MonoBehaviour:
       m_Groups: 
       m_Action: Scale
       m_Flags: 8
+    - m_Name: 
+      m_Id: b3a1acab-c311-4214-bf36-5a35cb96bbed
+      m_Path: <OculusTouchController>{RightHand}/primaryButton
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Scale
+      m_Flags: 0
   showScalingMarker:
     m_Name: Show Scaling Marker
     m_Type: 0
@@ -1006,7 +1022,7 @@ MonoBehaviour:
     m_SingletonActionBindings:
     - m_Name: 
       m_Id: b375b9b6-944d-4253-8ad6-f761dc175c70
-      m_Path: <XRController>{RightHand}/secondaryTouched
+      m_Path: <ValveIndexController>{RightHand}/primaryTouched
       m_Interactions: 
       m_Processors: 
       m_Groups: 
@@ -1023,6 +1039,14 @@ MonoBehaviour:
     - m_Name: 
       m_Id: 1c1b28f4-d9d6-49f0-9023-6b81c319c888
       m_Path: <WMRSpatialController>/gripPressed
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Show Scaling Marker
+      m_Flags: 0
+    - m_Name: 
+      m_Id: 634a75e2-d4e5-4a24-8126-c13f49a9f95d
+      m_Path: <OculusTouchController>{RightHand}/primaryTouched
       m_Interactions: 
       m_Processors: 
       m_Groups: 
@@ -2219,6 +2243,14 @@ MonoBehaviour:
       m_Groups: 
       m_Action: Undo Deletion
       m_Flags: 0
+    - m_Name: 
+      m_Id: 99426cef-a044-40a3-bf0b-68f444e29a15
+      m_Path: <OculusTouchController>{RightHand}/primaryButton
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Undo Deletion
+      m_Flags: 0
   moveAndResizeSphereAction:
     m_Name: Move And Resize Sphere
     m_Type: 0
@@ -2246,6 +2278,14 @@ MonoBehaviour:
     - m_Name: 
       m_Id: 8fa9efd8-3b92-43be-b2f5-63b2ac2c18a6
       m_Path: <WMRSpatialController>{RightHand}/joystick
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Move And Resize Sphere
+      m_Flags: 0
+    - m_Name: 
+      m_Id: 83d65707-ffee-4469-a01a-7a57e826c35c
+      m_Path: <OculusTouchController>{RightHand}/thumbstick
       m_Interactions: 
       m_Processors: 
       m_Groups: 

@@ -262,12 +262,14 @@ public class DeletePoints : MonoBehaviour
 
             var scaleFactor = Mathf.Exp(delta * 0.1F);
 
-            deletionSphere.transform.localScale *= scaleFactor;
+            var size = deletionSphere.transform.localScale.x * scaleFactor;            
 
-            if (deletionSphere.transform.localScale.x < minimumSphereSize)
-            {
-                deletionSphere.transform.localScale = Vector3.one * minimumSphereSize;
-            }
+            if (size < minimumSphereSize)
+                size = minimumSphereSize;            
+            else if (size > maximumSphereSize)            
+                size = maximumSphereSize;            
+
+            deletionSphere.transform.localScale = Vector3.one * size;
 
             if (Mathf.Abs(delta) <= moveAndResizeThumbstickDeadzone)
             {
@@ -283,6 +285,11 @@ public class DeletePoints : MonoBehaviour
             var scaleFactor = delta * 0.1F;
 
             deletionSphere.transform.localPosition += Vector3.forward * scaleFactor;
+
+            if (deletionSphere.transform.localPosition.z < minimumSphereOffset)
+                deletionSphere.transform.localPosition = Vector3.forward * minimumSphereOffset;
+            else if (deletionSphere.transform.localPosition.z > maximumSphereOffset)
+                deletionSphere.transform.localPosition = Vector3.forward * maximumSphereOffset;
 
             if (Mathf.Abs(delta) <= moveAndResizeThumbstickDeadzone)
             {

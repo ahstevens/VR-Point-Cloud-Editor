@@ -18,6 +18,12 @@ DLL_ERRORS.txt
 testOutPut_BAG.txt
 undoActions.txt
 writeTest.txt
+ERRORS.txt
+LoadManager.txt
+renderLog.txt
+Validate.txt
+
+*.meta
 
 *.log
 

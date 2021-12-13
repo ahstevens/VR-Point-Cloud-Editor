@@ -17,12 +17,26 @@ public class PointCloudUI : MonoBehaviour
     public GameObject fileDropdown;
     public GameObject loadingText;
     public GameObject loadingIcon;
+    public GameObject unloadButton;
+    public GameObject outlierText;
+    public GameObject outlierShowButton;
+    public GameObject outlierDeleteButton;
+    public GameObject outlierDistSlider;
+    public GameObject outlierNeighborSlider;
+    public GameObject outlierDistText;
+    public GameObject outlierNeighborText;
+    public GameObject outlierDistValText;
+    public GameObject outlierNeighborValText;
+    public GameObject showGroundPlaneButton;
+    public GameObject groundPlane;
 
     private Canvas thisCanvas;
 
     private Dropdown dd;
 
     public ColorPicker colorPicker;
+
+    public GameObject panel;
 
     public Button colorPickerButton;
 
@@ -41,8 +55,13 @@ public class PointCloudUI : MonoBehaviour
     private bool loading;
     private bool saving;
 
+    private bool showingOutliers;
+
     private string lastSaveDirectory;
     private string lastLoadDirectory;
+
+    private float outliersDistance = 5f;
+    private int outlierNeighborCount = 5;
 
     // Start is called before the first frame update
     void Start()
@@ -73,13 +92,24 @@ public class PointCloudUI : MonoBehaviour
         loadingText.SetActive(false);
         loadingIcon.SetActive(false);
         resetPointCloudTransforms.gameObject.SetActive(false);
+        unloadButton.SetActive(false);
+
+        ActivateOutliersUI(false);
 
         fileBrowsing = false;
         loading = false;
         saving = false;
 
+        showingOutliers = false;
+
         lastSaveDirectory = null;
         lastLoadDirectory = null;
+
+        AdjustOutlierDistance(outliersDistance);
+        AdjustOutlierNeighborCount(outlierNeighborCount);
+
+        if (groundPlane == null)
+            groundPlane = GameObject.Find("Ground Plane");
     }
 
     // Update is called once per frame
@@ -105,12 +135,16 @@ public class PointCloudUI : MonoBehaviour
                 ActivateColorPickerUI(false);
 
                 ActivateLoadAndSaveUI(false);
+
+                panel.SetActive(false);
             }
             else
             {
                 ActivateColorPickerUI(true);
 
                 ActivateLoadAndSaveUI(true);
+
+                panel.SetActive(true);
             }
         }
     }
@@ -202,21 +236,34 @@ public class PointCloudUI : MonoBehaviour
 
         if (FileBrowser.Success)
         {
-            pointCloudManager.SaveLAZFile(FileBrowser.Result[0] + "/" + filename, dd.value);
+            var pcs = pointCloudManager.getPointCloudsInScene();
+            Debug.Log("Saving point cloud " + pcs[dd.value].ID + " to " + FileBrowser.Result[0] + "/" + filename);
+            pointCloudManager.SaveLAZFile(FileBrowser.Result[0] + "/" + filename, pcs[dd.value].ID);
             lastSaveDirectory = FileBrowser.Result[0];
         }
 
         fileBrowsing = false;
     }
 
+    public void UnloadFile()
+    {
+        var pcs = pointCloudManager.getPointCloudsInScene();
+
+        pointCloudManager.UnLoad(pcs[dd.value].ID);
+
+        UpdateDropdownFiles();
+    }
+
     private void UpdateDropdownFiles()
     {
-        var dd = fileDropdown.GetComponent<Dropdown>();
-
         dd.options.Clear();
 
-        foreach (var pcName in pointCloudManager.pointClouds)
-            dd.options.Add(new Dropdown.OptionData(pcName.inSceneRepresentation.name));
+        var pcs = pointCloudManager.getPointCloudsInScene();
+
+        foreach (var pc in pcs)
+            dd.options.Add(new Dropdown.OptionData(pc.name));
+
+        dd.RefreshShownValue();
     }
 
     private void ActivateLoadAndSaveUI(bool activate)
@@ -224,20 +271,27 @@ public class PointCloudUI : MonoBehaviour
         if (activate)
         {
             loadButton.SetActive(true);
+            showGroundPlaneButton.SetActive(true);
 
-            if (pointCloudManager.pointClouds.Count > 0)
-            {
-                saveButton.SetActive(true);
-                fileDropdown.SetActive(true);
-                resetPointCloudTransforms.gameObject.SetActive(true);
-            }
+            bool pointCloudsLoaded = pointCloudManager.getPointCloudsInScene().Length > 0;
+
+            saveButton.SetActive(pointCloudsLoaded);
+            fileDropdown.SetActive(pointCloudsLoaded);
+            resetPointCloudTransforms.gameObject.SetActive(pointCloudsLoaded);
+            unloadButton.SetActive(pointCloudsLoaded);
+
+            ActivateOutliersUI(pointCloudsLoaded);            
         }
         else
         {
+            showGroundPlaneButton.SetActive(false);
             loadButton.SetActive(false);
             saveButton.SetActive(false);
             fileDropdown.SetActive(false);
             resetPointCloudTransforms.gameObject.SetActive(false);
+            unloadButton.SetActive(false);
+
+            ActivateOutliersUI(false);
         }
     }
 
@@ -295,5 +349,67 @@ public class PointCloudUI : MonoBehaviour
         resettableObject.transform.position = Vector3.zero;
         resettableObject.transform.rotation = Quaternion.identity;
         resettableObject.transform.localScale = Vector3.one;
+    }
+
+    public void HighlightOutliers()
+    {
+        if (showingOutliers)
+        {
+            var pcs = pointCloudManager.getPointCloudsInScene();
+
+            pointCloudManager.HighlightOutliers(0f, 0, pcs[dd.value].ID);
+
+            showingOutliers = false;
+
+            outlierShowButton.GetComponent<Button>().GetComponentInChildren<Text>().text = "Show";
+        }
+        else
+        {
+            var pcs = pointCloudManager.getPointCloudsInScene();
+
+            pointCloudManager.HighlightOutliers(outliersDistance, outlierNeighborCount, pcs[dd.value].ID);
+
+            showingOutliers = true;
+
+            outlierShowButton.GetComponent<Button>().GetComponentInChildren<Text>().text = "Hide";
+        }
+    }
+
+    public void DeleteOutliers()
+    {
+        var pcs = pointCloudManager.getPointCloudsInScene();
+        pointCloudManager.DeleteOutliers(pcs[dd.value].ID);
+    }
+
+    public void AdjustOutlierDistance(System.Single dist)
+    {
+        outliersDistance = dist;
+        outlierDistValText.GetComponent<Text>().text = dist.ToString("F1");
+    }
+
+    public void AdjustOutlierNeighborCount(System.Single num)
+    {
+        outlierNeighborCount = (int)num;
+        outlierNeighborValText.GetComponent<Text>().text = num.ToString();
+    }
+
+    private void ActivateOutliersUI(bool activate)
+    {
+        outlierDeleteButton.SetActive(activate);
+        outlierShowButton.SetActive(activate);
+        outlierText.SetActive(activate);
+        outlierDistSlider.SetActive(activate);
+        outlierDistText.SetActive(activate);
+        outlierDistValText.SetActive(activate);
+        outlierNeighborSlider.SetActive(activate);
+        outlierNeighborText.SetActive(activate);
+        outlierNeighborValText.SetActive(activate);
+    }
+
+    public void ToggleGroundPlane()
+    {
+        groundPlane.SetActive(!groundPlane.activeSelf);
+
+        showGroundPlaneButton.GetComponentInChildren<Text>().text = (groundPlane.activeSelf ? "Hide" : "Show") + " Ground Plane";
     }
 }

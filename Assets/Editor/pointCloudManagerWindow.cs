@@ -1,3 +1,8 @@
+//#define BENCHMARK
+//#define ALTERNATIVE_LOAD
+//#define ADVANCED_SETTINGS
+//#define POINT_IN_SPHERE_TEST
+
 using UnityEditor;
 using UnityEngine;
 using System.Collections.Generic;
@@ -5,33 +10,61 @@ using UnityEditor.SceneManagement;
 using System.IO;
 using System;
 using System.Collections;
+using System.Runtime.InteropServices;
 
 public class pointCloudManagerWindow : EditorWindow
 {
+#if ADVANCED_SETTINGS
     private bool frustumCulling = false;
     private bool LODSystemActive = false;
+#endif // ADVANCED_SETTINGS
+
+#if BENCHMARK
     private float FPS;
     private float escapedTime;
     private List<float> FPSvalues;
     private bool benchmarkActive = false;
-    private bool playModeWasInitByWindow = false;
-    private DirectoryInfo currentDirectory = null;
-    private List<FileInfo> fileList = new List<FileInfo>();
 
+    private bool playModeWasInitByWindow = false;
     private string PrevScene;
     private bool benchmarkFinishedLoadPrevScene = false;
+#endif // BENCHMARK
 
+#if ALTERNATIVE_LOAD
+    private DirectoryInfo currentDirectory = null;
+    private List<FileInfo> fileList = new List<FileInfo>();
+#endif // ALTERNATIVE_LOAD
+
+#if POINT_IN_SPHERE_TEST
     private bool downScale = true;
     private float sizeDifference = 0.0f;
     private float workingRange = 0.0f;
     private bool pointInRange = false;
     private bool pointInRangeLastStep = false;
     private float lastScaleWithPoints = 0.0f;
+#endif // POINT_IN_SPHERE_TEST
 
-    [MenuItem("Point cloud manager/show main window")]
+    private static bool outliersSearch = false;
+    private static int tempMinNeigboars = 5;
+    private static float tempNeigboarsDistance = 5.0f;
+
+    [DllImport("PointCloudPlugin")]
+    private static extern void updateCamera(IntPtr worldMatrix, IntPtr projectionMatrix);
+    [DllImport("PointCloudPlugin")]
+    static public extern bool updateWorldMatrix(IntPtr worldMatrix, IntPtr pointCloudID);
+    [DllImport("PointCloudPlugin")]
+    private static extern IntPtr GetRenderEventFunc();
+ 
+    [MenuItem("Hydrographic Toolkit/Point cloud manager")]
     public static void ShowWindow()
     {
         GetWindow(typeof(pointCloudManagerWindow));
+    }
+
+    pointCloud[] getPointCloudsInScene()
+    {
+        pointCloud[] pointClouds = (pointCloud[])GameObject.FindObjectsOfType(typeof(pointCloud));
+        return pointClouds;
     }
 
     private string OpenLAZFileDialog()
@@ -44,26 +77,181 @@ public class pointCloudManagerWindow : EditorWindow
         return currentFile;
     }
 
-    private void SaveLAZFileDialog(int index, string defaultName)
+    private void SaveLAZFileDialog(string pointCloudID, string defaultName)
     {
         string saveToFile = EditorUtility.SaveFilePanel("Save to", "", defaultName, "laz");
         if (saveToFile == "")
             return;
 
-        pointCloudManager.SaveLAZFile(saveToFile, index);
+        pointCloudManager.SaveLAZFile(saveToFile, pointCloudID);
     }
 
-    private void SaveOwnFormatFileDialog(int index, string defaultName)
+    private void SaveOwnFormatFileDialog(string pointCloudID, string defaultName)
     {
         string saveToFile = EditorUtility.SaveFilePanel("Save to", "", defaultName, "cpc");
         if (saveToFile == "")
             return;
 
-        pointCloudManager.SaveOwnFormatFile(saveToFile, index);
+        pointCloudManager.SaveOwnFormatFile(saveToFile, pointCloudID);
     }
+
+    private GameObject getPointCloudManagerGameObject()
+    {
+        GameObject pointCloudManager = GameObject.Find("pointCloudManager");
+        if (pointCloudManager == null)
+            return null;
+
+        return pointCloudManager;
+    }
+
+    private void createPointCloudManagerGameObject()
+    {
+        GameObject pointCloudManager = new GameObject("pointCloudManager");
+
+        // Add script
+        MonoScript script = Resources.Load<MonoScript>("CCOM/PointCloud/Scripts/pointCloudManager");
+        ScriptableObject myCommonClass = ScriptableObject.CreateInstance(script.GetClass()) as ScriptableObject;
+        pointCloudManager.AddComponent(myCommonClass.GetType());
+    }
+
+//void OnPostRenderCallback(Camera cam)
+//{
+//	if (cam == Camera.main)
+//	{
+//		Matrix4x4 cameraToWorld = cam.cameraToWorldMatrix;
+//		cameraToWorld = cameraToWorld.inverse;
+//		float[] cameraToWorldArray = new float[16];
+//		for (int i = 0; i < 4; i++)
+//		{
+//			for (int j = 0; j < 4; j++)
+//			{
+//				cameraToWorldArray[i * 4 + j] = cameraToWorld[i, j];
+//			}
+//		}
+//		GCHandle pointerTocameraToWorld = GCHandle.Alloc(cameraToWorldArray, GCHandleType.Pinned);
+//
+//		cam.enabled = true;
+//
+//		//Matrix4x4 projection = cam.nonJitteredProjectionMatrix;
+//		Matrix4x4 projection = GL.GetGPUProjectionMatrix(cam.projectionMatrix, true);
+//
+//		float[] projectionArray = new float[16];
+//		for (int i = 0; i < 4; i++)
+//		{
+//			for (int j = 0; j < 4; j++)
+//			{
+//				projectionArray[i * 4 + j] = projection[i, j];
+//			}
+//		}
+//		GCHandle pointerProjection = GCHandle.Alloc(projectionArray, GCHandleType.Pinned);
+//
+//		updateCamera(pointerTocameraToWorld.AddrOfPinnedObject(), pointerProjection.AddrOfPinnedObject());
+//
+//		pointerTocameraToWorld.Free();
+//		pointerProjection.Free();
+//
+//#if FRUSTUMCULLING_TEST
+//		if (frustumCullingTestCamera != null)
+//		{
+//			Matrix4x4 cameraToWorld_ = frustumCullingTestCamera.cameraToWorldMatrix;
+//			cameraToWorld_ = cameraToWorld_.inverse;
+//			float[] cameraToWorldArray_ = new float[16];
+//			for (int i = 0; i < 4; i++)
+//			{
+//				for (int j = 0; j < 4; j++)
+//				{
+//					cameraToWorldArray_[i * 4 + j] = cameraToWorld_[i, j];
+//				}
+//			}
+//			GCHandle pointerTocameraToWorld_ = GCHandle.Alloc(cameraToWorldArray_, GCHandleType.Pinned);
+//
+//			//Matrix4x4 projection = cam.nonJitteredProjectionMatrix;
+//			Matrix4x4 projection_ = GL.GetGPUProjectionMatrix(frustumCullingTestCamera.projectionMatrix, true);
+//
+//			float[] projectionArray_ = new float[16];
+//			for (int i = 0; i < 4; i++)
+//			{
+//				for (int j = 0; j < 4; j++)
+//				{
+//					projectionArray_[i * 4 + j] = projection_[i, j];
+//				}
+//			}
+//			GCHandle pointerProjection_ = GCHandle.Alloc(projectionArray_, GCHandleType.Pinned);
+//
+//			updateTestCamera(pointerTocameraToWorld_.AddrOfPinnedObject(), pointerProjection_.AddrOfPinnedObject());
+//
+//			pointerTocameraToWorld_.Free();
+//			pointerProjection_.Free();
+//		}
+//#endif // FRUSTUMCULLING_TEST
+//
+//		Matrix4x4 world;
+//		float[] worldArray = new float[16];
+//		GCHandle pointerWorld;
+//
+//
+//		pointCloud[] pointClouds_ = getPointCloudsInScene();
+//		for (int i = 0; i < pointClouds_.Length; i++)
+//		{
+//			world = pointClouds_[i].gameObject.transform.localToWorldMatrix;
+//			//Matrix4x4 worldALternative = pointCloudManager.pointClouds[i].inSceneRepresentation.transform.worldToLocalMatrix;
+//
+//			for (int j = 0; j < 4; j++)
+//			{
+//				for (int k = 0; k < 4; k++)
+//				{
+//					worldArray[j * 4 + k] = world[j, k];
+//				}
+//			}
+//
+//			pointerWorld = GCHandle.Alloc(worldArray, GCHandleType.Pinned);
+//
+//			IntPtr IDStrPtr = Marshal.StringToHGlobalAnsi(pointClouds_[i].ID);
+//			//Debug.Log(pointClouds_[i].gameObject.transform.position);
+//			updateWorldMatrix(pointerWorld.AddrOfPinnedObject(), IDStrPtr);
+//
+//			Marshal.FreeHGlobal(IDStrPtr);
+//			pointerWorld.Free();
+//		}
+//
+//		GL.IssuePluginEvent(GetRenderEventFunc(), 1);
+//	}
+//}
+
+    bool firstFrame = true;
 
     void Update()
     {
+        if (firstFrame)
+        {
+            //Debug.Log(pointCloudManager.GetNewID());
+
+            firstFrame = false;
+            pointCloudManager.OnSceneStart();
+
+            Camera.onPostRender -= pointCloudManager.OnPostRenderCallback;
+            Camera.onPostRender += pointCloudManager.OnPostRenderCallback;
+
+            EditorSceneManager.sceneSaved -= pointCloudManager.OnSceneSaveCallback;
+            EditorSceneManager.sceneSaved += pointCloudManager.OnSceneSaveCallback;
+#if ALTERNATIVE_LOAD
+        updateFileList();
+#endif // ALTERNATIVE_LOAD
+
+#if BENCHMARK
+        benchmarkActive = false;
+#endif // BENCHMARK
+        }
+
+        pointCloudManager.checkIsAsyncLoadFinished();
+
+        //if (Camera.onPostRender != pointCloudManager.OnPostRenderCallback)
+        //    Camera.onPostRender = pointCloudManager.OnPostRenderCallback;
+
+        if (getPointCloudManagerGameObject() == null)
+            createPointCloudManagerGameObject();
+
+#if BENCHMARK
         if (!benchmarkActive && benchmarkFinishedLoadPrevScene && !EditorApplication.isPlaying)
         {
             benchmarkFinishedLoadPrevScene = false;
@@ -78,12 +266,17 @@ public class pointCloudManagerWindow : EditorWindow
 
         if (benchmarkActive && !pointCloudManager.isWaitingToLoad && pointCloudManager.isReInitializationObjectsAsyncEmpty())
             escapedTime += Time.unscaledDeltaTime;
+#endif // BENCHMARK
     }
 
+#if BENCHMARK
     static bool loadStarted = false;
+#endif // BENCHMARK
+
 
     void OnInspectorUpdate()
     {
+#if BENCHMARK
         if (pointCloudManager.isWaitingToLoad)
             loadStarted = true;
 
@@ -123,12 +316,15 @@ public class pointCloudManagerWindow : EditorWindow
         FPSvalues.Add(FPS);
         if (FPSvalues.Count > 10000)
             FPSvalues.Clear();
+#endif // BENCHMARK
         Repaint();
     }
 
     static int indexSelected;
+
     void OnGUI()
     {
+#if BENCHMARK
         GUILayout.Label("FPS: " + FPS);
         GUILayout.Label("Escaped time: " + escapedTime);
 
@@ -137,7 +333,7 @@ public class pointCloudManagerWindow : EditorWindow
             GUI.enabled = false;
         }
 
-        if (GUILayout.Button("Launch benchmark"))
+        if (GUILayout.Button("Lunch benchmark"))
         {
             if (FPSvalues == null)
                 FPSvalues = new List<float>();
@@ -164,47 +360,51 @@ public class pointCloudManagerWindow : EditorWindow
 
         }
         GUI.enabled = true;
+#endif // BENCHMARK
 
-        if (!EditorApplication.isPlaying || pointCloudManager.isWaitingToLoad)
-        {
+        if (pointCloudManager.isWaitingToLoad)
             GUI.enabled = false;
-        }
 
-        if (GUILayout.Button("Load LAZ file"))
+        if (GUILayout.Button("Import LAZ file"))
             OpenLAZFileDialog();
 
         GUI.enabled = true;
 
-        if (pointCloudManager.pointClouds != null)
+        pointCloud[] pointClouds = (pointCloud[])GameObject.FindObjectsOfType(typeof(pointCloud));
+        if (pointClouds.Length > 0)
         {
-            string[] availableIndexes = new string[pointCloudManager.pointClouds.Count];
-            for (int i = 0; i < pointCloudManager.pointClouds.Count; i++)
-            {
-                if (pointCloudManager.pointClouds[i].inSceneRepresentation == null)
-                    return;
-                availableIndexes[i] = pointCloudManager.pointClouds[i].inSceneRepresentation.name;
+            string[] availableIndexes = new string[pointClouds.Length];
 
-                if (pointCloudManager.pointClouds[i].UTMZone == 0 && !pointCloudManager.pointClouds[i].North)
-                {
-                    GUILayout.Label("UTMZone : Information about UTMZone was not found");
-                }
-                else
-                {
-                    GUILayout.Label("UTMZone : " + pointCloudManager.pointClouds[i].UTMZone + (pointCloudManager.pointClouds[i].North ? "N" : "S"));
-                }
+            if (indexSelected >= 0 && indexSelected < pointClouds.Length && pointClouds[indexSelected].UTMZone == 0 && !pointClouds[indexSelected].North)
+            {
+                GUILayout.Label("UTMZone : Information about UTMZone was not found");
+            }
+            else
+            {
+                GUILayout.Label("UTMZone : " + pointClouds[indexSelected].UTMZone + (pointClouds[indexSelected].North ? "N" : "S"));
             }
 
-            if (pointCloudManager.pointClouds.Count != 0)
+            for (int i = 0; i < pointClouds.Length; i++)
             {
+                availableIndexes[i] = pointClouds[i].name;
+            }
+
+            //GUILayout.Label(pointClouds[0].gameObject.name);
+
+            if (pointClouds.Length != 0)
+            {
+                GUILayout.Space(16);
+                GUILayout.Label("Saving: ");
                 indexSelected = EditorGUILayout.Popup("Choose file: ", indexSelected, availableIndexes);
 
-                if (GUILayout.Button("Save to LAZ file"))
-                    SaveLAZFileDialog(indexSelected, availableIndexes[indexSelected]);
+                if (GUILayout.Button("Export to LAZ file"))
+                    SaveLAZFileDialog(pointClouds[indexSelected].ID, availableIndexes[indexSelected]);
 
-                if (GUILayout.Button("Save to own file format"))
-                    SaveOwnFormatFileDialog(indexSelected, availableIndexes[indexSelected]);
+                if (GUILayout.Button("Export to own file(.cpc) format"))
+                    SaveOwnFormatFileDialog(pointClouds[indexSelected].ID, availableIndexes[indexSelected]);
             }
 
+#if ADVANCED_SETTINGS
             frustumCulling = GUILayout.Toggle(frustumCulling, "use frustum culling");
             pointCloudManager.SetFrustumCulling(frustumCulling);
 
@@ -227,8 +427,10 @@ public class pointCloudManagerWindow : EditorWindow
                     }
                 }
             }
+#endif // ADVANCED_SETTINGS
         }
 
+#if ALTERNATIVE_LOAD
         GUILayout.Label("Alternative load : ");
         if (currentDirectory == null)
             currentDirectory = new DirectoryInfo(Application.dataPath + "//PointClouds");
@@ -251,6 +453,9 @@ public class pointCloudManagerWindow : EditorWindow
 
         GUI.enabled = true;
 
+#endif // ALTERNATIVE_LOAD
+
+#if POINT_IN_SPHERE_TEST
         if (GUILayout.Button("Test isAtleastOnePointInSphere"))
             pointCloudManager.testIsAtleastOnePointInSphere();
 
@@ -316,34 +521,64 @@ public class pointCloudManagerWindow : EditorWindow
             if (tempGameObject != null)
                 GameObject.Destroy(tempGameObject);
         }
+#endif // POINT_IN_SPHERE_TEST
 
-        pointCloudManager.highlightDeletedPoints = GUILayout.Toggle(pointCloudManager.highlightDeletedPoints, "Highlight points to delete");
-        pointCloudManager.setHighlightDeletedPoints(pointCloudManager.highlightDeletedPoints);
+        if (pointClouds.Length > 0)
+        {
+#if ADVANCED_SETTINGS
+            pointCloudManager.highlightDeletedPoints = GUILayout.Toggle(pointCloudManager.highlightDeletedPoints, "Highlight points to delete");
+            pointCloudManager.setHighlightDeletedPoints(pointCloudManager.highlightDeletedPoints);
+#endif // ADVANCED_SETTINGS
 
-        //if (GUILayout.Button("Test closest point algorithms"))
-        //{
-        //    pointCloudManager.test_Closest_Point();
-        //}
+            GUILayout.Space(16);
+            GUILayout.Label("Outliers: ");
 
+            if (GUILayout.Button("Show outliers"))
+            {
+                pointCloudManager.HighlightOutliers(tempNeigboarsDistance, tempMinNeigboars, pointClouds[indexSelected].ID);
+            }
+
+            if (GUILayout.Button("Delete shown outliers"))
+            {
+                pointCloudManager.DeleteOutliers(pointClouds[indexSelected].ID);
+                EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
+            }
+
+            outliersSearch = GUILayout.Toggle(outliersSearch, "Advanced outliers settings");
+            if (outliersSearch)
+            {
+                tempMinNeigboars = EditorGUILayout.IntField("Min amount of neigboars: ", tempMinNeigboars);
+                if (tempMinNeigboars < 1)
+                    tempMinNeigboars = 1;
+
+                tempNeigboarsDistance = EditorGUILayout.FloatField("Max distance of neigboars: ", tempNeigboarsDistance);
+                if (tempNeigboarsDistance < 0.1f)
+                    tempNeigboarsDistance = 0.1f;
+            }
+
+            //if (GUILayout.Button("Test closest point algorithms"))
+            //{
+            //    pointCloudManager.test_Closest_Point();
+            //}
+        }
+
+#if ALTERNATIVE_LOAD
         timePassed += Time.unscaledDeltaTime;
         if (timePassed > 2.0f)
         {
             timePassed = 0.0f;
             updateFileList();
         }
+#endif // ALTERNATIVE_LOAD
     }
-    static float timePassed = 0.0f;
 
+#if ALTERNATIVE_LOAD
+    static float timePassed = 0.0f;
     void updateFileList()
     {
         fileList.Clear();
         fileList.AddRange(new List<FileInfo>(currentDirectory.GetFiles("*.las", SearchOption.AllDirectories)));
         fileList.AddRange(new List<FileInfo>(currentDirectory.GetFiles("*.laz", SearchOption.AllDirectories)));
     }
-
-    void Start()
-    {
-        updateFileList();
-        benchmarkActive = false;
-    }
+#endif // ALTERNATIVE_LOAD
 }

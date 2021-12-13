@@ -23,8 +23,10 @@ LoadManager.txt
 renderLog.txt
 Validate.txt
 
-*.meta
+Assets/Resources/CCOM/PointCloud/Data
 
+*.meta
+*.dll.old
 *.log
 
 # Visual Studio cache directory

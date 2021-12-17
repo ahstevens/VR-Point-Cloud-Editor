@@ -167,9 +167,9 @@ public class DeletePoints : MonoBehaviour
         }
 
         currentDeletionOpCount = 0;
-
+        
         InvokeRepeating("deleteInSphere", 0, deleteRate);
-        Debug.Log("Editing Started");
+        //Debug.Log("Editing Started");
     }
 
     void OnEndDeleteSphere()
@@ -180,7 +180,7 @@ public class DeletePoints : MonoBehaviour
         }
 
         CancelInvoke("deleteInSphere");
-        Debug.Log("Editing Finished");
+        //Debug.Log("Editing Finished");
 
         deletionOps.Add(currentDeletionOpCount);
     }

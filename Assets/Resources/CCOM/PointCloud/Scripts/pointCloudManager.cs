@@ -319,9 +319,9 @@ Destroy(geoReference);
             GameObject pointCloudGameObject = new GameObject(name);
 
             // Add script to a point cloud game object.
-            pointCloudGameObject.AddComponent<pointCloud>();
+            var pcComponent = pointCloudGameObject.AddComponent<pointCloud>();
 
-            pointCloudGameObject.GetComponent<pointCloud>().ID = ID;
+            pcComponent.ID = ID;
             //pointClouds.Add(new pointCloud(filePathForAsyncLoad, reInitializationForAsyncLoad));
 
             IntPtr adjustmentArray = Marshal.AllocHGlobal(8 * 5);
@@ -338,20 +338,20 @@ Destroy(geoReference);
 			
 			Marshal.FreeHGlobal(IDStrPtr);
 
-            pointCloudGameObject.GetComponent<pointCloud>().UTMZone = zone[0];
-            pointCloudGameObject.GetComponent<pointCloud>().North = north[0] == 1;
+            pcComponent.UTMZone = zone[0];
+            pcComponent.North = north[0] == 1;
 
             string rawDataPath = Application.dataPath + "/Resources/CCOM/PointCloud/Data/" + Path.GetFileName(filePathForAsyncLoad);
 
-            pointCloudGameObject.GetComponent<pointCloud>().pathToRawData = rawDataPath;
+            pcComponent.pathToRawData = rawDataPath;
 
             float[] adjustmentResult = new float[5];
             Marshal.Copy(adjustmentArray, adjustmentResult, 0, 5);
 
             
-            pointCloudGameObject.GetComponent<pointCloud>().adjustmentX = adjustmentResult[0];
-            pointCloudGameObject.GetComponent<pointCloud>().adjustmentY = adjustmentResult[1];
-            pointCloudGameObject.GetComponent<pointCloud>().adjustmentZ = adjustmentResult[2];
+            pcComponent.adjustmentX = adjustmentResult[0];
+            pcComponent.adjustmentY = adjustmentResult[1];
+            pcComponent.adjustmentZ = adjustmentResult[2];
 
             //pointClouds[pointClouds.Count - 1].adjustment = new Vector3();
             //pointClouds[pointClouds.Count - 1].adjustment.x = adjustmentResult[0];
@@ -383,12 +383,12 @@ Destroy(geoReference);
             
             if (getReferenceScript() == null)
             {
-                createGEOReference(new Vector3(adjustmentResult[3], 0.0f, adjustmentResult[4]), pointCloudGameObject.GetComponent<pointCloud>().UTMZone);
+                createGEOReference(new Vector3(adjustmentResult[3], 0.0f, adjustmentResult[4]), pcComponent.UTMZone);
             }
             else
             {
-                pointCloudGameObject.GetComponent<pointCloud>().initialXShift = -(getReferenceScript().realWorldX - adjustmentResult[3]);
-                pointCloudGameObject.GetComponent<pointCloud>().initialZShift = -(getReferenceScript().realWorldZ - adjustmentResult[4]);
+                pcComponent.initialXShift = -(getReferenceScript().realWorldX - adjustmentResult[3]);
+                pcComponent.initialZShift = -(getReferenceScript().realWorldZ - adjustmentResult[4]);
                 //pointClouds[pointClouds.Count - 1].initialXShift = -(getReferenceScript().realWorldX - adjustmentResult[3]);
                 //pointClouds[pointClouds.Count - 1].initialZShift = -(getReferenceScript().realWorldZ - adjustmentResult[4]);
             }
@@ -401,11 +401,14 @@ Destroy(geoReference);
             //    y = pointClouds[pointClouds.Count - 1].inSceneRepresentation.transform.position.y;
 
 
-            pointCloudGameObject.transform.position = new Vector3((float)(pointCloudGameObject.GetComponent<pointCloud>().initialXShift),
-                                                                  y,
-                                                                  (float)(pointCloudGameObject.GetComponent<pointCloud>().initialZShift));
-
             pointCloudGameObject.transform.parent = GameObject.Find("Point Clouds Root").transform;
+
+            pointCloudGameObject.transform.localPosition = new Vector3((float)(pcComponent.initialXShift),
+                                                                  y,
+                                                                  (float)(pcComponent.initialZShift));
+
+            pointCloudGameObject.transform.localRotation = Quaternion.identity;
+            pointCloudGameObject.transform.localScale = Vector3.one;
 
             //pointClouds[pointClouds.Count - 1].inSceneRepresentation.transform.position = new Vector3((float)(pointClouds[pointClouds.Count - 1].initialXShift),
             //                                                                                          y,

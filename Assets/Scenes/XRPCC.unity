@@ -7215,7 +7215,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1762762905}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 52818c6624ad806499188a3164c34df1, type: 3}
+  m_Script: {fileID: 11500000, guid: 2d59ae9ea2ab0e2428fad681dcbe5098, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   pointCloudGameObject: {fileID: 0}

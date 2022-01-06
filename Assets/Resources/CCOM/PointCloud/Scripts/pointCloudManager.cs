@@ -394,7 +394,8 @@ Destroy(geoReference);
             }
 
             // Default value for y, it should be calculated but for now it is a magic number.
-            float y = 905.0f;
+            //float y = 905.0f;
+            float y = 0f;
 
             // If we are re initializing existing objects, we should preserve y coordinate.
             //if (reInitializationForAsyncLoad != null)

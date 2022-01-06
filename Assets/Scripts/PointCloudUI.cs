@@ -105,8 +105,8 @@ public class PointCloudUI : MonoBehaviour
         lastSaveDirectory = null;
         lastLoadDirectory = null;
 
-        AdjustOutlierDistance(outliersDistance);
-        AdjustOutlierNeighborCount(outlierNeighborCount);
+        AdjustOutlierDistance();
+        AdjustOutlierNeighborCount();
 
         if (groundPlane == null)
             groundPlane = GameObject.Find("Ground Plane");
@@ -350,47 +350,56 @@ public class PointCloudUI : MonoBehaviour
         resettableObject.transform.rotation = Quaternion.identity;
         resettableObject.transform.localScale = Vector3.one;
     }
-
+    
     public void HighlightOutliers()
     {
         if (showingOutliers)
         {
-            var pcs = pointCloudManager.getPointCloudsInScene();
-
-            pointCloudManager.HighlightOutliers(0f, 0, pcs[dd.value].ID);
-
             showingOutliers = false;
 
             outlierShowButton.GetComponent<Button>().GetComponentInChildren<Text>().text = "Show";
         }
         else
         {
-            var pcs = pointCloudManager.getPointCloudsInScene();
-
-            pointCloudManager.HighlightOutliers(outliersDistance, outlierNeighborCount, pcs[dd.value].ID);
-
             showingOutliers = true;
 
             outlierShowButton.GetComponent<Button>().GetComponentInChildren<Text>().text = "Hide";
         }
+
+        UpdateOutliers();
+    }
+
+    public void UpdateOutliers()
+    {
+        var pcs = pointCloudManager.getPointCloudsInScene();
+
+        var d = showingOutliers ? outliersDistance : 0f;
+        var n = showingOutliers ? outlierNeighborCount : 0;
+
+        pointCloudManager.HighlightOutliers(d, n, pcs[dd.value].ID);
     }
 
     public void DeleteOutliers()
     {
         var pcs = pointCloudManager.getPointCloudsInScene();
+        pointCloudManager.HighlightOutliers(outliersDistance, outlierNeighborCount, pcs[dd.value].ID);
         pointCloudManager.DeleteOutliers(pcs[dd.value].ID);
     }
 
-    public void AdjustOutlierDistance(System.Single dist)
+    public void AdjustOutlierDistance()
     {
-        outliersDistance = dist;
-        outlierDistValText.GetComponent<Text>().text = dist.ToString("F1");
+        outliersDistance = outlierDistSlider.GetComponent<Slider>().value;
+        outlierDistValText.GetComponent<Text>().text = outliersDistance.ToString("F1");
+
+        UpdateOutliers();
     }
 
-    public void AdjustOutlierNeighborCount(System.Single num)
+    public void AdjustOutlierNeighborCount()
     {
-        outlierNeighborCount = (int)num;
-        outlierNeighborValText.GetComponent<Text>().text = num.ToString();
+        outlierNeighborCount = (int)outlierNeighborSlider.GetComponent<Slider>().value;
+        outlierNeighborValText.GetComponent<Text>().text = outlierNeighborCount.ToString();
+
+        UpdateOutliers();
     }
 
     private void ActivateOutliersUI(bool activate)

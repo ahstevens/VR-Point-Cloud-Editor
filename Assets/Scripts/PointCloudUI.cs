@@ -105,8 +105,8 @@ public class PointCloudUI : MonoBehaviour
         lastSaveDirectory = null;
         lastLoadDirectory = null;
 
-        AdjustOutlierDistance();
-        AdjustOutlierNeighborCount();
+        AdjustOutlierDistance(outliersDistance);
+        AdjustOutlierNeighborCount(outlierNeighborCount);
 
         if (groundPlane == null)
             groundPlane = GameObject.Find("Ground Plane");
@@ -373,6 +373,9 @@ public class PointCloudUI : MonoBehaviour
     {
         var pcs = pointCloudManager.getPointCloudsInScene();
 
+        if (pcs.Length == 0)
+            return;
+
         var d = showingOutliers ? outliersDistance : 0f;
         var n = showingOutliers ? outlierNeighborCount : 0;
 
@@ -386,20 +389,16 @@ public class PointCloudUI : MonoBehaviour
         pointCloudManager.DeleteOutliers(pcs[dd.value].ID);
     }
 
-    public void AdjustOutlierDistance()
+    public void AdjustOutlierDistance(System.Single dist)
     {
-        outliersDistance = outlierDistSlider.GetComponent<Slider>().value;
-        outlierDistValText.GetComponent<Text>().text = outliersDistance.ToString("F1");
-
-        UpdateOutliers();
+        outliersDistance = dist;
+        outlierDistValText.GetComponent<Text>().text = dist.ToString("F1");
     }
 
-    public void AdjustOutlierNeighborCount()
+    public void AdjustOutlierNeighborCount(System.Single num)
     {
-        outlierNeighborCount = (int)outlierNeighborSlider.GetComponent<Slider>().value;
-        outlierNeighborValText.GetComponent<Text>().text = outlierNeighborCount.ToString();
-
-        UpdateOutliers();
+        outlierNeighborCount = (int)num;
+        outlierNeighborValText.GetComponent<Text>().text = num.ToString();
     }
 
     private void ActivateOutliersUI(bool activate)

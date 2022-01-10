@@ -95,8 +95,8 @@ public class XRFlyingInterface : MonoBehaviour
         abc.positionAction = new InputActionProperty(xrControllerPosition);
         abc.rotationAction = new InputActionProperty(xrControllerRotation);
 
-        beginningCameraPosition = Camera.main.transform.position;
-        beginningCameraRotation = Camera.main.transform.rotation;
+        beginningCameraPosition = this.transform.position;
+        beginningCameraRotation = this.transform.rotation;
     }
 
     // Update is called once per frame
@@ -199,7 +199,7 @@ public class XRFlyingInterface : MonoBehaviour
     void ResetView()
     {
         Debug.Log("Reset View");
-        Camera.current.transform.rotation = beginningCameraRotation;
-        Camera.current.transform.position = beginningCameraPosition;
+        this.transform.rotation = beginningCameraRotation;
+        this.transform.position = beginningCameraPosition;
     }
 }

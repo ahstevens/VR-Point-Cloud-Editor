@@ -46,6 +46,10 @@ public class PointCloudUI : MonoBehaviour
 
     public GameObject editingCursor;
 
+    public XRFlyingInterface xrf;
+
+    public Button flyButton;
+
     private bool colorPickerActive;
 
     private bool menuOpen;
@@ -136,6 +140,8 @@ public class PointCloudUI : MonoBehaviour
 
                 ActivateLoadAndSaveUI(false);
 
+                flyButton.gameObject.SetActive(false);
+
                 panel.SetActive(false);
             }
             else
@@ -143,6 +149,8 @@ public class PointCloudUI : MonoBehaviour
                 ActivateColorPickerUI(true);
 
                 ActivateLoadAndSaveUI(true);
+
+                flyButton.gameObject.SetActive(true);
 
                 panel.SetActive(true);
             }
@@ -164,7 +172,8 @@ public class PointCloudUI : MonoBehaviour
         thisCanvas.enabled = true;
         menuOpen = true;
 
-        editingCursor.SetActive(false);
+        if (!xrf.enabled)
+            editingCursor.SetActive(false);
     }
 
     private void CloseMenu()
@@ -177,7 +186,8 @@ public class PointCloudUI : MonoBehaviour
             fileBrowserCanvas.SetActive(false);
         }
 
-        editingCursor.SetActive(true);
+        if (!xrf.enabled)
+            editingCursor.SetActive(true);
     }
 
     public void LoadFile()
@@ -419,5 +429,15 @@ public class PointCloudUI : MonoBehaviour
         groundPlane.SetActive(!groundPlane.activeSelf);
 
         showGroundPlaneButton.GetComponentInChildren<Text>().text = (groundPlane.activeSelf ? "Hide" : "Show") + " Ground Plane";
+    }
+
+    public void ToggleFlyingMode()
+    {
+        xrf.enabled = !xrf.enabled;
+        
+        if (xrf.enabled)
+            flyButton.GetComponentInChildren<Text>().text = "EDIT MODE";
+        else
+            flyButton.GetComponentInChildren<Text>().text = "FLY MODE";
     }
 }

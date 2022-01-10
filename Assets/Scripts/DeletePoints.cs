@@ -85,6 +85,9 @@ public class DeletePoints : MonoBehaviour
         if (pcRoot == null)
             pcRoot = GameObject.Find("Point Clouds Root");
 
+        if (Keyboard.current.escapeKey.wasPressedThisFrame)
+            Application.Quit();
+
         if (movingOrResizing)
         {
             var sample = moveAndResizeSphereAction.ReadValue<Vector2>();

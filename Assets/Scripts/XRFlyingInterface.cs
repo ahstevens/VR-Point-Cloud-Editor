@@ -48,11 +48,11 @@ public class XRFlyingInterface : MonoBehaviour
     
     private GameObject bat;
 
-    public InputAction xrControllerPosition;
-    public InputAction xrControllerRotation;
-    public InputAction setReference;
-    public InputAction fly;
-    public InputAction resetView;
+    public InputActionProperty controllerPosition;
+    public InputActionProperty controllerRotation;
+    public InputActionProperty setReference;
+    public InputActionProperty fly;
+    public InputActionProperty resetView;
 
     private bool flying;
     private bool beyondThreshold;
@@ -67,10 +67,10 @@ public class XRFlyingInterface : MonoBehaviour
     {
         XRRigOrMainCamera = this.gameObject;
 
-        fly.started += ctx => OnBeginFly();
-        fly.canceled += ctx => OnEndFly();
-        
-        resetView.started += ctx => ResetView();
+        fly.action.started += ctx => OnBeginFly();
+        fly.action.canceled += ctx => OnEndFly();        
+
+        resetView.action.started += ctx => ResetView();        
 
         flying = false;
         beyondThreshold = false;
@@ -84,7 +84,7 @@ public class XRFlyingInterface : MonoBehaviour
         }
         else
         {
-            setReference.started += ctx => OnSetReference();
+            setReference.action.started += ctx => OnSetReference();
         }
 
         // Create the Bat to track it in the physical space
@@ -92,8 +92,8 @@ public class XRFlyingInterface : MonoBehaviour
         var abc = bat.AddComponent<ActionBasedController>();
 
         // Add the XR controller specified in this script to the Bat's ActionBasedController script
-        abc.positionAction = new InputActionProperty(xrControllerPosition);
-        abc.rotationAction = new InputActionProperty(xrControllerRotation);
+        abc.positionAction = controllerPosition;
+        abc.rotationAction = controllerRotation;
 
         beginningCameraPosition = this.transform.position;
         beginningCameraRotation = this.transform.rotation;
@@ -147,16 +147,16 @@ public class XRFlyingInterface : MonoBehaviour
 
     void OnEnable()
     {
-        setReference.Enable();
-        fly.Enable();
-        resetView.Enable();
+        setReference.action.Enable();
+        fly.action.Enable();
+        resetView.action.Enable();
     }
 
     void OnDisable()
     {
-        setReference.Disable();
-        fly.Disable();
-        resetView.Disable();
+        setReference.action.Disable();
+        fly.action.Disable();
+        resetView.action.Disable();
     }
 
     void OnSetReference()

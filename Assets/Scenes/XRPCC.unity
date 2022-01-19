@@ -231,7 +231,7 @@ RectTransform:
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMax: {x: 0.21052632, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 10, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -1299,14 +1299,13 @@ GameObject:
   - component: {fileID: 598687395}
   - component: {fileID: 598687400}
   - component: {fileID: 598687401}
-  - component: {fileID: 598687397}
   m_Layer: 0
   m_Name: XR Rig
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &598687395
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1342,30 +1341,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &598687397
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 598687394}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 69d2b7d685a9db847851dfc9d412aa1d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  toggleButton:
-    m_UseReference: 0
-    m_Action:
-      m_Name: Toggle Button
-      m_Type: 0
-      m_ExpectedControlType: 
-      m_Id: 3dbf0a32-f29f-49f9-ac41-dbba7e8cdb13
-      m_Processors: 
-      m_Interactions: 
-      m_SingletonActionBindings: []
-    m_Reference: {fileID: 0}
-  editCursorPrefab: {fileID: 751590837}
 --- !u!114 &598687400
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1382,94 +1357,71 @@ MonoBehaviour:
   movementThreshold: 0.01
   translationMultiplier: 100
   rotationMultiplier: 0.05
-  xrControllerPosition:
-    m_Name: Xr Controller Position
-    m_Type: 0
-    m_ExpectedControlType: 
-    m_Id: e777d186-33ab-4fc2-bbce-ad1ee33b44bd
-    m_Processors: 
-    m_Interactions: 
-    m_SingletonActionBindings:
-    - m_Name: 
-      m_Id: 50285abd-2f6b-4d81-a236-e3d896d6e008
-      m_Path: <XRController>{RightHand}/devicePosition
-      m_Interactions: 
+  controllerPosition:
+    m_UseReference: 1
+    m_Action:
+      m_Name: Controller Position
+      m_Type: 0
+      m_ExpectedControlType: 
+      m_Id: 454c323c-39b4-4891-8b78-2dfe4378d1b2
       m_Processors: 
-      m_Groups: 
-      m_Action: Xr Controller Position
-      m_Flags: 0
-  xrControllerRotation:
-    m_Name: Xr Controller Rotation
-    m_Type: 0
-    m_ExpectedControlType: 
-    m_Id: e92a80e2-1e44-4173-a8e6-7c53e791efe0
-    m_Processors: 
-    m_Interactions: 
-    m_SingletonActionBindings:
-    - m_Name: 
-      m_Id: 86ae8021-3e18-49b7-8224-6ac078c15dcf
-      m_Path: <XRController>{RightHand}/deviceRotation
       m_Interactions: 
+      m_SingletonActionBindings: []
+    m_Reference: {fileID: -3326005586356538449, guid: c348712bda248c246b8c49b3db54643f,
+      type: 3}
+  controllerRotation:
+    m_UseReference: 1
+    m_Action:
+      m_Name: Controller Rotation
+      m_Type: 0
+      m_ExpectedControlType: 
+      m_Id: f326de69-b6ba-41cf-b935-764cafef8887
       m_Processors: 
-      m_Groups: 
-      m_Action: Xr Controller Rotation
-      m_Flags: 0
+      m_Interactions: 
+      m_SingletonActionBindings: []
+    m_Reference: {fileID: 5101698808175986029, guid: c348712bda248c246b8c49b3db54643f,
+      type: 3}
   setReference:
-    m_Name: Set Reference
-    m_Type: 0
-    m_ExpectedControlType: 
-    m_Id: 3247feec-3e73-467f-bff2-537247da2045
-    m_Processors: 
-    m_Interactions: 
-    m_SingletonActionBindings:
-    - m_Name: 
-      m_Id: ef25f45c-8026-4314-9fa4-5fd0c3e00061
-      m_Path: <XRController>{RightHand}/menu
-      m_Interactions: 
+    m_UseReference: 0
+    m_Action:
+      m_Name: Set Reference
+      m_Type: 0
+      m_ExpectedControlType: 
+      m_Id: ca04dff6-446f-4f33-88a9-53386a311ffa
       m_Processors: 
-      m_Groups: 
-      m_Action: Set Reference
-      m_Flags: 0
+      m_Interactions: 
+      m_SingletonActionBindings:
+      - m_Name: 
+        m_Id: f4812616-0f7a-42e3-a1e3-92195c4f6157
+        m_Path: 
+        m_Interactions: 
+        m_Processors: 
+        m_Groups: 
+        m_Action: Set Reference
+        m_Flags: 0
+    m_Reference: {fileID: 0}
   fly:
-    m_Name: Fly
-    m_Type: 0
-    m_ExpectedControlType: 
-    m_Id: b7e540ab-15ac-4066-b569-532482a5c2f6
-    m_Processors: 
-    m_Interactions: 
-    m_SingletonActionBindings:
-    - m_Name: 
-      m_Id: 7c56ae51-acef-4ec6-aeca-65301344753e
-      m_Path: <XRController>{RightHand}/primaryButton
-      m_Interactions: 
+    m_UseReference: 0
+    m_Action:
+      m_Name: Fly
+      m_Type: 0
+      m_ExpectedControlType: 
+      m_Id: e1f6949e-c7f6-480c-85ee-d6f79b978842
       m_Processors: 
-      m_Groups: 
-      m_Action: Fly
-      m_Flags: 0
-    - m_Name: 
-      m_Id: 6ffb6732-5528-456d-abd1-b69a791dfc9f
-      m_Path: <ViveController>{RightHand}/triggerPressed
       m_Interactions: 
-      m_Processors: 
-      m_Groups: 
-      m_Action: Fly
-      m_Flags: 0
+      m_SingletonActionBindings: []
+    m_Reference: {fileID: 0}
   resetView:
-    m_Name: Reset View
-    m_Type: 0
-    m_ExpectedControlType: 
-    m_Id: da5be510-a4fe-4c15-b612-e0688a558b8b
-    m_Processors: 
-    m_Interactions: 
-    m_SingletonActionBindings:
-    - m_Name: 
-      m_Id: 39cc7d7a-4523-4c0c-8d68-16607bd17903
-      m_Path: <ViveController>{RightHand}/trackpadClicked
-      m_Interactions: 
+    m_UseReference: 0
+    m_Action:
+      m_Name: Reset View
+      m_Type: 0
+      m_ExpectedControlType: 
+      m_Id: 27e45052-9579-4abc-a275-21032943115d
       m_Processors: 
-      m_Groups: 
-      m_Action: Reset View
-      m_Flags: 0
+      m_Interactions: 
+      m_SingletonActionBindings: []
+    m_Reference: {fileID: 0}
 --- !u!114 &598687401
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4376,7 +4328,7 @@ RectTransform:
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMax: {x: 0.21052632, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 10, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -5949,8 +5901,8 @@ RectTransform:
   m_Father: {fileID: 1669182325}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMin: {x: 0.21052632, y: 0}
+  m_AnchorMax: {x: 0.21052632, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -6236,8 +6188,8 @@ RectTransform:
   m_Father: {fileID: 1918449376}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMin: {x: 0.21052632, y: 0}
+  m_AnchorMax: {x: 0.21052632, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -6978,7 +6930,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!81 &1580300682
 AudioListener:
   m_ObjectHideFlags: 0
@@ -7074,94 +7026,66 @@ MonoBehaviour:
   movementThreshold: 0.01
   translationMultiplier: 100
   rotationMultiplier: 0.025
-  xrControllerPosition:
-    m_Name: Xr Controller Position
-    m_Type: 0
-    m_ExpectedControlType: 
-    m_Id: 48136214-f070-4457-b52f-67b9955aa8e6
-    m_Processors: 
-    m_Interactions: 
-    m_SingletonActionBindings:
-    - m_Name: 
-      m_Id: 2826c68d-6d7c-4210-8c53-34cac92b6d71
-      m_Path: <XRController>{RightHand}/devicePosition
-      m_Interactions: 
+  controllerPosition:
+    m_UseReference: 1
+    m_Action:
+      m_Name: Controller Position
+      m_Type: 0
+      m_ExpectedControlType: 
+      m_Id: c7767de0-240d-4e57-8107-94ee61f18682
       m_Processors: 
-      m_Groups: 
-      m_Action: Xr Controller Position
-      m_Flags: 0
-  xrControllerRotation:
-    m_Name: Xr Controller Rotation
-    m_Type: 0
-    m_ExpectedControlType: 
-    m_Id: ed662a8c-671f-4579-b86c-f7ae2a99fd9f
-    m_Processors: 
-    m_Interactions: 
-    m_SingletonActionBindings:
-    - m_Name: 
-      m_Id: b73d44de-5e10-4a6e-b700-7053c820dd96
-      m_Path: <XRController>{RightHand}/deviceRotation
       m_Interactions: 
+      m_SingletonActionBindings: []
+    m_Reference: {fileID: 5922473366525983001, guid: bc5d5383aa166484ea2f603c8a1dc8e1,
+      type: 3}
+  controllerRotation:
+    m_UseReference: 1
+    m_Action:
+      m_Name: Controller Rotation
+      m_Type: 0
+      m_ExpectedControlType: 
+      m_Id: 5b8fbbf1-9783-4bd6-804a-0630b19695d7
       m_Processors: 
-      m_Groups: 
-      m_Action: Xr Controller Rotation
-      m_Flags: 0
+      m_Interactions: 
+      m_SingletonActionBindings: []
+    m_Reference: {fileID: 2920246399020806521, guid: bc5d5383aa166484ea2f603c8a1dc8e1,
+      type: 3}
   setReference:
-    m_Name: Set Reference
-    m_Type: 0
-    m_ExpectedControlType: 
-    m_Id: cc4853ab-497c-4462-81c4-a1bc17fcb1ca
-    m_Processors: 
-    m_Interactions: 
-    m_SingletonActionBindings:
-    - m_Name: 
-      m_Id: 6e8f5ef9-5513-40d3-9cd3-4991bf359096
-      m_Path: <ValveIndexController>/thumbstickClicked
-      m_Interactions: 
+    m_UseReference: 1
+    m_Action:
+      m_Name: Set Reference
+      m_Type: 0
+      m_ExpectedControlType: 
+      m_Id: c4523984-cd5a-4623-b8df-79ca76df2438
       m_Processors: 
-      m_Groups: 
-      m_Action: Set Reference
-      m_Flags: 0
-    - m_Name: 
-      m_Id: c0d6992b-1383-4968-afaa-19b0cad6cf8a
-      m_Path: <XRController>{RightHand}/menuButton
       m_Interactions: 
-      m_Processors: 
-      m_Groups: 
-      m_Action: Set Reference
-      m_Flags: 0
+      m_SingletonActionBindings: []
+    m_Reference: {fileID: 8871070414385680602, guid: bc5d5383aa166484ea2f603c8a1dc8e1,
+      type: 3}
   fly:
-    m_Name: Fly
-    m_Type: 0
-    m_ExpectedControlType: 
-    m_Id: 876cd328-eb34-4b57-9c7f-fb42a5ffe63d
-    m_Processors: 
-    m_Interactions: 
-    m_SingletonActionBindings:
-    - m_Name: 
-      m_Id: c8d3d136-4a36-4a9c-a8fd-1ab3df9733af
-      m_Path: <XRController>{RightHand}/trigger
-      m_Interactions: 
+    m_UseReference: 1
+    m_Action:
+      m_Name: Fly
+      m_Type: 0
+      m_ExpectedControlType: 
+      m_Id: d13aa377-7065-4fec-b958-00190150c74b
       m_Processors: 
-      m_Groups: 
-      m_Action: Fly
-      m_Flags: 0
+      m_Interactions: 
+      m_SingletonActionBindings: []
+    m_Reference: {fileID: 6745756859780287892, guid: bc5d5383aa166484ea2f603c8a1dc8e1,
+      type: 3}
   resetView:
-    m_Name: Reset View
-    m_Type: 0
-    m_ExpectedControlType: 
-    m_Id: ffd5827c-3761-4902-8ba6-884c88d6eb4f
-    m_Processors: 
-    m_Interactions: 
-    m_SingletonActionBindings:
-    - m_Name: 
-      m_Id: 7c428d5f-5780-4a5e-941c-11005dd1856c
-      m_Path: <XRController>{RightHand}/touchpadClicked
-      m_Interactions: 
+    m_UseReference: 1
+    m_Action:
+      m_Name: Reset View
+      m_Type: 0
+      m_ExpectedControlType: 
+      m_Id: 792451fc-1ad1-4d29-9196-23220f1b56ff
       m_Processors: 
-      m_Groups: 
-      m_Action: Reset View
-      m_Flags: 0
+      m_Interactions: 
+      m_SingletonActionBindings: []
+    m_Reference: {fileID: -6256756565007478743, guid: bc5d5383aa166484ea2f603c8a1dc8e1,
+      type: 3}
 --- !u!1 &1610190729
 GameObject:
   m_ObjectHideFlags: 0

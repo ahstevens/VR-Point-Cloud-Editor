@@ -7,7 +7,7 @@ using UnityEngine.InputSystem;
 public class XRGrabbing : MonoBehaviour
 {
 
-    public InputAction grab;
+    public InputActionProperty grab;
 
     public GameObject grabbableObject;
 
@@ -18,18 +18,18 @@ public class XRGrabbing : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        grab.started += ctx => OnBeginGrab();
-        grab.canceled += ctx => OnEndGrab();
+        grab.action.started += ctx => OnBeginGrab();
+        grab.action.canceled += ctx => OnEndGrab();
     }
 
     void OnEnable()
     {
-        grab.Enable();
+        grab.action.Enable();
     }
 
     void OnDisable()
     {
-        grab.Disable();
+        grab.action.Disable();
     }
 
     // Update is called once per frame

@@ -18,9 +18,9 @@ public class DeletePoints : MonoBehaviour
     static public extern void undo(int numberToDelete);
 
     public GameObject scalingRoot;
-    public InputAction deleteSphereAction;
-    public InputAction undoDeletionAction;
-    public InputAction moveAndResizeSphereAction;
+    public InputActionProperty deleteSphereAction;
+    public InputActionProperty undoDeletionAction;
+    public InputActionProperty moveAndResizeSphereAction;
     public float moveAndResizeThumbstickDeadzone = 0.2f;
     public float moveAndResizeTouchpadDelta = 0.2f;
     public float minimumSphereSize = 0.01f;
@@ -58,13 +58,13 @@ public class DeletePoints : MonoBehaviour
     {
         deletionSphere = this.gameObject;
 
-        deleteSphereAction.started += ctx => OnBeginDeleteSphere();
-        deleteSphereAction.canceled += ctx => OnEndDeleteSphere();
+        deleteSphereAction.action.started += ctx => OnBeginDeleteSphere();
+        deleteSphereAction.action.canceled += ctx => OnEndDeleteSphere();
 
-        undoDeletionAction.started += ctx => UndoDeletion();
+        undoDeletionAction.action.started += ctx => UndoDeletion();
 
-        moveAndResizeSphereAction.started += ctx => OnBeginMoveAndResizeSphere();
-        moveAndResizeSphereAction.canceled += ctx => OnEndMoveAndResizeSphere();
+        moveAndResizeSphereAction.action.started += ctx => OnBeginMoveAndResizeSphere();
+        moveAndResizeSphereAction.action.canceled += ctx => OnEndMoveAndResizeSphere();
 
         movingOrResizing = false;
         resizing = false;
@@ -90,7 +90,7 @@ public class DeletePoints : MonoBehaviour
 
         if (movingOrResizing)
         {
-            var sample = moveAndResizeSphereAction.ReadValue<Vector2>();
+            var sample = moveAndResizeSphereAction.action.ReadValue<Vector2>();
 
             if (touchpad)
             {
@@ -146,16 +146,16 @@ public class DeletePoints : MonoBehaviour
 
     void OnEnable()
     {
-        deleteSphereAction.Enable();
-        undoDeletionAction.Enable();
-        moveAndResizeSphereAction.Enable();
+        deleteSphereAction.action.Enable();
+        undoDeletionAction.action.Enable();
+        moveAndResizeSphereAction.action.Enable();
     }
 
     void OnDisable()
     {
-        deleteSphereAction.Disable();
-        undoDeletionAction.Disable();
-        moveAndResizeSphereAction.Disable();
+        deleteSphereAction.action.Disable();
+        undoDeletionAction.action.Disable();
+        moveAndResizeSphereAction.action.Disable();
     }
 
     void OnBeginDeleteSphere()
@@ -225,10 +225,10 @@ public class DeletePoints : MonoBehaviour
     {
         movingOrResizing = true;
 
-        if (moveAndResizeSphereAction.activeControl.displayName == "trackpad" || moveAndResizeSphereAction.activeControl.displayName == "touchpad")
+        if (moveAndResizeSphereAction.action.activeControl.displayName == "trackpad" || moveAndResizeSphereAction.action.activeControl.displayName == "touchpad")
         {
             touchpad = true;
-            initialTouchpadTouchPoint = moveAndResizeSphereAction.ReadValue<Vector2>();
+            initialTouchpadTouchPoint = moveAndResizeSphereAction.action.ReadValue<Vector2>();
         }
         else
         {
@@ -261,7 +261,7 @@ public class DeletePoints : MonoBehaviour
     {
         if (resizing)
         {
-            var delta = moveAndResizeSphereAction.ReadValue<Vector2>().x;
+            var delta = moveAndResizeSphereAction.action.ReadValue<Vector2>().x;
 
             var scaleFactor = Mathf.Exp(delta * 0.1F);
 
@@ -283,7 +283,7 @@ public class DeletePoints : MonoBehaviour
 
         if (moving)
         {
-            var delta = moveAndResizeSphereAction.ReadValue<Vector2>().y;
+            var delta = moveAndResizeSphereAction.action.ReadValue<Vector2>().y;
 
             var scaleFactor = delta * 0.1F;
 
@@ -304,7 +304,7 @@ public class DeletePoints : MonoBehaviour
 
     private void TouchpadMoveOrResize()
     {
-        var sample = moveAndResizeSphereAction.ReadValue<Vector2>();
+        var sample = moveAndResizeSphereAction.action.ReadValue<Vector2>();
 
         if (moving)
         {

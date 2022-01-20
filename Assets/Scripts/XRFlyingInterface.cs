@@ -139,9 +139,9 @@ public class XRFlyingInterface : MonoBehaviour
                 }
             }
 
-            Quaternion relativeRotation = Quaternion.Inverse(flyingOrigin.transform.rotation) * bat.transform.localRotation;
+            Quaternion relativeRotationBat = Quaternion.Inverse(flyingOrigin.transform.rotation) * bat.transform.localRotation;
 
-            XRRigOrMainCamera.transform.rotation = XRRigOrMainCamera.transform.rotation * Quaternion.Slerp(Quaternion.identity, relativeRotation, rotationMultiplier);
+            XRRigOrMainCamera.transform.rotation *= Quaternion.Slerp(Quaternion.identity, relativeRotationBat, rotationMultiplier);
         }
     }
 

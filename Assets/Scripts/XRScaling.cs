@@ -6,12 +6,12 @@ using System.Collections.Generic;
 
 public class XRScaling : MonoBehaviour
 {
-    public InputAction scale;
-    public InputAction showScalingMarker;
+    public InputActionProperty scale;
+    public InputActionProperty showScalingMarker;
     public GameObject LeftHandController;
     public GameObject RightHandController;
-    public InputAction LeftControllerPosition;
-    public InputAction RightControllerPosition;
+    public InputActionProperty LeftControllerPosition;
+    public InputActionProperty RightControllerPosition;
 
     public GameObject scalingRoot;
 
@@ -40,13 +40,13 @@ public class XRScaling : MonoBehaviour
         scaleRod = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
         scaleRod.SetActive(false);
 
-        scale.started += ctx => OnBeginScale();
-        scale.canceled += ctx => OnEndScale();
+        scale.action.started += ctx => OnBeginScale();
+        scale.action.canceled += ctx => OnEndScale();
 
         scaling = false;
 
-        showScalingMarker.started += ctx => ShowScalingMarker();
-        showScalingMarker.canceled += ctx => HideScalingMarker();
+        showScalingMarker.action.started += ctx => ShowScalingMarker();
+        showScalingMarker.action.canceled += ctx => HideScalingMarker();
 
         if (scalingRoot == null)
             scalingRoot = GameObject.Find("Scaling Root");
@@ -64,18 +64,18 @@ public class XRScaling : MonoBehaviour
 
     void OnEnable()
     {
-        scale.Enable();
-        showScalingMarker.Enable();
-        LeftControllerPosition.Enable();
-        RightControllerPosition.Enable();
+        scale.action.Enable();
+        showScalingMarker.action.Enable();
+        LeftControllerPosition.action.Enable();
+        RightControllerPosition.action.Enable();
     }
 
     void OnDisable()
     {
-        scale.Disable();
-        showScalingMarker.Disable();
-        LeftControllerPosition.Disable();
-        RightControllerPosition.Disable();
+        scale.action.Disable();
+        showScalingMarker.action.Disable();
+        LeftControllerPosition.action.Disable();
+        RightControllerPosition.action.Disable();
     }
 
     private void OnBeginScale()
@@ -147,8 +147,8 @@ public class XRScaling : MonoBehaviour
 
     float GetControllersDistancePhysicalSpace()
     {
-        var leftPos = LeftControllerPosition.ReadValue<Vector3>();
-        var rightPos = RightControllerPosition.ReadValue<Vector3>();
+        var leftPos = LeftControllerPosition.action.ReadValue<Vector3>();
+        var rightPos = RightControllerPosition.action.ReadValue<Vector3>();
 
         return (rightPos - leftPos).magnitude;
     }

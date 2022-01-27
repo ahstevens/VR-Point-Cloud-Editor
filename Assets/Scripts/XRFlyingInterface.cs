@@ -34,7 +34,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.InputSystem.XR;
 
 public class XRFlyingInterface : MonoBehaviour
 {
@@ -89,11 +89,11 @@ public class XRFlyingInterface : MonoBehaviour
 
         // Create the Bat to track it in the physical space
         bat = new GameObject("Bat Physical Space");
-        var abc = bat.AddComponent<ActionBasedController>();
+        var abc = bat.AddComponent<TrackedPoseDriver>();
 
         // Add the XR controller specified in this script to the Bat's ActionBasedController script
-        abc.positionAction = controllerPosition;
-        abc.rotationAction = controllerRotation;
+        abc.positionAction = controllerPosition.action;
+        abc.rotationAction = controllerRotation.action;
 
         beginningCameraPosition = this.transform.position;
         beginningCameraRotation = this.transform.rotation;

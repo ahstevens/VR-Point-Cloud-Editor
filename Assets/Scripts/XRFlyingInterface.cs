@@ -35,10 +35,14 @@ using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.XR;
+using System.IO;
+using System.Threading.Tasks;
 
 public class XRFlyingInterface : MonoBehaviour
 {
     public bool desktopFlyingMode;
+
+    public string calibrationFile = "xrflyingcalibration.txt";
 
     public float movementThreshold = 0.01f;
     public float translationMultiplier = 100f;
@@ -75,16 +79,19 @@ public class XRFlyingInterface : MonoBehaviour
         flying = false;
         beyondThreshold = false;
 
+        trackingReference = new GameObject("Tracking Reference");
         // In VR, tracking reference can just be the scene origin
         // In Desktop mode, the tracking reference is relative to the display.
         if (!desktopFlyingMode)
         {
-            trackingReference = new GameObject("Tracking Reference");
             trackingReference.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
         }
         else
         {
             setReference.action.started += ctx => OnSetReference();
+
+            if (!LoadCalibration(trackingReference))
+                Destroy(trackingReference);
         }
 
         // Create the Bat to track it in the physical space
@@ -167,6 +174,8 @@ public class XRFlyingInterface : MonoBehaviour
         trackingReference.transform.SetPositionAndRotation(bat.transform.position, bat.transform.localRotation);
         
         Debug.Log("Tracking Reference Set!");
+
+        SaveCalibration(trackingReference.transform.position, trackingReference.transform.rotation);
     }
 
     void OnBeginFly()
@@ -201,5 +210,69 @@ public class XRFlyingInterface : MonoBehaviour
         Debug.Log("Reset View");
         this.transform.rotation = beginningCameraRotation;
         this.transform.position = beginningCameraPosition;
+    }
+
+    void SaveCalibration(Vector3 position, Quaternion rotation)
+    {
+        File.WriteAllText(Application.dataPath + "/" + calibrationFile, position.ToString("F5") + '\n' + rotation.ToString("F5"));
+
+        Debug.Log("Calibration saved to " + Application.dataPath + "/" + calibrationFile);
+    }
+
+    bool LoadCalibration(GameObject trackingReference)
+    {
+        var cal = File.ReadAllLines(Application.dataPath + "/" + calibrationFile);
+
+        if (cal.Length != 2)
+            return false;
+
+        // remove parens
+        for (int i = 0; i < 2; ++i)
+        {
+            if (cal[i].StartsWith("(") && cal[i].EndsWith(")"))
+                cal[i] = cal[i].Substring(1, cal[i].Length - 2);
+            else
+                return false;            
+        }
+
+        // split the items
+        string[] posArray = cal[0].Split(',');
+        string[] rotArray = cal[1].Split(',');
+
+        if (posArray.Length != 3 || rotArray.Length != 4)
+            return false;
+
+        // store as a Vector3
+        try
+        {
+            trackingReference.transform.position = new Vector3(
+                float.Parse(posArray[0]),
+                float.Parse(posArray[1]),
+                float.Parse(posArray[2]));
+        }
+        catch (Exception e)
+        {
+            Debug.Log("Error creating position vector: " + e);
+            return false;
+        }
+
+        // store as a Quaternion
+        try
+        {
+            trackingReference.transform.rotation = new Quaternion(
+                float.Parse(rotArray[0]),
+                float.Parse(rotArray[1]),
+                float.Parse(rotArray[2]),
+                float.Parse(rotArray[3]));
+        }
+        catch (Exception e)
+        {
+            Debug.Log("Error creating rotation quaternion: " + e);
+            return false;
+        }
+
+        Debug.Log("Calibration read from " + Application.dataPath + "/" + calibrationFile);
+
+        return true;
     }
 }

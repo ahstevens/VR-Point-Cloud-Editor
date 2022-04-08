@@ -21,6 +21,7 @@ public class DeletePoints : MonoBehaviour
     public InputActionProperty deleteSphereAction;
     public InputActionProperty undoDeletionAction;
     public InputActionProperty moveAndResizeSphereAction;
+    public InputActionProperty hapticAction;
     public float moveAndResizeThumbstickDeadzone = 0.2f;
     public float moveAndResizeTouchpadDelta = 0.2f;
     public float minimumSphereSize = 0.01f;
@@ -193,8 +194,6 @@ public class DeletePoints : MonoBehaviour
         if (pcRoot == null)
             return;
 
-        //Debug.Log(thisController.SendHapticImpulse(0.7f, 2f));
-
         float[] center = new float[3];
         center[0] = deletionSphere.transform.position.x;
         center[1] = deletionSphere.transform.position.y;
@@ -207,7 +206,7 @@ public class DeletePoints : MonoBehaviour
         {
             currentDeletionOpCount++;
 
-            // haptic impulse here once you figure out how (or if it's even possible at the moment)
+            UnityEngine.XR.OpenXR.Input.OpenXRInput.SendHapticImpulse(hapticAction.action, 0.5f, 0.01f);
         }
     }
 

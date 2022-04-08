@@ -146,7 +146,9 @@ public class XRFlyingInterface : MonoBehaviour
                 }
             }
 
-            Quaternion relativeRotationBat = Quaternion.Inverse(flyingOrigin.transform.rotation) * bat.transform.localRotation;
+            Quaternion offset = trackingReference.transform.rotation;
+
+            Quaternion relativeRotationBat = Quaternion.Inverse(offset) * (Quaternion.Inverse(flyingOrigin.transform.rotation) * bat.transform.rotation) * offset;
 
             XRRigOrMainCamera.transform.rotation *= Quaternion.Slerp(Quaternion.identity, relativeRotationBat, rotationMultiplier);
         }
@@ -171,7 +173,7 @@ public class XRFlyingInterface : MonoBehaviour
         if (trackingReference == null)
             trackingReference = new GameObject("Tracking Reference");
 
-        trackingReference.transform.SetPositionAndRotation(bat.transform.position, bat.transform.localRotation);
+        trackingReference.transform.SetPositionAndRotation(bat.transform.position, bat.transform.rotation);
         
         Debug.Log("Tracking Reference Set!");
 

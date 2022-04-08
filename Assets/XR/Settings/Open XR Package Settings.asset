@@ -59,7 +59,6 @@ MonoBehaviour:
   - {fileID: 4591647972758090862}
   - {fileID: -828694297464443485}
   - {fileID: -2271296505846179295}
-  - {fileID: -4682628122316696653}
   - {fileID: 3320804487121550196}
   - {fileID: -8443772177992200206}
   - {fileID: 5754406258180641383}
@@ -195,7 +194,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_enabled: 0
   nameUi: Mock Runtime
-  version: 0.0.1
+  version: 0.0.2
   featureIdInternal: com.unity.openxr.feature.mockruntime
   openxrExtensionStrings: XR_UNITY_null_gfx
   company: Unity

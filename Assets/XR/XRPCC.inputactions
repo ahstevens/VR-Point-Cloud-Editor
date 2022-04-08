@@ -11,7 +11,8 @@
                     "id": "b4a83e8d-b938-4b2c-a3b2-ef1ad82d8f72",
                     "expectedControlType": "Vector3",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "",
+                    "initialStateCheck": true
                 },
                 {
                     "name": "Rotation",
@@ -19,7 +20,8 @@
                     "id": "3f424251-2bab-4959-9a80-1b079af3ccae",
                     "expectedControlType": "Quaternion",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "",
+                    "initialStateCheck": true
                 }
             ],
             "bindings": [
@@ -57,7 +59,8 @@
                     "id": "43b56756-0193-4e69-9678-af53a08b350a",
                     "expectedControlType": "Vector3",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "",
+                    "initialStateCheck": true
                 },
                 {
                     "name": "Rotation",
@@ -65,7 +68,8 @@
                     "id": "a16923e6-54c7-4fe8-9470-493a2583419e",
                     "expectedControlType": "Quaternion",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "",
+                    "initialStateCheck": true
                 }
             ],
             "bindings": [
@@ -103,7 +107,8 @@
                     "id": "2016d4e2-7866-4734-be4c-208631441f15",
                     "expectedControlType": "Vector3",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "",
+                    "initialStateCheck": true
                 },
                 {
                     "name": "Rotation",
@@ -111,7 +116,8 @@
                     "id": "c7be98f9-f926-49f3-87f5-b90e42690851",
                     "expectedControlType": "Quaternion",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "",
+                    "initialStateCheck": true
                 }
             ],
             "bindings": [
@@ -149,7 +155,8 @@
                     "id": "05313f78-044e-4a99-8933-78666778eb67",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "",
+                    "initialStateCheck": false
                 },
                 {
                     "name": "Set Reference",
@@ -157,7 +164,8 @@
                     "id": "b58b6d73-2385-4e66-88b1-d72bda359f0c",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "",
+                    "initialStateCheck": false
                 },
                 {
                     "name": "Reset View",
@@ -165,7 +173,8 @@
                     "id": "3cafe5bd-2154-41e6-a6ee-3ec9c70f98da",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -183,7 +192,7 @@
                 {
                     "name": "",
                     "id": "a6272b46-2e54-40c3-bc64-a57a442bca89",
-                    "path": "<ViveController>{RightHand}/menu",
+                    "path": "<XRController>{RightHand}/menu",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -247,7 +256,8 @@
                     "id": "4090506e-d84e-4e7f-adda-e24290b46b70",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "",
+                    "initialStateCheck": false
                 },
                 {
                     "name": "Show Scaling Marker",
@@ -255,7 +265,8 @@
                     "id": "dc594b44-11d0-4756-a976-71c8afbb0510",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -403,7 +414,8 @@
                     "id": "e0795370-e530-4b12-9a53-602e858bd4c7",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -430,7 +442,8 @@
                     "id": "aaeef368-c154-41ce-a57b-0b35df5a62bc",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "",
+                    "initialStateCheck": false
                 },
                 {
                     "name": "Undo Delete",
@@ -438,7 +451,8 @@
                     "id": "f94b7060-1075-4ae2-929b-52b3ff4a9a42",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "",
+                    "initialStateCheck": false
                 },
                 {
                     "name": "Move and Resize Sphere Cursor",
@@ -446,7 +460,17 @@
                     "id": "6c9af340-09ce-4726-aab7-bdbd8919a869",
                     "expectedControlType": "Vector2",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "Haptic",
+                    "type": "PassThrough",
+                    "id": "e220dff4-d0aa-4a85-8640-04419dc23ac4",
+                    "expectedControlType": "Haptic",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -546,6 +570,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "Move and Resize Sphere Cursor",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "5eae83e4-7dd8-405e-be0b-d73e177c8b97",
+                    "path": "<XRController>{RightHand}/haptic",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Haptic",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

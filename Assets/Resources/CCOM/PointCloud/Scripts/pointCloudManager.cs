@@ -1,13 +1,14 @@
 //#define FRUSTUMCULLING_TEST
 //#define AABB_TEST
 
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System;
 using System.IO;
-using UnityEditor;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 #if UNITY_EDITOR
 using UnityEditor.SceneManagement;
@@ -43,7 +44,7 @@ public class pointCloudManager : MonoBehaviour
     private static extern IntPtr GetRenderEventFunc();
     [DllImport("PointCloudPlugin")]
     
-    private static extern void RequestToDeleteFromUnity(IntPtr center, float size);
+    private static extern bool RequestToDeleteFromUnity(IntPtr center, float size);
     [DllImport("PointCloudPlugin")]
     private static extern int RequestOctreeBoundsCountFromUnity();
     [DllImport("PointCloudPlugin")]
@@ -53,13 +54,11 @@ public class pointCloudManager : MonoBehaviour
     [DllImport("PointCloudPlugin")]
     static public extern bool OpenLAZFileFromUnity(IntPtr filePath, IntPtr ID);
     [DllImport("PointCloudPlugin")]
-    private static extern bool unLoad(IntPtr IDToFill);
-    [DllImport("PointCloudPlugin")]
     static public extern bool IsLastAsyncLoadFinished();
     [DllImport("PointCloudPlugin")]
     static public extern void OnSceneStartFromUnity(IntPtr projectFilePath);
     [DllImport("PointCloudPlugin")]
-    static public extern void SaveToLAZFileFromUnity(IntPtr filePath, IntPtr pointCloudID);
+    static public extern bool SaveToLAZFileFromUnity(IntPtr filePath, IntPtr pointCloudID);
     [DllImport("PointCloudPlugin")]
     static public extern void SaveToOwnFormatFileFromUnity(IntPtr filePath, IntPtr pointCloudID);
     [DllImport("PointCloudPlugin")]
@@ -104,7 +103,12 @@ public class pointCloudManager : MonoBehaviour
     private static extern bool ValidatePointCloudGMFromUnity(IntPtr filePath, IntPtr pointCloudID);
     [DllImport("PointCloudPlugin")]
     private static extern void getNewUniqueID(IntPtr IDToFill);
+    [DllImport("PointCloudPlugin")]
+    private static extern bool unLoad(IntPtr IDToFill);
 
+    [DllImport("PointCloudPlugin")]
+    private static extern void setScreenIndex(int newScreenIndex);
+	
     List<Vector3> vertexData;
     List<Color32> vertexColors;
     public GameObject pointCloudGameObject;
@@ -122,6 +126,8 @@ public class pointCloudManager : MonoBehaviour
     public static bool isLookingForClosestPoint = false;
     public static bool highlightDeletedPoints = false;
 
+    private static bool renderPointClouds = true;
+
     static private GEOReference getReferenceScript()
     {
         GameObject geoReference = GameObject.Find("UnityZeroGeoReference");
@@ -134,7 +140,7 @@ public class pointCloudManager : MonoBehaviour
     static private float getGEOScale()
     {
         GEOReference scriptClass = getReferenceScript();
-        //Debug.Log(scriptClass);
+
         if (scriptClass == null)
             return 1.0f;
 
@@ -220,12 +226,12 @@ public class pointCloudManager : MonoBehaviour
 #if UNITY_EDITOR
                     DestroyImmediate(pointClouds[i].gameObject);
 #else
-Destroy(pointClouds[i].gameObject);
+					Destroy(pointClouds[i].gameObject);
 #endif
                     break;
                 }
             }
-                       
+
             pointClouds = (pointCloud[])GameObject.FindObjectsOfType(typeof(pointCloud));
             if (pointClouds.Length == 0)
             {
@@ -236,14 +242,14 @@ Destroy(pointClouds[i].gameObject);
 #if UNITY_EDITOR
                     DestroyImmediate(geoReference);
 #else
-Destroy(geoReference);
+					Destroy(geoReference);
 #endif
             }
         }
 
         return result;
     }
-
+	
     public static void SaveLAZFile(string filePath, string pointCloudID)
     {
         IntPtr strPtr = Marshal.StringToHGlobalAnsi(filePath);
@@ -275,10 +281,6 @@ Destroy(geoReference);
     public void reInitialize()
     {
         Camera.onPostRender += OnPostRenderCallback;
-
-        //IntPtr projectPathPtr = Marshal.StringToHGlobalAnsi(Application.dataPath);
-        // DLL reinitialization
-        //OnSceneStartFromUnity(projectPathPtr);
 
         pointClouds = new List<pointCloud>();
         LODSettings = new List<LODInformation>();
@@ -312,7 +314,6 @@ Destroy(geoReference);
             string ID = toLoadList[0];
             toLoadList.RemoveAt(0);
             IntPtr IDStrPtr = Marshal.StringToHGlobalAnsi(ID);
-            //int pointCloudsCount = getPointCloudsInScene().Length;
 
             // Create game object that will represent point cloud.
             string name = Path.GetFileNameWithoutExtension(filePathForAsyncLoad);
@@ -320,16 +321,14 @@ Destroy(geoReference);
 
             // Add script to a point cloud game object.
             var pcComponent = pointCloudGameObject.AddComponent<pointCloud>();
-
             pcComponent.ID = ID;
-            //pointClouds.Add(new pointCloud(filePathForAsyncLoad, reInitializationForAsyncLoad));
 
             IntPtr adjustmentArray = Marshal.AllocHGlobal(8 * 5);
-            RequestPointCloudAdjustmentFromUnity(adjustmentArray, IDStrPtr/*pointCloudsCount*/);
+            RequestPointCloudAdjustmentFromUnity(adjustmentArray, IDStrPtr);
 
             IntPtr UTMZone = Marshal.AllocHGlobal(8);
             IntPtr North = Marshal.AllocHGlobal(8);
-            RequestPointCloudUTMZoneFromUnity(UTMZone, North, IDStrPtr/*pointCloudsCount*/);
+            RequestPointCloudUTMZoneFromUnity(UTMZone, North, IDStrPtr);
             int[] zone = new int[1];
             Marshal.Copy(UTMZone, zone, 0, 1);
 
@@ -343,23 +342,17 @@ Destroy(geoReference);
 
             string rawDataPath = Application.dataPath + "/Resources/CCOM/PointCloud/Data/" + Path.GetFileName(filePathForAsyncLoad);
 
+            pcComponent.pathToRawData = filePathForAsyncLoad;
+#if UNITY_EDITOR
             pcComponent.pathToRawData = rawDataPath;
+#endif
 
             float[] adjustmentResult = new float[5];
             Marshal.Copy(adjustmentArray, adjustmentResult, 0, 5);
 
-            
             pcComponent.adjustmentX = adjustmentResult[0];
             pcComponent.adjustmentY = adjustmentResult[1];
             pcComponent.adjustmentZ = adjustmentResult[2];
-
-            //pointClouds[pointClouds.Count - 1].adjustment = new Vector3();
-            //pointClouds[pointClouds.Count - 1].adjustment.x = adjustmentResult[0];
-            //pointClouds[pointClouds.Count - 1].adjustment.y = adjustmentResult[1];
-            //pointClouds[pointClouds.Count - 1].adjustment.z = adjustmentResult[2];
-
-
-
 
             //pointClouds[pointClouds.Count - 1].LODs = new List<LODInformation>();
             //IntPtr maxDistance = Marshal.AllocHGlobal(8);
@@ -389,8 +382,6 @@ Destroy(geoReference);
             {
                 pcComponent.initialXShift = -(getReferenceScript().realWorldX - adjustmentResult[3]);
                 pcComponent.initialZShift = -(getReferenceScript().realWorldZ - adjustmentResult[4]);
-                //pointClouds[pointClouds.Count - 1].initialXShift = -(getReferenceScript().realWorldX - adjustmentResult[3]);
-                //pointClouds[pointClouds.Count - 1].initialZShift = -(getReferenceScript().realWorldZ - adjustmentResult[4]);
             }
 
             // Default value for y, it should be calculated but for now it is a magic number.
@@ -398,11 +389,10 @@ Destroy(geoReference);
             float y = 0f;
 
             // If we are re initializing existing objects, we should preserve y coordinate.
-            //if (reInitializationForAsyncLoad != null)
-            //    y = pointClouds[pointClouds.Count - 1].inSceneRepresentation.transform.position.y;
-
-
-            pointCloudGameObject.transform.parent = GameObject.Find("Point Clouds Root").transform;
+			GameObject pcRoot = GameObject.Find("Point Clouds Root");
+			
+			if (pcRoot != null)
+				pointCloudGameObject.transform.parent = pcRoot.transform;
 
             pointCloudGameObject.transform.localPosition = new Vector3((float)(pcComponent.initialXShift),
                                                                   y,
@@ -410,10 +400,6 @@ Destroy(geoReference);
 
             pointCloudGameObject.transform.localRotation = Quaternion.identity;
             pointCloudGameObject.transform.localScale = Vector3.one;
-
-            //pointClouds[pointClouds.Count - 1].inSceneRepresentation.transform.position = new Vector3((float)(pointClouds[pointClouds.Count - 1].initialXShift),
-            //                                                                                          y,
-            //                                                                                          (float)(pointClouds[pointClouds.Count - 1].initialZShift));
 
             isWaitingToLoad = false;
         }
@@ -446,11 +432,8 @@ Destroy(geoReference);
 			Marshal.FreeHGlobal(strPtr);
 			Marshal.FreeHGlobal(IDStrPtr);
         }
-
-        //Debug.Log("OnValidate was called");
     }
 
-    // Start is called before the first frame update
     void Start()
     {
         OnValidate();
@@ -578,7 +561,6 @@ Destroy(geoReference);
 #endif // AABB_TEST
     static bool requestWasSend = false;
 
-    // Update is called once per frame
     void Update()
     {
         checkIsAsyncLoadFinished();
@@ -618,61 +600,13 @@ Destroy(geoReference);
         }
 #endif // AABB_TEST
 
-        //if (Input.GetKeyUp(KeyCode.LeftArrow))
-        //{
-        //    Vector3 position = transform.position;
-        //    position.z += 1.0f;
-        //    transform.SetPositionAndRotation(position, transform.rotation);
-        //}
-
-        //if (Input.GetKeyUp(KeyCode.RightArrow))
-        //{
-        //    Vector3 position = transform.position;
-        //    position.z -= 1.0f;
-        //    transform.SetPositionAndRotation(position, transform.rotation);
-        //}
-
-        //if (Input.GetKeyUp(KeyCode.UpArrow))
-        //{
-        //    Vector3 position = transform.position;
-        //    position.x += 1.0f;
-        //    transform.SetPositionAndRotation(position, transform.rotation);
-        //}
-
-        //if (Input.GetKeyUp(KeyCode.DownArrow))
-        //{
-        //    Vector3 position = transform.position;
-        //    position.x -= 1.0f;
-        //    transform.SetPositionAndRotation(position, transform.rotation);
-        //}
-
-        //if (Input.GetKeyUp(KeyCode.E))
-        //{
-        //    Debug.Log("Input.GetKeyUp(KeyCode.E)");
-        //    float[] center = new float[3];
-        //    center[0] = transform.position.x;
-        //    center[1] = transform.position.y;
-        //    center[2] = transform.position.z;
-        //
-        //    GCHandle toDelete = GCHandle.Alloc(center.ToArray(), GCHandleType.Pinned);
-        //    RequestToDeleteFromUnity(toDelete.AddrOfPinnedObject(), transform.localScale.x / 2.0f);
-        //    EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
-        //}
-        //
-        //if ((Input.GetKey(KeyCode.RightControl) || Input.GetKey(KeyCode.LeftControl)) && Input.GetKeyDown(KeyCode.Z))
-        //{
-        //    Debug.Log("Ctrl + Z");
-        //    requestUndo(1);
-        //    EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
-        //}
-
-        //if (highlightDeletedPoints)
-        //{
-        //    UpdateDeletionSpherePositionFromUnity(transform.position, transform.localScale.x / 2.0f);
-        //}
-
-        //setHighlightDeletedPointsActive(false);
+        if (Keyboard.current.pKey.wasPressedThisFrame)
+        {
+            renderPointClouds = !renderPointClouds;
+        }
     }
+
+    static int screenIndex = 0;
 
     public static void OnPostRenderCallback(Camera cam)
     {
@@ -680,8 +614,14 @@ Destroy(geoReference);
         EditorSceneManager.sceneSaved -= OnSceneSaveCallback;
         EditorSceneManager.sceneSaved += OnSceneSaveCallback;
 #endif
-        if (cam == Camera.main)
+
+        if (cam == Camera.main && renderPointClouds)
         {
+            screenIndex++;
+            if (screenIndex > 5)
+                screenIndex = 0;
+
+            setScreenIndex(screenIndex);
             Matrix4x4 cameraToWorld = cam.cameraToWorldMatrix;
             cameraToWorld = cameraToWorld.inverse;
             float[] cameraToWorldArray = new float[16];
@@ -696,7 +636,6 @@ Destroy(geoReference);
 
             cam.enabled = true;
 
-            //Matrix4x4 projection = cam.nonJitteredProjectionMatrix;
             Matrix4x4 projection = GL.GetGPUProjectionMatrix(cam.projectionMatrix, true);
 
             float[] projectionArray = new float[16];
@@ -769,20 +708,18 @@ Destroy(geoReference);
 
                 pointerWorld = GCHandle.Alloc(worldArray, GCHandleType.Pinned);
                 IntPtr IDStrPtr = Marshal.StringToHGlobalAnsi(pointClouds_[i].ID);
-				//Debug.Log(IDStrPtr);
                 updateWorldMatrix(pointerWorld.AddrOfPinnedObject(), IDStrPtr);
 				Marshal.FreeHGlobal(IDStrPtr);
                 pointerWorld.Free();
             }
 
+            setScreenIndex(screenIndex);
             GL.IssuePluginEvent(GetRenderEventFunc(), 1);
         }
     }
 
     public static void OnSceneSaveCallback(Scene scene)
     {
-        //Debug.Log("Point clouds saved.");
-
         pointCloud[] pointCloudsInScene = getPointCloudsInScene();
         for (int i = 0; i < pointCloudsInScene.Length; i++)
         {
@@ -1112,16 +1049,22 @@ Destroy(geoReference);
         deleteOutliers(IDStrPtr);
 		Marshal.FreeHGlobal(IDStrPtr);
     }
-
+    private static bool firstFrame = true;
     public static void OnSceneStart()
     {
-        //Debug.Log("OnSceneStartFromUnity");
+        if (firstFrame)
+        {
+            firstFrame = false;
+            Camera.onPostRender -= pointCloudManager.OnPostRenderCallback;
+            Camera.onPostRender += pointCloudManager.OnPostRenderCallback;
+            OnSceneStart();
+        }
         OnSceneStartFromUnity(Marshal.StringToHGlobalAnsi(Application.dataPath));
     }
 
     public static String GetNewID()
     {
-       IntPtr arrayToFill = Marshal.AllocHGlobal(24 * 8);
+		IntPtr arrayToFill = Marshal.AllocHGlobal(24 * 8);
         getNewUniqueID(arrayToFill);
 
         int[] tempArray = new int[24];

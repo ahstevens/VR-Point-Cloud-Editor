@@ -208,7 +208,7 @@ public class PointCloudUI : MonoBehaviour
     {
         yield return FileBrowser.WaitForLoadDialog(FileBrowser.PickMode.Files, false, lastLoadDirectory == null ? Application.dataPath : lastLoadDirectory, null, "Load Point Cloud", "Load");
 
-        Debug.Log(FileBrowser.Success);
+        //Debug.Log(FileBrowser.Success);
 
         if (FileBrowser.Success)
         {

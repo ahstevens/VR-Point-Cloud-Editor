@@ -11,6 +11,7 @@ using System.IO;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 #if UNITY_EDITOR
+using UnityEditor;
 using UnityEditor.SceneManagement;
 #endif
 
@@ -323,7 +324,7 @@ public class pointCloudManager : MonoBehaviour
             var pcComponent = pointCloudGameObject.AddComponent<pointCloud>();
             pcComponent.ID = ID;
 
-            IntPtr adjustmentArray = Marshal.AllocHGlobal(8 * 5);
+            IntPtr adjustmentArray = Marshal.AllocHGlobal(8 * 11);
             RequestPointCloudAdjustmentFromUnity(adjustmentArray, IDStrPtr);
 
             IntPtr UTMZone = Marshal.AllocHGlobal(8);
@@ -347,12 +348,20 @@ public class pointCloudManager : MonoBehaviour
             pcComponent.pathToRawData = rawDataPath;
 #endif
 
-            float[] adjustmentResult = new float[5];
-            Marshal.Copy(adjustmentArray, adjustmentResult, 0, 5);
+            double[] adjustmentResult = new double[11];
+            Marshal.Copy(adjustmentArray, adjustmentResult, 0, 11);
 
             pcComponent.adjustmentX = adjustmentResult[0];
             pcComponent.adjustmentY = adjustmentResult[1];
             pcComponent.adjustmentZ = adjustmentResult[2];
+
+            pcComponent.AABB_min_x = adjustmentResult[5];
+            pcComponent.AABB_min_y = adjustmentResult[6];
+            pcComponent.AABB_min_z = adjustmentResult[7];
+
+            pcComponent.AABB_max_x = adjustmentResult[8];
+            pcComponent.AABB_max_y = adjustmentResult[9];
+            pcComponent.AABB_max_z = adjustmentResult[10];
 
             //pointClouds[pointClouds.Count - 1].LODs = new List<LODInformation>();
             //IntPtr maxDistance = Marshal.AllocHGlobal(8);
@@ -376,7 +385,7 @@ public class pointCloudManager : MonoBehaviour
             
             if (getReferenceScript() == null)
             {
-                createGEOReference(new Vector3(adjustmentResult[3], 0.0f, adjustmentResult[4]), pcComponent.UTMZone);
+                createGEOReference(new Vector3((float)adjustmentResult[3], 0.0f, (float)adjustmentResult[4]), pcComponent.UTMZone);
             }
             else
             {
@@ -390,9 +399,31 @@ public class pointCloudManager : MonoBehaviour
 
             // If we are re initializing existing objects, we should preserve y coordinate.
 			GameObject pcRoot = GameObject.Find("Point Clouds Root");
-			
-			if (pcRoot != null)
-				pointCloudGameObject.transform.parent = pcRoot.transform;
+
+            if (pcRoot != null)
+            {
+                pointCloudGameObject.transform.parent = pcRoot.transform;
+
+                if (pointClouds.Count == 0)
+                {
+                    pcComponent.ResetMiniature();
+
+                    //GameObject ctr = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    //ctr.transform.parent = pointCloudGameObject.transform;
+                    //ctr.transform.localPosition = center;
+                    //ctr.transform.localScale = 10f * Vector3.one;
+                    //
+                    //GameObject minBall = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    //minBall.transform.parent = pointCloudGameObject.transform;
+                    //minBall.transform.localPosition = center - size / 2f;
+                    //minBall.transform.localScale = 10f * Vector3.one;
+                    //
+                    //GameObject maxBall = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    //maxBall.transform.parent = pointCloudGameObject.transform;
+                    //maxBall.transform.localPosition = center + size / 2f;
+                    //maxBall.transform.localScale = 10f * Vector3.one;
+                }
+            }
 
             pointCloudGameObject.transform.localPosition = new Vector3((float)(pcComponent.initialXShift),
                                                                   y,
@@ -412,6 +443,9 @@ public class pointCloudManager : MonoBehaviour
 #if UNITY_EDITOR
         EditorSceneManager.sceneSaved -= OnSceneSaveCallback;
         EditorSceneManager.sceneSaved += OnSceneSaveCallback;
+
+        EditorApplication.playModeStateChanged -= LogPlayModeState;
+        EditorApplication.playModeStateChanged += LogPlayModeState;
 #endif
         OnSceneStartFromUnity(Marshal.StringToHGlobalAnsi(Application.dataPath));
 
@@ -433,6 +467,21 @@ public class pointCloudManager : MonoBehaviour
 			Marshal.FreeHGlobal(IDStrPtr);
         }
     }
+
+#if UNITY_EDITOR
+    private static void LogPlayModeState(PlayModeStateChange state)
+    {
+        Debug.Log(state);
+
+        if (state == PlayModeStateChange.ExitingPlayMode)
+        {
+            foreach (var pc in pointCloudManager.getPointCloudsInScene())
+            {
+                pointCloudManager.UnLoad(pc.ID);
+            }
+        }
+    }
+#endif
 
     void Start()
     {

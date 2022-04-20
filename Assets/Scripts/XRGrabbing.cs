@@ -6,8 +6,8 @@ using UnityEngine.InputSystem;
 
 public class XRGrabbing : MonoBehaviour
 {
-
     public InputActionProperty grab;
+    public InputActionProperty resetMiniature;
 
     public GameObject grabbableObject;
 
@@ -20,16 +20,20 @@ public class XRGrabbing : MonoBehaviour
     {
         grab.action.started += ctx => OnBeginGrab();
         grab.action.canceled += ctx => OnEndGrab();
+
+        resetMiniature.action.started += ctx => OnResetMiniature();
     }
 
     void OnEnable()
     {
         grab.action.Enable();
+        resetMiniature.action.Enable();
     }
 
     void OnDisable()
     {
         grab.action.Disable();
+        resetMiniature.action.Disable();
     }
 
     // Update is called once per frame
@@ -57,5 +61,13 @@ public class XRGrabbing : MonoBehaviour
     private void OnEndGrab()
     {
         grabbing = false;
+    }
+
+    private void OnResetMiniature()
+    {
+        var pcs = pointCloudManager.getPointCloudsInScene();
+
+        if (pcs.Length > 0)
+            pcs[0].ResetMiniature();
     }
 }

@@ -129,19 +129,11 @@ public class XRScaling : MonoBehaviour
             scaleRod.transform.LookAt(RightHandController.transform.position, Vector3.up);
             scaleRod.transform.rotation *= Quaternion.Euler(90, 0, 0);
 
-            //scaleSphere.transform.localScale = Vector3.one * 0.01f * scaleFactor;
-
             var pivotDelta = pivotDirection;
             pivotDelta.Scale(scaleFactor * Vector3.one);
             scalingRoot.transform.localPosition = scalePoint + pivotDelta;
 
-            scalingRoot.transform.localScale = originalScale * scaleFactor;
-
-            var newControllerDirection = RightHandController.transform.position - LeftHandController.transform.position;
-
-            var newRotation = Quaternion.FromToRotation(controllerDirection, newControllerDirection);
-
-            //scalingRoot.transform.rotation = originalRotation * newRotation;            
+            scalingRoot.transform.localScale = originalScale * scaleFactor;      
         }
     }
 

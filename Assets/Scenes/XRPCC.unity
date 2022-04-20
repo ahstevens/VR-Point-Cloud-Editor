@@ -5258,6 +5258,19 @@ MonoBehaviour:
       m_Flags: 0
     m_Reference: {fileID: -3669243343821583564, guid: bc5d5383aa166484ea2f603c8a1dc8e1,
       type: 3}
+  resetMiniature:
+    m_UseReference: 1
+    m_Action:
+      m_Name: Reset Miniature
+      m_Type: 0
+      m_ExpectedControlType: 
+      m_Id: 124dc08c-4cb4-44ef-ba9a-3ec573e955a8
+      m_Processors: 
+      m_Interactions: 
+      m_SingletonActionBindings: []
+      m_Flags: 0
+    m_Reference: {fileID: 4197092095678953996, guid: bc5d5383aa166484ea2f603c8a1dc8e1,
+      type: 3}
   grabbableObject: {fileID: 417516343}
 --- !u!1001 &1170089060
 PrefabInstance:

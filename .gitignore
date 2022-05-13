@@ -27,12 +27,11 @@ version.txt
 camera.txt
 screens.txt
 precision.txt
-xrflyingcalibration.txt
+xrflyingcalibration.txt*
 EPSG.txt
 
 Assets/Resources/CCOM/PointCloud/Data
 
-*.meta
 *.dll.old
 *.log
 

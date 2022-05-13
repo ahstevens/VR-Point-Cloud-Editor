@@ -409,6 +409,11 @@ public class pointCloudManager : MonoBehaviour
                 if (pointClouds.Count == 0)
                 {
                     pcComponent.ResetMiniature();
+
+                    var encm = FindObjectOfType<ENCManager>();
+                    encm.geoReference = getReferenceScript();
+                    encm.pointCloud = pcComponent;
+                    encm.create = true;
                 }
             }
 

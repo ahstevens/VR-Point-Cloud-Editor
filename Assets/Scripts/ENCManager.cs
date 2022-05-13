@@ -39,11 +39,12 @@ public class ENCManager : MonoBehaviour
 
         ENC = GameObject.CreatePrimitive(PrimitiveType.Quad);
         ENC.name = "ENC_" + pc.name;
+
         ENC.transform.parent = pc.transform;
         ENC.transform.localRotation = Quaternion.Euler(90f, 0, 0);
+
         Renderer rend = ENC.GetComponent<Renderer>();
         rend.material = new Material(Shader.Find("Unlit/Texture"));
-
 
         StartCoroutine(GetTexture(geoRef, pc));
     }

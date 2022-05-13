@@ -38,7 +38,7 @@ public class LODInformation
 public class pointCloudManager : MonoBehaviour
 {
     [DllImport("PointCloudPlugin")]
-    private static extern void updateCamera(IntPtr worldMatrix, IntPtr projectionMatrix);
+    private static extern void updateCamera(IntPtr worldMatrix, IntPtr projectionMatrix, int screenIndex);
     [DllImport("PointCloudPlugin")]
     static public extern bool updateWorldMatrix(IntPtr worldMatrix, IntPtr pointCloudID);
     [DllImport("PointCloudPlugin")]
@@ -324,7 +324,7 @@ public class pointCloudManager : MonoBehaviour
             var pcComponent = pointCloudGameObject.AddComponent<pointCloud>();
             pcComponent.ID = ID;
 
-            IntPtr adjustmentArray = Marshal.AllocHGlobal(8 * 11);
+            IntPtr adjustmentArray = Marshal.AllocHGlobal(8 * 12);
             RequestPointCloudAdjustmentFromUnity(adjustmentArray, IDStrPtr);
 
             IntPtr UTMZone = Marshal.AllocHGlobal(8);
@@ -348,8 +348,8 @@ public class pointCloudManager : MonoBehaviour
             pcComponent.pathToRawData = rawDataPath;
 #endif
 
-            double[] adjustmentResult = new double[11];
-            Marshal.Copy(adjustmentArray, adjustmentResult, 0, 11);
+            double[] adjustmentResult = new double[12];
+            Marshal.Copy(adjustmentArray, adjustmentResult, 0, 12);
 
             pcComponent.adjustmentX = adjustmentResult[0];
             pcComponent.adjustmentY = adjustmentResult[1];
@@ -362,6 +362,8 @@ public class pointCloudManager : MonoBehaviour
             pcComponent.AABB_max_x = adjustmentResult[8];
             pcComponent.AABB_max_y = adjustmentResult[9];
             pcComponent.AABB_max_z = adjustmentResult[10];
+
+            pcComponent.EPSG = (int)(adjustmentResult[11]);
 
             //pointClouds[pointClouds.Count - 1].LODs = new List<LODInformation>();
             //IntPtr maxDistance = Marshal.AllocHGlobal(8);
@@ -382,7 +384,7 @@ public class pointCloudManager : MonoBehaviour
 
             //Marshal.FreeHGlobal(maxDistance);
             //Marshal.FreeHGlobal(targetPercentOFPoints);
-            
+
             if (getReferenceScript() == null)
             {
                 createGEOReference(new Vector3((float)adjustmentResult[3], 0.0f, (float)adjustmentResult[4]), pcComponent.UTMZone);
@@ -407,21 +409,6 @@ public class pointCloudManager : MonoBehaviour
                 if (pointClouds.Count == 0)
                 {
                     pcComponent.ResetMiniature();
-
-                    //GameObject ctr = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                    //ctr.transform.parent = pointCloudGameObject.transform;
-                    //ctr.transform.localPosition = center;
-                    //ctr.transform.localScale = 10f * Vector3.one;
-                    //
-                    //GameObject minBall = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                    //minBall.transform.parent = pointCloudGameObject.transform;
-                    //minBall.transform.localPosition = center - size / 2f;
-                    //minBall.transform.localScale = 10f * Vector3.one;
-                    //
-                    //GameObject maxBall = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                    //maxBall.transform.parent = pointCloudGameObject.transform;
-                    //maxBall.transform.localPosition = center + size / 2f;
-                    //maxBall.transform.localScale = 10f * Vector3.one;
                 }
             }
 
@@ -444,8 +431,8 @@ public class pointCloudManager : MonoBehaviour
         EditorSceneManager.sceneSaved -= OnSceneSaveCallback;
         EditorSceneManager.sceneSaved += OnSceneSaveCallback;
 
-        EditorApplication.playModeStateChanged -= LogPlayModeState;
-        EditorApplication.playModeStateChanged += LogPlayModeState;
+        EditorApplication.playModeStateChanged -= ClearPointCloudsOnPlayModeExit;
+        EditorApplication.playModeStateChanged += ClearPointCloudsOnPlayModeExit;
 #endif
         OnSceneStartFromUnity(Marshal.StringToHGlobalAnsi(Application.dataPath));
 
@@ -469,10 +456,8 @@ public class pointCloudManager : MonoBehaviour
     }
 
 #if UNITY_EDITOR
-    private static void LogPlayModeState(PlayModeStateChange state)
+    private static void ClearPointCloudsOnPlayModeExit(PlayModeStateChange state)
     {
-        Debug.Log(state);
-
         if (state == PlayModeStateChange.ExitingPlayMode)
         {
             foreach (var pc in pointCloudManager.getPointCloudsInScene())
@@ -667,10 +652,10 @@ public class pointCloudManager : MonoBehaviour
         if (cam == Camera.main && renderPointClouds)
         {
             screenIndex++;
-            if (screenIndex > 5)
+            if (screenIndex > 1)
                 screenIndex = 0;
 
-            setScreenIndex(screenIndex);
+            //setScreenIndex(screenIndex);
             Matrix4x4 cameraToWorld = cam.cameraToWorldMatrix;
             cameraToWorld = cameraToWorld.inverse;
             float[] cameraToWorldArray = new float[16];
@@ -697,7 +682,7 @@ public class pointCloudManager : MonoBehaviour
             }
             GCHandle pointerProjection = GCHandle.Alloc(projectionArray, GCHandleType.Pinned);
 
-            updateCamera(pointerTocameraToWorld.AddrOfPinnedObject(), pointerProjection.AddrOfPinnedObject());
+            updateCamera(pointerTocameraToWorld.AddrOfPinnedObject(), pointerProjection.AddrOfPinnedObject(), screenIndex);
 
             pointerTocameraToWorld.Free();
             pointerProjection.Free();
@@ -762,8 +747,8 @@ public class pointCloudManager : MonoBehaviour
                 pointerWorld.Free();
             }
 
-            setScreenIndex(screenIndex);
-            GL.IssuePluginEvent(GetRenderEventFunc(), 1);
+            //setScreenIndex(screenIndex);
+            GL.IssuePluginEvent(GetRenderEventFunc(), screenIndex);
         }
     }
 

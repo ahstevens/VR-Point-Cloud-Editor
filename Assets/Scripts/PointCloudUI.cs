@@ -29,6 +29,7 @@ public class PointCloudUI : MonoBehaviour
     public GameObject outlierNeighborValText;
     public GameObject showGroundPlaneButton;
     public GameObject groundPlane;
+    public GameObject buildInfo;
 
     private Canvas thisCanvas;
 
@@ -98,6 +99,8 @@ public class PointCloudUI : MonoBehaviour
         resetPointCloudTransforms.gameObject.SetActive(false);
         unloadButton.SetActive(false);
 
+        buildInfo.GetComponent<Text>().text = Application.version;
+
         ActivateOutliersUI(false);
 
         fileBrowsing = false;
@@ -141,6 +144,7 @@ public class PointCloudUI : MonoBehaviour
                 ActivateLoadAndSaveUI(false);
 
                 flyButton.gameObject.SetActive(false);
+                buildInfo.SetActive(false);
 
                 panel.SetActive(false);
             }
@@ -151,6 +155,7 @@ public class PointCloudUI : MonoBehaviour
                 ActivateLoadAndSaveUI(true);
 
                 flyButton.gameObject.SetActive(true);
+                buildInfo.SetActive(true);
 
                 panel.SetActive(true);
             }
@@ -300,6 +305,7 @@ public class PointCloudUI : MonoBehaviour
             fileDropdown.SetActive(false);
             resetPointCloudTransforms.gameObject.SetActive(false);
             unloadButton.SetActive(false);
+            buildInfo.SetActive(false);
 
             ActivateOutliersUI(false);
         }

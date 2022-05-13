@@ -25,6 +25,8 @@ public class pointCloud : MonoBehaviour
     public double AABB_max_y;
     public double AABB_max_z;
 
+    public int EPSG;
+
     public Bounds bounds;
 
     void Start()
@@ -76,24 +78,21 @@ public class pointCloud : MonoBehaviour
         float scaleFactor = size / Mathf.Max(dimensions.x, dimensions.y, dimensions.z);
 
         var targetPos = Camera.main.transform.position + Camera.main.transform.forward * distance;
-        var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        go.transform.position = targetPos;
-        go.transform.rotation = new Quaternion(0.0f, Camera.main.transform.rotation.y, 0.0f, Camera.main.transform.rotation.w);
-        go.transform.localScale = Vector3.one * 0.1f;
+        var targetRot = new Quaternion(0.0f, Camera.main.transform.rotation.y, 0.0f, Camera.main.transform.rotation.w);
 
         // move center of point cloud in front of camera
-        this.transform.root.position = targetPos - center * scaleFactor;
-        this.transform.root.rotation = new Quaternion(0.0f, Camera.main.transform.rotation.y, 0.0f, Camera.main.transform.rotation.w);
-        this.transform.root.localScale = Vector3.one * scaleFactor;
+        transform.root.rotation = targetRot;
+        transform.root.localScale = Vector3.one * scaleFactor;
+        transform.root.position = targetPos - targetRot * (center * scaleFactor);
     }
 
     void DrawBounds(Bounds b, float delay = 0)
     {
         // bottom
-        var p1 = this.transform.TransformPoint(new Vector3(b.min.x, b.min.y, b.min.z));
-        var p2 = this.transform.TransformPoint(new Vector3(b.max.x, b.min.y, b.min.z));
-        var p3 = this.transform.TransformPoint(new Vector3(b.max.x, b.min.y, b.max.z));
-        var p4 = this.transform.TransformPoint(new Vector3(b.min.x, b.min.y, b.max.z));
+        var p1 = transform.TransformPoint(new Vector3(b.min.x, b.min.y, b.min.z));
+        var p2 = transform.TransformPoint(new Vector3(b.max.x, b.min.y, b.min.z));
+        var p3 = transform.TransformPoint(new Vector3(b.max.x, b.min.y, b.max.z));
+        var p4 = transform.TransformPoint(new Vector3(b.min.x, b.min.y, b.max.z));
 
         Debug.DrawLine(p1, p2, Color.blue, delay);
         Debug.DrawLine(p2, p3, Color.red, delay);
@@ -101,10 +100,10 @@ public class pointCloud : MonoBehaviour
         Debug.DrawLine(p4, p1, Color.magenta, delay);
 
         // top
-        var p5 = this.transform.TransformPoint(new Vector3(b.min.x, b.max.y, b.min.z));
-        var p6 = this.transform.TransformPoint(new Vector3(b.max.x, b.max.y, b.min.z));
-        var p7 = this.transform.TransformPoint(new Vector3(b.max.x, b.max.y, b.max.z));
-        var p8 = this.transform.TransformPoint(new Vector3(b.min.x, b.max.y, b.max.z));
+        var p5 = transform.TransformPoint(new Vector3(b.min.x, b.max.y, b.min.z));
+        var p6 = transform.TransformPoint(new Vector3(b.max.x, b.max.y, b.min.z));
+        var p7 = transform.TransformPoint(new Vector3(b.max.x, b.max.y, b.max.z));
+        var p8 = transform.TransformPoint(new Vector3(b.min.x, b.max.y, b.max.z));
 
         Debug.DrawLine(p5, p6, Color.blue, delay);
         Debug.DrawLine(p6, p7, Color.red, delay);

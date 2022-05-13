@@ -31,6 +31,9 @@ xrflyingcalibration.txt*
 EPSG.txt
 
 Assets/Resources/CCOM/PointCloud/Data
+Assets/Resources/CCOM/PointCloud/Data.meta
+Assets/ENCs
+Assets/ENCs.meta
 
 *.dll.old
 *.log

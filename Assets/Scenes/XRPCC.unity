@@ -7412,8 +7412,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3490f406d468e8c4c809acab2f48ed0b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  controller: {fileID: 756557910}
+  HMD: {fileID: 963194225}
+  pointCloudRoot: {fileID: 1570749247}
+  adjustENCAction:
+    m_UseReference: 1
+    m_Action:
+      m_Name: Adjust ENC
+      m_Type: 0
+      m_ExpectedControlType: 
+      m_Id: 1c7889cd-a428-460a-abf5-f2a50a36597e
+      m_Processors: 
+      m_Interactions: 
+      m_SingletonActionBindings: []
+      m_Flags: 0
+    m_Reference: {fileID: 4765834021669852332, guid: bc5d5383aa166484ea2f603c8a1dc8e1,
+      type: 3}
   resolution: 4096
-  EPSG: 3857
+  create: 0
+  geoReference: {fileID: 0}
+  pointCloud: {fileID: 0}
 --- !u!4 &1624364891
 Transform:
   m_ObjectHideFlags: 0

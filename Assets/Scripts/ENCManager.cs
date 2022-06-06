@@ -1,9 +1,15 @@
 using UnityEngine;
 using System.Collections;
 using UnityEngine.Networking;
+using UnityEngine.InputSystem;
 
 public class ENCManager : MonoBehaviour
 {
+    public GameObject controller;
+    public GameObject HMD;
+    public GameObject pointCloudRoot;
+
+    public InputActionProperty adjustENCAction;
 
     public int resolution = 4096;
 
@@ -13,17 +19,22 @@ public class ENCManager : MonoBehaviour
     public pointCloud pointCloud;
 
     private GameObject ENC;
+    private bool adjusting = false;
 
     void Start()
     {
+        adjustENCAction.action.started += ctx => BeginAdjustENCHeight();
+        adjustENCAction.action.canceled += ctx => EndAdjustENCHeight();
+
         create = false;
+        adjusting = false;
     }
 
     void Update()
     {
         if (geoReference == null)
             geoReference = FindObjectOfType<GEOReference>();
-         
+
         if (create)
         {
             if (geoReference != null && pointCloud != null)
@@ -31,6 +42,39 @@ public class ENCManager : MonoBehaviour
 
             create = false;
         }
+
+        var gaze = HMD.transform.forward;
+        var ctrlrDown = -controller.transform.up;
+
+        if (ENC != null)
+        {
+            if (Vector3.Dot(gaze, ctrlrDown) < 0)
+            {
+                ENC.SetActive(true);
+            }
+            else
+            {
+                adjusting = false;
+                ENC.SetActive(false);
+            }
+
+            if (adjusting)
+            {
+                var newheight = pointCloudRoot.transform.InverseTransformPoint(controller.transform.position).y;
+                ENC.transform.localPosition = new Vector3(ENC.transform.localPosition.x, newheight, ENC.transform.localPosition.z);
+            }
+        }
+
+    }
+
+    void OnEnable()
+    {
+        adjustENCAction.action.Enable();
+    }
+
+    void OnDisable()
+    {
+        adjustENCAction.action.Disable();
     }
 
     public void CreateENC(GEOReference geoRef, pointCloud pc)
@@ -67,9 +111,9 @@ public class ENCManager : MonoBehaviour
         if (epsg == 6344 || epsg == 0)
             epsg = 26915;
 
-        string url = $"https://gis.charttools.noaa.gov/arcgis/rest/services/MCS/ENCOnline/MapServer/exts/MaritimeChartService/WMSServer?LAYERS=0,1,2,3,4,5,6,7&FORMAT=image%2Fpng&CRS=EPSG:{epsg}&SERVICE=WMS&REQUEST=GetMap&WIDTH={resolution}&HEIGHT={resolution}&BBOX={minBBx},{minBBz},{maxBBx},{maxBBz}";        
+        string url = $"https://gis.charttools.noaa.gov/arcgis/rest/services/MCS/ENCOnline/MapServer/exts/MaritimeChartService/WMSServer?LAYERS=0,1,2,3,4,5,6,7&FORMAT=image%2Fpng&CRS=EPSG:{epsg}&SERVICE=WMS&REQUEST=GetMap&WIDTH={resolution}&HEIGHT={resolution}&BBOX={minBBx},{minBBz},{maxBBx},{maxBBz}";
 
-        Debug.Log(url);        
+        Debug.Log(url);
         UnityWebRequest www = UnityWebRequestTexture.GetTexture(url);
         yield return www.SendWebRequest();
 
@@ -105,4 +149,16 @@ public class ENCManager : MonoBehaviour
 #endif
     }
 
+    private void BeginAdjustENCHeight()
+    {
+        if (ENC == null || !ENC.activeInHierarchy)
+            return;
+
+        adjusting = true;
+    }
+
+    private void EndAdjustENCHeight()
+    {
+        adjusting = false;
+    }
 }

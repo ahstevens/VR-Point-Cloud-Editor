@@ -638,6 +638,34 @@
                     "isPartOfComposite": false
                 }
             ]
+        },
+        {
+            "name": "ENC",
+            "id": "924d85b1-b1b7-477d-b7c2-d27ab2026760",
+            "actions": [
+                {
+                    "name": "Adjust ENC Height",
+                    "type": "Button",
+                    "id": "9f9dc503-c6fe-4318-a634-72a99b17c966",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "602265a8-5522-4815-898a-12cc20866c9f",
+                    "path": "<XRController>{RightHand}/gripPressed",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Adjust ENC Height",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
         }
     ],
     "controlSchemes": []

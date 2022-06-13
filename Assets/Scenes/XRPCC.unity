@@ -7272,7 +7272,9 @@ MonoBehaviour:
   controller: {fileID: 756557910}
   HMD: {fileID: 963194225}
   pointCloudRoot: {fileID: 1570749247}
+  ENCShader: {fileID: 4800000, guid: ec5b8926f483a4b42b5399fb888e6c64, type: 3}
   errorTexture: {fileID: 10309, guid: 0000000000000000f000000000000000, type: 0}
+  fadeRate: 0.1
   adjustENCAction:
     m_UseReference: 1
     m_Action:

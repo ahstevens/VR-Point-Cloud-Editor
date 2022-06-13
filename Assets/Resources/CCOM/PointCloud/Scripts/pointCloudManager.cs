@@ -363,6 +363,8 @@ public class pointCloudManager : MonoBehaviour
             pcComponent.AABB_max_y = adjustmentResult[9];
             pcComponent.AABB_max_z = adjustmentResult[10];
 
+            pcComponent.UpdateBounds();
+
             pcComponent.EPSG = (int)(adjustmentResult[11]);
 
             //pointClouds[pointClouds.Count - 1].LODs = new List<LODInformation>();

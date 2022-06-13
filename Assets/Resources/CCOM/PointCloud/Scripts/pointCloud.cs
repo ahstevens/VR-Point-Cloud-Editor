@@ -36,8 +36,7 @@ public class pointCloud : MonoBehaviour
 
     private void Update()
     {
-        bounds.max = new Vector3((float)AABB_max_x, (float)AABB_max_y, (float)AABB_max_z);
-        bounds.min = new Vector3((float)AABB_min_x, (float)AABB_min_y, (float)AABB_min_z);
+        UpdateBounds();
 
         DrawBounds(bounds);
     }
@@ -59,6 +58,12 @@ public class pointCloud : MonoBehaviour
     //    Debug.Log("pointCloud OnDestroy!");
     //    pointCloudManager.UnLoad(ID);
     //}
+
+    public void UpdateBounds()
+    {
+        bounds.max = new Vector3((float)AABB_max_x, (float)AABB_max_y, (float)AABB_max_z);
+        bounds.min = new Vector3((float)AABB_min_x, (float)AABB_min_y, (float)AABB_min_z);
+    }
 
     public void ResetMiniature(float size = 1f, float distance = 0.75f)
     {

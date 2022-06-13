@@ -9,6 +9,8 @@ public class ENCManager : MonoBehaviour
     public GameObject HMD;
     public GameObject pointCloudRoot;
 
+    public Shader ENCShader;
+
     public Texture2D errorTexture;
 
     public InputActionProperty adjustENCAction;
@@ -92,7 +94,7 @@ public class ENCManager : MonoBehaviour
         ENC.transform.localPosition = pc.bounds.center;
 
         Renderer rend = ENC.GetComponent<Renderer>();
-        rend.material = new Material(Shader.Find("Unlit/Texture"));
+        rend.material = new Material(ENCShader);
 
         StartCoroutine(GetTexture(geoRef, pc));
     }

@@ -52,6 +52,10 @@ public class PointCloudUI : MonoBehaviour
 
     public Button flyButton;
 
+    public UnityEngine.XR.Interaction.Toolkit.XRInteractorLineVisual pointer;
+
+    private GameObject connector;
+
     private bool colorPickerActive;
 
     private bool menuOpen;
@@ -82,6 +86,10 @@ public class PointCloudUI : MonoBehaviour
         thisCanvas.enabled = false;
 
         dd = fileDropdown.GetComponent<Dropdown>();
+
+        pointer.enabled = false;
+        
+        connector = GameObject.Find("Connector");
 
         colorPickerActive = false;
         colorPicker.gameObject.SetActive(false);
@@ -124,6 +132,9 @@ public class PointCloudUI : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (connector == null)
+            connector = GameObject.Find("Connector");
+
         // just finished loading a file
         if (loading && !pointCloudManager.isWaitingToLoad)
         {
@@ -183,7 +194,13 @@ public class PointCloudUI : MonoBehaviour
         menuOpen = true;
 
         if (!xrf.enabled)
+        {
             editingCursor.SetActive(false);
+            connector.SetActive(false);
+
+            if (pointer)
+                pointer.enabled = true;
+        }
     }
 
     private void CloseMenu()
@@ -197,7 +214,13 @@ public class PointCloudUI : MonoBehaviour
         }
 
         if (!xrf.enabled)
+        {
             editingCursor.SetActive(true);
+            connector.SetActive(true);
+
+            if (pointer)
+                pointer.enabled = false;
+        }
     }
 
     public void LoadFile()

@@ -9,17 +9,19 @@ public class ENCManager : MonoBehaviour
     public GameObject HMD;
     public GameObject pointCloudRoot;
 
+    public Texture2D errorTexture;
+
     public InputActionProperty adjustENCAction;
 
     public int resolution = 4096;
 
-    public bool create = false;
+    public bool create;
 
     public GEOReference geoReference;
     public pointCloud pointCloud;
 
     private GameObject ENC;
-    private bool adjusting = false;
+    private bool adjusting;
 
     void Start()
     {
@@ -48,7 +50,7 @@ public class ENCManager : MonoBehaviour
 
         if (ENC != null)
         {
-            if (Vector3.Dot(gaze, ctrlrDown) < 0)
+            if (Vector3.Dot(gaze, ctrlrDown) < 0f)
             {
                 ENC.SetActive(true);
             }
@@ -86,6 +88,8 @@ public class ENCManager : MonoBehaviour
 
         ENC.transform.parent = pc.transform;
         ENC.transform.localRotation = Quaternion.Euler(90f, 0, 0);
+        ENC.transform.localScale = new Vector3(pc.bounds.extents.x * 2f, pc.bounds.extents.z * 2f, 1f);
+        ENC.transform.localPosition = pc.bounds.center;
 
         Renderer rend = ENC.GetComponent<Renderer>();
         rend.material = new Material(Shader.Find("Unlit/Texture"));
@@ -117,21 +121,22 @@ public class ENCManager : MonoBehaviour
         UnityWebRequest www = UnityWebRequestTexture.GetTexture(url);
         yield return www.SendWebRequest();
 
+        Texture2D myTexture;
+
         if (www.result != UnityWebRequest.Result.Success)
         {
             Debug.Log(www.error);
+
+            myTexture = errorTexture;
         }
         else
         {
-            Texture2D myTexture = ((DownloadHandlerTexture)www.downloadHandler).texture;
-
-            ENC.transform.localScale = new Vector3(pc.bounds.extents.x * 2, pc.bounds.extents.z * 2, 1);
-            ENC.transform.localPosition = pc.bounds.center;
+            myTexture = ((DownloadHandlerTexture)www.downloadHandler).texture;
 
             SaveTexture(myTexture, pc.name);
-
-            ENC.GetComponent<Renderer>().material.mainTexture = myTexture;
         }
+
+        ENC.GetComponent<Renderer>().material.mainTexture = myTexture;
     }
 
     private void SaveTexture(Texture2D texture, string name)

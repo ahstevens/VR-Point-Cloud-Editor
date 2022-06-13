@@ -29,6 +29,7 @@ public class PointCloudUI : MonoBehaviour
     public GameObject outlierNeighborValText;
     public GameObject showGroundPlaneButton;
     public GameObject groundPlane;
+    public GameObject createENCButton;
     public GameObject buildInfo;
 
     private Canvas thisCanvas;
@@ -97,6 +98,7 @@ public class PointCloudUI : MonoBehaviour
         loadingText.SetActive(false);
         loadingIcon.SetActive(false);
         resetPointCloudTransforms.gameObject.SetActive(false);
+        createENCButton.SetActive(false);
         unloadButton.SetActive(false);
 
         buildInfo.GetComponent<Text>().text = Application.version;
@@ -122,6 +124,7 @@ public class PointCloudUI : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        // just finished loading a file
         if (loading && !pointCloudManager.isWaitingToLoad)
         {
             loading = false;
@@ -130,6 +133,7 @@ public class PointCloudUI : MonoBehaviour
             UpdateDropdownFiles();
         }
 
+        // idle state
         if (!loading && !menuOpen)
         {
             thisCanvas.enabled = false;
@@ -137,13 +141,14 @@ public class PointCloudUI : MonoBehaviour
 
         if (!colorPickerActive)
         {
+            // reduced UI
             if (fileBrowsing || loading || saving)
             {
                 ActivateColorPickerUI(false);
 
                 ActivateLoadAndSaveUI(false);
 
-                flyButton.gameObject.SetActive(false);
+                //flyButton.gameObject.SetActive(false);
                 buildInfo.SetActive(false);
 
                 panel.SetActive(false);
@@ -154,10 +159,10 @@ public class PointCloudUI : MonoBehaviour
 
                 ActivateLoadAndSaveUI(true);
 
-                flyButton.gameObject.SetActive(true);
+                //flyButton.gameObject.SetActive(true);
                 buildInfo.SetActive(true);
 
-                panel.SetActive(true);
+                panel.SetActive(true);                
             }
         }
     }
@@ -293,6 +298,11 @@ public class PointCloudUI : MonoBehaviour
             saveButton.SetActive(pointCloudsLoaded);
             fileDropdown.SetActive(pointCloudsLoaded);
             resetPointCloudTransforms.gameObject.SetActive(pointCloudsLoaded);
+
+            createENCButton.SetActive(pointCloudsLoaded);
+            var encChild = GameObject.Find(dd.options[dd.value].text);
+            createENCButton.GetComponent<Button>().GetComponentInChildren<Text>().text = (encChild != null && encChild.transform.childCount > 0) ? "Reload ENC" : "Create ENC";
+
             unloadButton.SetActive(pointCloudsLoaded);
 
             ActivateOutliersUI(pointCloudsLoaded);            
@@ -304,6 +314,7 @@ public class PointCloudUI : MonoBehaviour
             saveButton.SetActive(false);
             fileDropdown.SetActive(false);
             resetPointCloudTransforms.gameObject.SetActive(false);
+            createENCButton.SetActive(false);
             unloadButton.SetActive(false);
             buildInfo.SetActive(false);
 
@@ -403,6 +414,8 @@ public class PointCloudUI : MonoBehaviour
         var pcs = pointCloudManager.getPointCloudsInScene();
         pointCloudManager.HighlightOutliers(outliersDistance, outlierNeighborCount, pcs[dd.value].ID);
         pointCloudManager.DeleteOutliers(pcs[dd.value].ID);
+        showingOutliers = false;
+        outlierShowButton.GetComponent<Button>().GetComponentInChildren<Text>().text = "Show";
     }
 
     public void AdjustOutlierDistance(System.Single dist)
@@ -445,5 +458,10 @@ public class PointCloudUI : MonoBehaviour
             flyButton.GetComponentInChildren<Text>().text = "EDIT MODE";
         else
             flyButton.GetComponentInChildren<Text>().text = "FLY MODE";
+    }
+
+    public void CreateENC()
+    {
+        FindObjectOfType<ENCManager>().create = true;
     }
 }

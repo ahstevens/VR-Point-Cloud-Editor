@@ -413,7 +413,7 @@ public class pointCloudManager : MonoBehaviour
                     var encm = FindObjectOfType<ENCManager>();
                     encm.geoReference = getReferenceScript();
                     encm.pointCloud = pcComponent;
-                    encm.create = true;
+                    encm.CreateENC(getReferenceScript(), pcComponent);
                 }
             }
 

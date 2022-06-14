@@ -520,7 +520,7 @@
                     "name": "Haptic",
                     "type": "PassThrough",
                     "id": "e220dff4-d0aa-4a85-8640-04419dc23ac4",
-                    "expectedControlType": "Haptic",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false

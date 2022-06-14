@@ -206,7 +206,8 @@ public class DeletePoints : MonoBehaviour
         {
             currentDeletionOpCount++;
 
-            UnityEngine.XR.OpenXR.Input.OpenXRInput.SendHapticImpulse(hapticAction.action, 0.5f, 0.01f);
+            // Send haptic feedback to right controller
+            UnityEngine.XR.OpenXR.Input.OpenXRInput.SendHapticImpulse(hapticAction.action, 0.5f, 0.01f, UnityEngine.InputSystem.XR.XRController.rightHand);
         }
     }
 

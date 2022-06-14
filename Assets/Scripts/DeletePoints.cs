@@ -31,6 +31,9 @@ public class DeletePoints : MonoBehaviour
 
     public float deleteRate = 0.25f;
 
+    public HapticPattern deleteHaptic;
+    public HapticPattern undoHaptic;
+
     private GameObject deletionSphere;
     private GameObject connectingRod;
     private GameObject pcRoot;
@@ -207,14 +210,16 @@ public class DeletePoints : MonoBehaviour
             currentDeletionOpCount++;
 
             // Send haptic feedback to right controller
-            UnityEngine.XR.OpenXR.Input.OpenXRInput.SendHapticImpulse(hapticAction.action, 0.5f, 0.01f, UnityEngine.InputSystem.XR.XRController.rightHand);
+            UnityEngine.XR.OpenXR.Input.OpenXRInput.SendHapticImpulse(hapticAction.action, deleteHaptic.amplitude, deleteHaptic.frequency, deleteHaptic.duration, UnityEngine.InputSystem.XR.XRController.rightHand);
         }
     }
 
     private void UndoDeletion()
-    {
+    {        
         if (deletionOps.Count > 0)
         {
+            UnityEngine.XR.OpenXR.Input.OpenXRInput.SendHapticImpulse(hapticAction.action, undoHaptic.amplitude, undoHaptic.frequency, undoHaptic.duration);//, UnityEngine.InputSystem.XR.XRController.rightHand);
+
             undo(deletionOps.Last());
 
             deletionOps.RemoveAt(deletionOps.Count - 1);

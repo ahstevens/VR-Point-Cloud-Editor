@@ -2829,6 +2829,8 @@ MonoBehaviour:
   minimumSphereOffset: 0.1
   maximumSphereOffset: 2
   deleteRate: 0.1
+  deleteHaptic: {fileID: 11400000, guid: eae79369b6dfcf7479c5751d83f42575, type: 2}
+  undoHaptic: {fileID: 11400000, guid: f82fd8e8aa2f3ea4bbf7501cd9048dd1, type: 2}
   CursorMaterial: {fileID: 2100000, guid: 9d1e6f75ab4598b4681297af1d3e027e, type: 2}
 --- !u!1 &756557910
 GameObject:

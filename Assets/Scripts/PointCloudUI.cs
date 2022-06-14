@@ -273,7 +273,7 @@ public class PointCloudUI : MonoBehaviour
 
     IEnumerator ShowSaveDialogCoroutine(string filename)
     {
-        yield return FileBrowser.WaitForSaveDialog(FileBrowser.PickMode.Folders, false, lastSaveDirectory == null ? Application.dataPath : lastSaveDirectory, filename, "Select Folder to Save " + filename, "Save");
+        yield return FileBrowser.WaitForSaveDialog(FileBrowser.PickMode.Folders, false, lastSaveDirectory == null ? Application.dataPath : lastSaveDirectory, null, "Select Folder to Save " + filename, "Save");
 
         Debug.Log(FileBrowser.Success);
 
@@ -323,8 +323,12 @@ public class PointCloudUI : MonoBehaviour
             resetPointCloudTransforms.gameObject.SetActive(pointCloudsLoaded);
 
             createENCButton.SetActive(pointCloudsLoaded);
-            var encChild = GameObject.Find(dd.options[dd.value].text);
-            createENCButton.GetComponent<Button>().GetComponentInChildren<Text>().text = (encChild != null && encChild.transform.childCount > 0) ? "Reload ENC" : "Create ENC";
+
+            if (pointCloudsLoaded)
+            {
+                var encChild = GameObject.Find(dd.options[dd.value].text);
+                createENCButton.GetComponent<Button>().GetComponentInChildren<Text>().text = (encChild != null && encChild.transform.childCount > 0) ? "Reload ENC" : "Create ENC";
+            }
 
             unloadButton.SetActive(pointCloudsLoaded);
 

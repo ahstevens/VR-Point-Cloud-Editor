@@ -182,6 +182,10 @@ public class pointCloudManager : MonoBehaviour
 
         isWaitingToLoad = true;
 
+#if UNITY_EDITOR
+        EditorUtility.DisplayProgressBar("Point Cloud Plugin", "Loading Point Cloud...", 0.5f);
+#endif
+
         if (pointClouds == null)
             pointClouds = new List<pointCloud>();
 
@@ -335,8 +339,8 @@ public class pointCloudManager : MonoBehaviour
 
             int[] north = new int[1];
             Marshal.Copy(North, north, 0, 1);
-			
-			Marshal.FreeHGlobal(IDStrPtr);
+
+            Marshal.FreeHGlobal(IDStrPtr);
 
             pcComponent.UTMZone = zone[0];
             pcComponent.North = north[0] == 1;
@@ -404,7 +408,7 @@ public class pointCloudManager : MonoBehaviour
             float y = 0f;
 
             // If we are re initializing existing objects, we should preserve y coordinate.
-			GameObject pcRoot = GameObject.Find("Point Clouds Root");
+            GameObject pcRoot = GameObject.Find("Point Clouds Root");
 
             if (pcRoot != null)
             {
@@ -429,7 +433,17 @@ public class pointCloudManager : MonoBehaviour
             pointCloudGameObject.transform.localScale = Vector3.one;
 
             isWaitingToLoad = false;
+
+#if UNITY_EDITOR
+            EditorUtility.ClearProgressBar();
+#endif
         }
+#if UNITY_EDITOR
+        else
+        {
+            EditorUtility.DisplayProgressBar("Point Cloud Plugin", "Loading Point Cloud...", UnityEngine.Random.Range(0f, 1f));
+        }
+#endif
     }
 
     void OnValidate()

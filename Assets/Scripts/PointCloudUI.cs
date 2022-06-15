@@ -273,7 +273,7 @@ public class PointCloudUI : MonoBehaviour
 
     IEnumerator ShowSaveDialogCoroutine(string filename)
     {
-        yield return FileBrowser.WaitForSaveDialog(FileBrowser.PickMode.Folders, false, lastSaveDirectory == null ? Application.dataPath : lastSaveDirectory, null, "Select Folder to Save " + filename, "Save");
+        yield return FileBrowser.WaitForSaveDialog(FileBrowser.PickMode.Folders, false, lastSaveDirectory == null ? lastLoadDirectory : lastSaveDirectory, null, "Select Folder to Save " + filename, "Save");
 
         Debug.Log(FileBrowser.Success);
 

@@ -46,7 +46,7 @@ public class ENCManager : MonoBehaviour
 
             create = false;
         }
-
+        
         var gaze = HMD.transform.forward;
         var ctrlrDown = -controller.transform.up;
 
@@ -91,10 +91,12 @@ public class ENCManager : MonoBehaviour
         ENC.transform.parent = pc.transform;
         ENC.transform.localRotation = Quaternion.Euler(90f, 0, 0);
         ENC.transform.localScale = new Vector3(pc.bounds.extents.x * 2f, pc.bounds.extents.z * 2f, 1f);
-        ENC.transform.localPosition = pc.bounds.center;
+        ENC.transform.localPosition = new Vector3(pc.bounds.center.x, pc.groundLevel, pc.bounds.center.z);
 
         Renderer rend = ENC.GetComponent<Renderer>();
         rend.material = new Material(ENCShader);
+
+        ENC.GetComponent<MeshRenderer>().enabled = false;
 
         StartCoroutine(GetTexture(geoRef, pc));
     }
@@ -139,6 +141,8 @@ public class ENCManager : MonoBehaviour
         }
 
         ENC.GetComponent<Renderer>().material.mainTexture = myTexture;
+
+        ENC.GetComponent<MeshRenderer>().enabled = true;
     }
 
     private void SaveTexture(Texture2D texture, string name)

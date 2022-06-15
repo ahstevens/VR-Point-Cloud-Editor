@@ -27,6 +27,8 @@ public class pointCloud : MonoBehaviour
 
     public int EPSG;
 
+    public float groundLevel;
+
     public Bounds bounds;
 
     void Start()

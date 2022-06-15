@@ -348,8 +348,8 @@ public class pointCloudManager : MonoBehaviour
             pcComponent.pathToRawData = rawDataPath;
 #endif
 
-            double[] adjustmentResult = new double[12];
-            Marshal.Copy(adjustmentArray, adjustmentResult, 0, 12);
+            double[] adjustmentResult = new double[13];
+            Marshal.Copy(adjustmentArray, adjustmentResult, 0, 13);
 
             pcComponent.adjustmentX = adjustmentResult[0];
             pcComponent.adjustmentY = adjustmentResult[1];
@@ -366,6 +366,8 @@ public class pointCloudManager : MonoBehaviour
             pcComponent.UpdateBounds();
 
             pcComponent.EPSG = (int)(adjustmentResult[11]);
+
+            pcComponent.groundLevel = (float)adjustmentResult[12];
 
             //pointClouds[pointClouds.Count - 1].LODs = new List<LODInformation>();
             //IntPtr maxDistance = Marshal.AllocHGlobal(8);

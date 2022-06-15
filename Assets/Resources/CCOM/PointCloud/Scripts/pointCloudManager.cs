@@ -183,7 +183,7 @@ public class pointCloudManager : MonoBehaviour
         isWaitingToLoad = true;
 
 #if UNITY_EDITOR
-        EditorUtility.DisplayProgressBar("Point Cloud Plugin", "Loading Point Cloud...", 0.5f);
+        EditorUtility.DisplayProgressBar("Point Cloud Plugin", "Loading Point Cloud...", 0f);
 #endif
 
         if (pointClouds == null)

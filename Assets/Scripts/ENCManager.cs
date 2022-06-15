@@ -116,7 +116,7 @@ public class ENCManager : MonoBehaviour
 
         int epsg = pc.EPSG;
 
-        if (epsg == 6344 || epsg == 0)
+        if (epsg == 6344 || epsg == 0 || epsg == 32767)
             epsg = 26915;
 
         string url = $"https://gis.charttools.noaa.gov/arcgis/rest/services/MCS/ENCOnline/MapServer/exts/MaritimeChartService/WMSServer?LAYERS=0,1,2,3,4,5,6,7&FORMAT=image%2Fpng&CRS=EPSG:{epsg}&SERVICE=WMS&REQUEST=GetMap&WIDTH={resolution}&HEIGHT={resolution}&BBOX={minBBx},{minBBz},{maxBBx},{maxBBz}";

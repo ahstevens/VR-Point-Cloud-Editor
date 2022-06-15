@@ -121,22 +121,6 @@
       },
       "url": "https://packages.unity.com"
     },
-    "com.virgis.conda-extensions": {
-      "version": "1.0.3",
-      "depth": 1,
-      "source": "registry",
-      "dependencies": {},
-      "url": "https://package.openupm.com"
-    },
-    "com.virgis.gdal": {
-      "version": "3.5.1",
-      "depth": 0,
-      "source": "registry",
-      "dependencies": {
-        "com.virgis.conda-extensions": "1.0.3"
-      },
-      "url": "https://package.openupm.com"
-    },
     "com.unity.modules.ai": {
       "version": "1.0.0",
       "depth": 0,

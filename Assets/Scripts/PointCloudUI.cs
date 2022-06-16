@@ -132,6 +132,7 @@ public class PointCloudUI : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+
         if (connector == null)
             connector = GameObject.Find("Connector");
 
@@ -176,6 +177,8 @@ public class PointCloudUI : MonoBehaviour
                 panel.SetActive(true);                
             }
         }
+
+        BlockUnloadWhileSaving();
     }
 
     private void OnEnable()
@@ -490,5 +493,31 @@ public class PointCloudUI : MonoBehaviour
     public void CreateENC()
     {
         FindObjectOfType<ENCManager>().create = true;
+    }
+
+    private void BlockUnloadWhileSaving()
+    {
+        //unloadButton.GetComponent<Button>().enabled = pointCloudManager.IsLastAsyncSaveFinished();
+        //unloadButton.SetActive(pointCloudManager.IsLastAsyncSaveFinished());
+
+        if (pointCloudManager.IsLastAsyncSaveFinished()) // not saving
+        {
+            saveButton.GetComponent<Button>().interactable = true;
+            saveButton.GetComponentInChildren<Text>().fontSize = 60;
+            saveButton.GetComponentInChildren<Text>().text = "Save";
+
+            unloadButton.GetComponent<Button>().interactable = true;
+        }
+        else // saving
+        {
+            saveButton.GetComponent<Button>().interactable = false;
+            saveButton.GetComponentInChildren<Text>().fontSize = 36;
+
+
+            int numberOfElipsis = 0 + (int)(4f * (Time.timeSinceLevelLoad % 1f));
+            saveButton.GetComponentInChildren<Text>().text = "Saving" + new string('.', numberOfElipsis) + new string(' ', 3 - numberOfElipsis);
+
+            unloadButton.GetComponent<Button>().interactable = false;
+        }
     }
 }

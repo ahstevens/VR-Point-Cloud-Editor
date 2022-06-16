@@ -63,6 +63,8 @@ public class pointCloudManager : MonoBehaviour
     [DllImport("PointCloudPlugin")]
     static public extern void SaveToOwnFormatFileFromUnity(IntPtr filePath, IntPtr pointCloudID);
     [DllImport("PointCloudPlugin")]
+    static public extern bool IsLastAsyncSaveFinished();
+    [DllImport("PointCloudPlugin")]
     static public extern void RequestPointCloudAdjustmentFromUnity(IntPtr adjustment, IntPtr ID);
     [DllImport("PointCloudPlugin")]
     static public extern void RequestPointCloudUTMZoneFromUnity(IntPtr UTMZone, IntPtr North, IntPtr ID);

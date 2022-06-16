@@ -34,6 +34,8 @@ Assets/Resources/CCOM/PointCloud/Data
 Assets/Resources/CCOM/PointCloud/Data.meta
 Assets/ENCs
 Assets/ENCs.meta
+Assets/Conda
+Assets/Conda.meta
 
 *.dll.old
 *.log

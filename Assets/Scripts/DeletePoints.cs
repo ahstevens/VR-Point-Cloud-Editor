@@ -1,10 +1,13 @@
 using System;
 using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using UnityEngine.InputSystem;
 using UnityEditor;
+using OSGeo;
+using OSGeo.OSR;
 
 public class DeletePoints : MonoBehaviour
 {
@@ -60,6 +63,22 @@ public class DeletePoints : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        GdalConfiguration.ConfigureGdal();
+
+        SpatialReference src = new SpatialReference("");
+        src.ImportFromEPSG(6344);
+        Debug.Log("SOURCE IsGeographic:" + src.IsGeographic() + " IsProjected:" + src.IsProjected());
+        SpatialReference dst = new SpatialReference("");
+        dst.ImportFromEPSG(4326);
+        Debug.Log("DEST IsGeographic:" + dst.IsGeographic() + " IsProjected:" + dst.IsProjected());
+
+        CoordinateTransformation ct = new CoordinateTransformation(src, dst);
+        double[] p = new double[3];
+        p[0] = 783382.73625; p[1] = 3313812.3895; p[2] = 0;
+        ct.TransformPoint(p);
+        Debug.Log("x:" + p[0] + " y:" + p[1] + " z:" + p[2]);
+
+
         deletionSphere = this.gameObject;
 
         deleteSphereAction.action.started += ctx => OnBeginDeleteSphere();
@@ -215,15 +234,21 @@ public class DeletePoints : MonoBehaviour
     }
 
     private void UndoDeletion()
-    {        
+    {
         if (deletionOps.Count > 0)
         {
-            UnityEngine.XR.OpenXR.Input.OpenXRInput.SendHapticImpulse(hapticAction.action, undoHaptic.amplitude, undoHaptic.frequency, undoHaptic.duration);//, UnityEngine.InputSystem.XR.XRController.rightHand);
+            var numHalfSteps = deletionOps.Count;
+            var frequency = undoHaptic.frequency * Mathf.Pow(2, numHalfSteps / 12f);
+            UnityEngine.XR.OpenXR.Input.OpenXRInput.SendHapticImpulse(hapticAction.action, undoHaptic.amplitude, frequency, undoHaptic.duration);//, UnityEngine.InputSystem.XR.XRController.rightHand);
 
             undo(deletionOps.Last());
 
             deletionOps.RemoveAt(deletionOps.Count - 1);
-        }        
+        }
+        else
+        {
+            StartCoroutine(NoMoreUndo());
+        }
     }
 
     private void OnBeginMoveAndResizeSphere()
@@ -259,6 +284,7 @@ public class DeletePoints : MonoBehaviour
         center[0] = deletionSphere.transform.position.x;
         center[1] = deletionSphere.transform.position.y;
         center[2] = deletionSphere.transform.position.z;
+        
         UpdateDeletionSpherePositionFromUnity(toDelete.AddrOfPinnedObject(), (deletionSphere.transform.localScale.x) / scalingRoot.transform.localScale.x);
     }
 
@@ -369,5 +395,14 @@ public class DeletePoints : MonoBehaviour
         {
             deletionSphere.transform.localPosition = Vector3.forward * currentRadius;
         }
+    }
+
+    IEnumerator NoMoreUndo()
+    {
+        UnityEngine.XR.OpenXR.Input.OpenXRInput.SendHapticImpulse(hapticAction.action, 1f, undoHaptic.frequency, 0.05f);
+        yield return new WaitForSeconds(0.1f);
+        UnityEngine.XR.OpenXR.Input.OpenXRInput.SendHapticImpulse(hapticAction.action, 0.5f, undoHaptic.frequency * Mathf.Pow(2, -2 / 12f), 0.05f);
+        yield return new WaitForSeconds(0.1f);
+        UnityEngine.XR.OpenXR.Input.OpenXRInput.SendHapticImpulse(hapticAction.action, 0.25f, undoHaptic.frequency * Mathf.Pow(2, -4 / 12f), 0.05f);
     }
 }

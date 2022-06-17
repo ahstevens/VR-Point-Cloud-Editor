@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: UndoHaptic
   m_EditorClassIdentifier: 
   amplitude: 0.5
-  frequency: 190
+  frequency: 120
   duration: 0.1

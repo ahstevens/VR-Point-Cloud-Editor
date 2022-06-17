@@ -15,19 +15,6 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 #endif
 
-public class debugNodeBox
-{
-    public Vector3 center;
-    public float size;
-    public int depth;
-    public debugNodeBox(Vector3 center, float size, int depth)
-    {
-        this.center = center;
-        this.size = size;
-        this.depth = depth;
-    }
-}
-
 public class LODInformation
 {
     public float maxDistance;
@@ -126,7 +113,6 @@ public class pointCloudManager : MonoBehaviour
     public static bool isWaitingToLoad = false;
     public static string filePathForAsyncLoad = "";
     public static float localLODTransitionDistance = 3500.0f;
-    public static bool isLookingForClosestPoint = false;
     public static bool highlightDeletedPoints = false;
 
     private static bool renderPointClouds = true;
@@ -230,11 +216,7 @@ public class pointCloudManager : MonoBehaviour
             {
                 if (pointClouds[i].ID == pointCloudID)
                 {
-#if UNITY_EDITOR
                     DestroyImmediate(pointClouds[i].gameObject);
-#else
-					Destroy(pointClouds[i].gameObject);
-#endif
                     break;
                 }
             }
@@ -246,11 +228,7 @@ public class pointCloudManager : MonoBehaviour
                 // Should fix that.
                 GameObject geoReference = GameObject.Find("UnityZeroGeoReference");
                 if (geoReference != null)
-#if UNITY_EDITOR
                     DestroyImmediate(geoReference);
-#else
-					Destroy(geoReference);
-#endif
             }
         }
 
@@ -327,7 +305,7 @@ public class pointCloudManager : MonoBehaviour
             GameObject pointCloudGameObject = new GameObject(name);
 
             // Add script to a point cloud game object.
-            var pcComponent = pointCloudGameObject.AddComponent<pointCloud>();
+            var pcComponent = pointCloudGameObject.AddComponent<pointCloud>();            
             pcComponent.ID = ID;
 
             IntPtr adjustmentArray = Marshal.AllocHGlobal(8 * 12);
@@ -361,39 +339,24 @@ public class pointCloudManager : MonoBehaviour
             pcComponent.adjustmentY = adjustmentResult[1];
             pcComponent.adjustmentZ = adjustmentResult[2];
 
-            pcComponent.AABB_min_x = adjustmentResult[5];
-            pcComponent.AABB_min_y = adjustmentResult[6];
-            pcComponent.AABB_min_z = adjustmentResult[7];
+            pcComponent.bounds = new Bounds();
 
-            pcComponent.AABB_max_x = adjustmentResult[8];
-            pcComponent.AABB_max_y = adjustmentResult[9];
-            pcComponent.AABB_max_z = adjustmentResult[10];
+            pcComponent.bounds.SetMinMax(
+                new Vector3(
+                    (float)adjustmentResult[5],
+                    (float)adjustmentResult[6], 
+                    (float)adjustmentResult[7]),
+                new Vector3(
+                    (float)adjustmentResult[8],
+                    (float)adjustmentResult[9],
+                    (float)adjustmentResult[10])
+                );
 
-            pcComponent.UpdateBounds();
+            Debug.Log(pcComponent.bounds);
 
             pcComponent.EPSG = (int)(adjustmentResult[11]);
 
             pcComponent.groundLevel = (float)adjustmentResult[12];
-
-            //pointClouds[pointClouds.Count - 1].LODs = new List<LODInformation>();
-            //IntPtr maxDistance = Marshal.AllocHGlobal(8);
-            //IntPtr targetPercentOFPoints = Marshal.AllocHGlobal(8);
-
-            //for (int i = 0; i < 4; i++)
-            //{
-            //    pointClouds[pointClouds.Count - 1].LODs.Add(new LODInformation());
-            //    RequestLODInfoFromUnity(maxDistance, targetPercentOFPoints, i, pointClouds.Count - 1);
-            //    float[] distance = new float[1];
-            //    Marshal.Copy(maxDistance, distance, 0, 1);
-            //    pointClouds[pointClouds.Count - 1].LODs[i].maxDistance = distance[0];
-
-            //    float[] percentOFPoints = new float[1];
-            //    Marshal.Copy(targetPercentOFPoints, percentOFPoints, 0, 1);
-            //    pointClouds[pointClouds.Count - 1].LODs[i].targetPercentOFPoints = percentOFPoints[0];
-            //}
-
-            //Marshal.FreeHGlobal(maxDistance);
-            //Marshal.FreeHGlobal(targetPercentOFPoints);
 
             if (getReferenceScript() == null)
             {
@@ -485,9 +448,9 @@ public class pointCloudManager : MonoBehaviour
     {
         if (state == PlayModeStateChange.ExitingPlayMode)
         {
-            foreach (var pc in pointCloudManager.getPointCloudsInScene())
+            foreach (var pc in getPointCloudsInScene())
             {
-                pointCloudManager.UnLoad(pc.ID);
+                UnLoad(pc.ID);
             }
         }
     }
@@ -496,138 +459,11 @@ public class pointCloudManager : MonoBehaviour
     void Start()
     {
         OnValidate();
-        //InvokeRepeating("checkIsAsyncLoadFinished", 1.0f, 0.3f);
-        //reInitialize();
-#if AABB_TEST
-        double lastInterval = Time.realtimeSinceStartup;
-
-        double time = (Time.realtimeSinceStartup - lastInterval) * 1000;
-        Debug.Log("Octree build time: " + time + " ms.");
-
-        List<debugNodeBox> list = new List<debugNodeBox>();
-        int testSize = RequestOctreeBoundsCountFromUnity();
-        // 8 bytes for 64 bit dll
-        IntPtr testArrayToFill = Marshal.AllocHGlobal(testSize * 8 * 5);
-        RequestOctreeBoundsFromUnity(testArrayToFill);
-
-        float[] testArray = new float[testSize * 5];
-        Marshal.Copy(testArrayToFill, testArray, 0, testSize * 5);
-
-        for (int i = 0; i < testSize; i++)
-        {
-            list.Add(new debugNodeBox(new Vector3(testArray[i * 5], testArray[i * 5 + 1], testArray[i * 5 + 2]), testArray[i * 5 + 3], (int)testArray[i * 5 + 4]));
-        }
-        Marshal.FreeHGlobal(testArrayToFill);
-
-        int boxCount = list.Count;
-        LineRenderer[] lines = new LineRenderer[boxCount * 12];
-
-        int debugMaxNodeDepth = RequestOctreeDebugMaxNodeDepthFromUnity();
-        octreeDepthViualizations = new List<List<LineRenderer>>();
-        for (int i = 0; i < debugMaxNodeDepth + 1; i++)
-        {
-            octreeDepthViualizations.Add(new List<LineRenderer>());
-        }
-
-        //lastInterval = Time.realtimeSinceStartup;
-        for (int i = 0; i < boxCount; i++)
-        {
-            float currentSize = list[i].size / 2.0f;
-            for (int j = 0; j < 12; j++)
-            {
-                GameObject gObject = new GameObject("MyGameObject");
-                lines[i * 12 + j] = gObject.AddComponent<LineRenderer>();
-                lines[i * 12 + j].material = new Material(Shader.Find("Sprites/Default"));
-
-                octreeDepthViualizations[list[i].depth].Add(lines[i * 12 + j]);
-
-                if (list[i].depth == 1)
-                {
-                    lines[i * 12 + j].startColor = Color.green;
-                    lines[i * 12 + j].endColor = Color.green;
-                }
-                else if (list[i].depth == 2)
-                {
-                    lines[i * 12 + j].startColor = Color.blue;
-                    lines[i * 12 + j].endColor = Color.blue;
-                }
-                else if (list[i].depth == 3)
-                {
-                    lines[i * 12 + j].startColor = Color.yellow;
-                    lines[i * 12 + j].endColor = Color.yellow;
-                }
-                else if (list[i].depth == 4)
-                {
-                    lines[i * 12 + j].startColor = Color.cyan;
-                    lines[i * 12 + j].endColor = Color.cyan;
-                }
-                else if (list[i].depth == 5)
-                {
-                    lines[i * 12 + j].startColor = Color.magenta;
-                    lines[i * 12 + j].endColor = Color.magenta;
-                }
-                else
-                {
-                    lines[i * 12 + j].startColor = Color.red;
-                    lines[i * 12 + j].endColor = Color.red;
-                }
-
-                lines[i * 12 + j].widthMultiplier = 0.5f;
-                lines[i * 12 + j].positionCount = 2;
-            }
-
-            list[i].center = pointClouds[pointClouds.Count - 1].inSceneRepresentation.transform.localToWorldMatrix * new Vector4(list[i].center.x, list[i].center.y, list[i].center.z, 1.0f);
-
-            // bottom
-            lines[i * 12 + 0].SetPosition(0, list[i].center + new Vector3(-currentSize, -currentSize, -currentSize));
-            lines[i * 12 + 0].SetPosition(1, list[i].center + new Vector3(-currentSize, -currentSize, currentSize));
-            lines[i * 12 + 1].SetPosition(0, list[i].center + new Vector3(-currentSize, -currentSize, currentSize));
-            lines[i * 12 + 1].SetPosition(1, list[i].center + new Vector3(currentSize, -currentSize, currentSize));
-            lines[i * 12 + 2].SetPosition(0, list[i].center + new Vector3(currentSize, -currentSize, currentSize));
-            lines[i * 12 + 2].SetPosition(1, list[i].center + new Vector3(currentSize, -currentSize, -currentSize));
-            lines[i * 12 + 3].SetPosition(0, list[i].center + new Vector3(currentSize, -currentSize, -currentSize));
-            lines[i * 12 + 3].SetPosition(1, list[i].center + new Vector3(-currentSize, -currentSize, -currentSize));
-
-            // vertical connections
-            lines[i * 12 + 4].SetPosition(0, list[i].center + new Vector3(-currentSize, -currentSize, -currentSize));
-            lines[i * 12 + 4].SetPosition(1, list[i].center + new Vector3(-currentSize, currentSize, -currentSize));
-            lines[i * 12 + 5].SetPosition(0, list[i].center + new Vector3(-currentSize, -currentSize, currentSize));
-            lines[i * 12 + 5].SetPosition(1, list[i].center + new Vector3(-currentSize, currentSize, currentSize));
-            lines[i * 12 + 6].SetPosition(0, list[i].center + new Vector3(currentSize, -currentSize, currentSize));
-            lines[i * 12 + 6].SetPosition(1, list[i].center + new Vector3(currentSize, currentSize, currentSize));
-            lines[i * 12 + 7].SetPosition(0, list[i].center + new Vector3(currentSize, -currentSize, -currentSize));
-            lines[i * 12 + 7].SetPosition(1, list[i].center + new Vector3(currentSize, currentSize, -currentSize));
-
-            // top
-            lines[i * 12 + 8].SetPosition(0, list[i].center + new Vector3(-currentSize, currentSize, -currentSize));
-            lines[i * 12 + 8].SetPosition(1, list[i].center + new Vector3(-currentSize, currentSize, currentSize));
-            lines[i * 12 + 9].SetPosition(0, list[i].center + new Vector3(-currentSize, currentSize, currentSize));
-            lines[i * 12 + 9].SetPosition(1, list[i].center + new Vector3(currentSize, currentSize, currentSize));
-            lines[i * 12 + 10].SetPosition(0, list[i].center + new Vector3(currentSize, currentSize, currentSize));
-            lines[i * 12 + 10].SetPosition(1, list[i].center + new Vector3(currentSize, currentSize, -currentSize));
-            lines[i * 12 + 11].SetPosition(0, list[i].center + new Vector3(currentSize, currentSize, -currentSize));
-            lines[i * 12 + 11].SetPosition(1, list[i].center + new Vector3(-currentSize, currentSize, -currentSize));
-        }
-
-        time = (Time.realtimeSinceStartup - lastInterval) * 1000;
-        Debug.Log("line list time: " + time + " ms.");
-#endif // AABB_TEST
     }
-
-#if AABB_TEST
-    int lastVisualizationDepth = -1;
-    public int visualizedDepth = -1;
-#endif // AABB_TEST
-    static bool requestWasSend = false;
 
     void Update()
     {
         checkIsAsyncLoadFinished();
-
-        if (isLookingForClosestPoint && !requestWasSend)
-        {
-            requestWasSend = true;
-        }
 
         if (Camera.onPostRender != OnPostRenderCallback && pointClouds == null)
         {
@@ -637,27 +473,6 @@ public class pointCloudManager : MonoBehaviour
         {
             Camera.onPostRender = OnPostRenderCallback;
         }
-
-#if AABB_TEST
-        if (visualizedDepth != lastVisualizationDepth)
-        {
-            lastVisualizationDepth = visualizedDepth;
-            for (int i = 0; i < octreeDepthViualizations.Count; i++)
-            {
-                for (int j = 0; j < octreeDepthViualizations[i].Count; j++)
-                {
-                    if (visualizedDepth == i)
-                    {
-                        octreeDepthViualizations[i][j].enabled = true;
-                    }
-                    else
-                    {
-                        octreeDepthViualizations[i][j].enabled = false;
-                    }
-                }
-            }
-        }
-#endif // AABB_TEST
 
         if (Keyboard.current.pKey.wasPressedThisFrame)
         {
@@ -711,41 +526,6 @@ public class pointCloudManager : MonoBehaviour
 
             pointerTocameraToWorld.Free();
             pointerProjection.Free();
-
-#if FRUSTUMCULLING_TEST
-            if (frustumCullingTestCamera != null)
-            {
-                Matrix4x4 cameraToWorld_ = frustumCullingTestCamera.cameraToWorldMatrix;
-                cameraToWorld_ = cameraToWorld_.inverse;
-                float[] cameraToWorldArray_ = new float[16];
-                for (int i = 0; i < 4; i++)
-                {
-                    for (int j = 0; j < 4; j++)
-                    {
-                        cameraToWorldArray_[i * 4 + j] = cameraToWorld_[i, j];
-                    }
-                }
-                GCHandle pointerTocameraToWorld_ = GCHandle.Alloc(cameraToWorldArray_, GCHandleType.Pinned);
-
-                //Matrix4x4 projection = cam.nonJitteredProjectionMatrix;
-                Matrix4x4 projection_ = GL.GetGPUProjectionMatrix(frustumCullingTestCamera.projectionMatrix, true);
-
-                float[] projectionArray_ = new float[16];
-                for (int i = 0; i < 4; i++)
-                {
-                    for (int j = 0; j < 4; j++)
-                    {
-                        projectionArray_[i * 4 + j] = projection_[i, j];
-                    }
-                }
-                GCHandle pointerProjection_ = GCHandle.Alloc(projectionArray_, GCHandleType.Pinned);
-
-                updateTestCamera(pointerTocameraToWorld_.AddrOfPinnedObject(), pointerProjection_.AddrOfPinnedObject());
-
-                pointerTocameraToWorld_.Free();
-                pointerProjection_.Free();
-            }
-#endif // FRUSTUMCULLING_TEST
 
             Matrix4x4 world;
             float[] worldArray = new float[16];
@@ -813,16 +593,6 @@ public class pointCloudManager : MonoBehaviour
     {
         setLODSystemActive(active);
     }
-
-    //public static void SetLODTransitionDistance(float LODTransitionDistance)
-    //{
-    //    // float[] worldArray = new float[16];
-    //    localLODTransitionDistance = LODTransitionDistance;
-
-    //    GCHandle valuePointer = GCHandle.Alloc(LODTransitionDistance, GCHandleType.Pinned);
-    //    setLODTransitionDistance(valuePointer.AddrOfPinnedObject());
-    //    valuePointer.Free();
-    //}
 
     public static void SetLODInfo(float maxDistance, float targetPercentOFPoints, int LODIndex, int pointCloudIndex)
     {
@@ -967,106 +737,7 @@ public class pointCloudManager : MonoBehaviour
         lineToClosestPoint.SetPosition(1, closestPointPosition);
 
         return pointRepresentation;
-
-        //GameObject pointRepresentation = GameObject.Find("PointRepresentation_PointCloudPlugin_Fast");
-        //if (pointRepresentation == null && EditorApplication.isPlaying)
-        //{
-        //    pointRepresentation = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        //    pointRepresentation.name = "PointRepresentation_PointCloudPlugin_Fast";
-        //    pointRepresentation.GetComponent<Renderer>().material.SetColor("_Color", Color.blue);
-        //}
-
-        //closestPointPosition = new Vector3(10.0f, 10.0f, 10.0f);
-
-        //float[] centerPosition = new float[3];
-        //centerPosition[0] = pointRepresentation.transform.position.x;
-        //centerPosition[1] = pointRepresentation.transform.position.y;
-        //centerPosition[2] = pointRepresentation.transform.position.z;
-
-        //GCHandle centerPositionPointer = GCHandle.Alloc(centerPosition, GCHandleType.Pinned);
-        //RequestClosestPointInSphereFromUnity(centerPositionPointer.AddrOfPinnedObject(), 0.0f);
-
-        //float[] closestPointPositionFromDLL = new float[3];
-        //Marshal.Copy(centerPositionPointer.AddrOfPinnedObject(), closestPointPositionFromDLL, 0, 3);
-        //closestPointPosition.x = closestPointPositionFromDLL[0];
-        //closestPointPosition.y = closestPointPositionFromDLL[1];
-        //closestPointPosition.z = closestPointPositionFromDLL[2];
-
-        //centerPositionPointer.Free();
-        //pointRepresentation.transform.position = closestPointPosition;
-
-        //if (lineToClosestPoint == null && EditorApplication.isPlaying)
-        //{
-        //    GameObject gObject = new GameObject("lineToClosestPoint_LineRenderer");
-        //    lineToClosestPoint = gObject.AddComponent<LineRenderer>();
-        //    lineToClosestPoint.material = new Material(Shader.Find("Sprites/Default"));
-        //    lineToClosestPoint.startColor = Color.green;
-        //    lineToClosestPoint.endColor = Color.green;
-
-        //    lineToClosestPoint.widthMultiplier = 2.0f;
-        //    lineToClosestPoint.positionCount = 2;
-        //}
-
-        //lineToClosestPoint.SetPosition(0, pointRepresentation.transform.position);
-        //lineToClosestPoint.SetPosition(1, closestPointPosition);
-
-        //return pointRepresentation;
     }
-
-    //public static bool test_Closest_Point()
-    //{
-    //    float[] initialPointPosition = new float[3];
-    //    GCHandle initialPointPositionPointer = GCHandle.Alloc(initialPointPosition, GCHandleType.Pinned);
-
-    //    float lastInterval = 0.0f;
-    //    float firstAlgTime = 0.0f;
-    //    float secondAlgTime = 0.0f;
-
-    //    for (int i = 0; i < 100; i++)
-    //    {
-    //        Vector3 randomPoint = new Vector3(UnityEngine.Random.value * 2000.0f - 1000.0f, UnityEngine.Random.value * 2000.0f - 1000.0f, UnityEngine.Random.value * 2000.0f - 1000.0f);
-
-    //        initialPointPosition[0] = randomPoint.x;
-    //        initialPointPosition[1] = randomPoint.y;
-    //        initialPointPosition[2] = randomPoint.z;
-
-    //        lastInterval = Time.realtimeSinceStartup;
-    //        RequestClosestPointInSphereFromUnity(initialPointPositionPointer.AddrOfPinnedObject(), 0.0f);
-    //        Debug.Log("delta time: " + (Time.realtimeSinceStartup - lastInterval) * 1000 + " ms.");
-    //        firstAlgTime += (Time.realtimeSinceStartup - lastInterval) * 1000;
-            
-    //        float[] closestPointPositionFromDLL_Fast = new float[3];
-    //        Marshal.Copy(initialPointPositionPointer.AddrOfPinnedObject(), closestPointPositionFromDLL_Fast, 0, 3);
-
-    //        initialPointPosition[0] = randomPoint.x;
-    //        initialPointPosition[1] = randomPoint.y;
-    //        initialPointPosition[2] = randomPoint.z;
-
-    //        lastInterval = Time.realtimeSinceStartup;
-    //        RequestClosestPointToPointFromUnity(initialPointPositionPointer.AddrOfPinnedObject());
-    //        secondAlgTime += (Time.realtimeSinceStartup - lastInterval) * 1000;
-
-    //        float[] closestPointPositionFromDLL = new float[3];
-    //        Marshal.Copy(initialPointPositionPointer.AddrOfPinnedObject(), closestPointPositionFromDLL, 0, 3);
-
-    //        if (closestPointPositionFromDLL_Fast[0] != closestPointPositionFromDLL[0] ||
-    //            closestPointPositionFromDLL_Fast[1] != closestPointPositionFromDLL[1] ||
-    //            closestPointPositionFromDLL_Fast[2] != closestPointPositionFromDLL[2])
-    //        {
-    //            initialPointPositionPointer.Free();
-    //            return false;
-    //        }
-    //    }
-
-    //    Debug.Log("naive algorithm time: " + secondAlgTime + " ms.");
-    //    Debug.Log("Octree with binary search area decrease time: " + firstAlgTime + " ms.");
-
-    //    initialPointPositionPointer.Free();
-
-    //    Debug.Log("Both algorithms produced same results!");
-
-    //    return true;
-    //}
 
     public static void setHighlightDeletedPoints(bool active)
     {

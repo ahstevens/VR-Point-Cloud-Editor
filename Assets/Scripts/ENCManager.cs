@@ -109,10 +109,10 @@ public class ENCManager : MonoBehaviour
 
     IEnumerator GetTexture(GEOReference geoRef, pointCloud pc)
     {
-        double minBBx = geoRef.realWorldX + pc.AABB_min_x;
-        double maxBBx = geoRef.realWorldX + pc.AABB_max_x;
-        double minBBz = geoRef.realWorldZ + pc.AABB_min_z;
-        double maxBBz = geoRef.realWorldZ + pc.AABB_max_z;
+        double minBBx = geoRef.realWorldX + pc.bounds.min.x;
+        double maxBBx = geoRef.realWorldX + pc.bounds.max.x;
+        double minBBz = geoRef.realWorldZ + pc.bounds.min.z;
+        double maxBBz = geoRef.realWorldZ + pc.bounds.max.z;
 
         int epsg = pc.EPSG;
 

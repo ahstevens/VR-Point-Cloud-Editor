@@ -36,6 +36,7 @@ Assets/ENCs
 Assets/ENCs.meta
 Assets/Conda
 Assets/Conda.meta
+Assets/StreamingAssets*
 
 *.dll.old
 *.log

@@ -32,7 +32,7 @@ public class pointCloudManager : MonoBehaviour
     private static extern IntPtr GetRenderEventFunc();
     [DllImport("PointCloudPlugin")]
     
-    private static extern bool RequestToDeleteFromUnity(IntPtr center, float size);
+    private static extern int RequestToDeleteFromUnity(IntPtr center, float size);
     [DllImport("PointCloudPlugin")]
     private static extern int RequestOctreeBoundsCountFromUnity();
     [DllImport("PointCloudPlugin")]
@@ -116,6 +116,8 @@ public class pointCloudManager : MonoBehaviour
     public static bool highlightDeletedPoints = false;
 
     private static bool renderPointClouds = true;
+
+    private static Material deletedPointsBox;
 
     static private GEOReference getReferenceScript()
     {
@@ -386,7 +388,7 @@ public class pointCloudManager : MonoBehaviour
                     var encm = FindObjectOfType<ENCManager>();
                     encm.geoReference = getReferenceScript();
                     encm.pointCloud = pcComponent;
-                    encm.CreateENC(getReferenceScript(), pcComponent);
+                    encm.StartCoroutine(encm.CreateENC(getReferenceScript(), pcComponent));
                 }
             }
 
@@ -396,6 +398,8 @@ public class pointCloudManager : MonoBehaviour
 
             pointCloudGameObject.transform.localRotation = Quaternion.identity;
             pointCloudGameObject.transform.localScale = Vector3.one;
+
+            AddSecretBoxForDeletedPoints(pointCloudGameObject);
 
             isWaitingToLoad = false;
 
@@ -458,11 +462,16 @@ public class pointCloudManager : MonoBehaviour
 
     void Start()
     {
+        deletedPointsBox = new Material(Shader.Find("Unlit/Color"));
+        deletedPointsBox.color = Camera.main.backgroundColor;
+
         OnValidate();
     }
 
     void Update()
     {
+        deletedPointsBox.color = Camera.main.backgroundColor;
+
         checkIsAsyncLoadFinished();
 
         if (Camera.onPostRender != OnPostRenderCallback && pointClouds == null)
@@ -808,5 +817,21 @@ public class pointCloudManager : MonoBehaviour
         } 
 
         return result;
+    }
+
+    public static void AddSecretBoxForDeletedPoints(GameObject pointCloud)
+    {
+        var pcComponent = pointCloud.GetComponent<pointCloud>();
+
+        var box = GameObject.CreatePrimitive(PrimitiveType.Cube);
+
+        box.name = "Deleted Points Obscurer";
+        box.transform.parent = pointCloud.transform;
+        box.transform.rotation = Quaternion.identity;
+        box.transform.localScale = Vector3.one * 1000;
+        box.transform.localPosition = Vector3.one * -200000.0f;
+
+        var br = box.GetComponent<Renderer>();
+        br.material = deletedPointsBox;
     }
 }

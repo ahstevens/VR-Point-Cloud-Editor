@@ -12,7 +12,7 @@ using OSGeo.OSR;
 public class DeletePoints : MonoBehaviour
 {
     [DllImport("PointCloudPlugin")]
-    private static extern bool RequestToDeleteFromUnity(IntPtr center, float size);
+    private static extern int RequestToDeleteFromUnity(IntPtr center, float size);
     [DllImport("PointCloudPlugin")]
     static public extern void setHighlightDeletedPointsActive(bool active);
     [DllImport("PointCloudPlugin")]
@@ -222,11 +222,13 @@ public class DeletePoints : MonoBehaviour
         center[2] = deletionSphere.transform.position.z;
         
         GCHandle toDelete = GCHandle.Alloc(center.ToArray(), GCHandleType.Pinned);
-        bool pointsWereDeleted = RequestToDeleteFromUnity(toDelete.AddrOfPinnedObject(), deletionSphere.transform.localScale.x);        
+        int pointsDeleted = RequestToDeleteFromUnity(toDelete.AddrOfPinnedObject(), deletionSphere.transform.localScale.x);        
 
-        if (pointsWereDeleted)
+        if (pointsDeleted > 0)
         {
             currentDeletionOpCount++;
+
+            Debug.Log(pointsDeleted + " points were deleted");
 
             // Send haptic feedback to right controller
             UnityEngine.XR.OpenXR.Input.OpenXRInput.SendHapticImpulse(hapticAction.action, deleteHaptic.amplitude, deleteHaptic.frequency, deleteHaptic.duration, UnityEngine.InputSystem.XR.XRController.rightHand);

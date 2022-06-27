@@ -2,6 +2,8 @@ using UnityEngine;
 using System.Collections;
 using UnityEngine.Networking;
 using UnityEngine.InputSystem;
+using OSGeo;
+using OSGeo.OSR;
 
 public class ENCManager : MonoBehaviour
 {
@@ -32,6 +34,13 @@ public class ENCManager : MonoBehaviour
 
         create = false;
         adjusting = false;
+
+        GdalConfiguration.ConfigureGdal();
+
+
+        //OnlineMaps.instance.zoom = 17;
+
+        //OnlineMaps.instance.SetPosition(-90.0632247459028, 29.9205774420515);
     }
 
     void Update()
@@ -117,10 +126,60 @@ public class ENCManager : MonoBehaviour
         double minBBz = geoRef.realWorldZ + pc.bounds.min.z;
         double maxBBz = geoRef.realWorldZ + pc.bounds.max.z;
 
+        SpatialReference src = new SpatialReference("");
+        src.ImportFromEPSG(pc.EPSG);
+        Debug.Log("SOURCE IsGeographic:" + src.IsGeographic() + " IsProjected:" + src.IsProjected());
+        SpatialReference dst = new SpatialReference("");
+        dst.ImportFromEPSG(4326);
+        Debug.Log("DEST IsGeographic:" + dst.IsGeographic() + " IsProjected:" + dst.IsProjected());
+
+        CoordinateTransformation ct = new CoordinateTransformation(src, dst);
+        double[] ctr = new double[3];
+        double[] minBB = new double[3];
+        double[] maxBB = new double[3];
+        ctr[0] = minBBx + (maxBBx - minBBx) / 2.0;
+        ctr[1] = minBBz + (maxBBz - minBBz) / 2.0;
+        ctr[2] = 0;
+        minBB[0] = minBBx;
+        minBB[1] = minBBz;
+        minBB[2] = 0;
+        maxBB[0] = maxBBx;
+        maxBB[1] = maxBBz;
+        maxBB[2] = 0;
+        ct.TransformPoint(minBB);
+        ct.TransformPoint(ctr);
+        ct.TransformPoint(maxBB);
+        Debug.Log("MIN x:" + minBB[0] + " y:" + minBB[1] + " z:" + minBB[2]);
+        Debug.Log("CTR x:" + ctr[0] + " y:" + ctr[1] + " z:" + ctr[2]);
+        Debug.Log("MAX x:" + maxBB[0] + " y:" + maxBB[1] + " z:" + maxBB[2]);
+
+        OnlineMapsMarker minMark = new OnlineMapsMarker();
+        OnlineMapsMarker maxMark = new OnlineMapsMarker();
+        minMark.SetPosition(minBB[0], minBB[1]);
+        maxMark.SetPosition(maxBB[0], maxBB[1]);
+
+        OnlineMapsMarkerBase[] bbox = { minMark, maxMark };
+
+        int zoom;
+        OnlineMapsUtils.GetCenterPointAndZoom(bbox, out _, out zoom);
+
+        OnlineMaps.instance.zoom = zoom;
+
+        OnlineMaps.instance.SetPosition(ctr[1], ctr[0]);
+
+        OnlineMaps.instance.Redraw();
+
+        Vector2 distanceKM = OnlineMapsUtils.DistanceBetweenPoints(OnlineMaps.instance.topLeftPosition,
+                OnlineMaps.instance.bottomRightPosition);
+
+        OnlineMapsControlBaseDynamicMesh.instance.sizeInScene = distanceKM * 1000;
+
+
         int epsg = pc.EPSG;
 
+        // NAD83 (2011) / UTM15N || null || 
         if (epsg == 6344 || epsg == 0 || epsg == 32767)
-            epsg = 26915;
+            epsg = 26915; // NAD83 / UTM15N
 
         string url = $"https://gis.charttools.noaa.gov/arcgis/rest/services/MCS/ENCOnline/MapServer/exts/MaritimeChartService/WMSServer?LAYERS=0,1,2,3,4,5,6,7&FORMAT=image%2Fpng&CRS=EPSG:{epsg}&SERVICE=WMS&REQUEST=GetMap&WIDTH={resolution}&HEIGHT={resolution}&BBOX={minBBx},{minBBz},{maxBBx},{maxBBz}";
 
@@ -133,7 +192,8 @@ public class ENCManager : MonoBehaviour
 
         while (!www.isDone)
         {
-            Debug.Log(www.downloadProgress);
+            if (www.downloadProgress > 0)
+                Debug.Log("Downloading: " + www.downloadProgress * 100 + "%");
             yield return null;
         }
 

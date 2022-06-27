@@ -95,35 +95,4 @@ public class pointCloud : MonoBehaviour
         //lr.SetPosition(8, p8);
         //lr.SetPosition(9, p5);
     }
-
-    public void TestTransform(int epsgFrom, int epsgTo = 3857)
-    {
-        // 4326 is WGS84 lat/lon for GPS etc.
-        // 3857 is Web Mercator for Google Maps etc.
-        try
-        {
-            /* -------------------------------------------------------------------- */
-            /*      Initialize srs                                                  */
-            /* -------------------------------------------------------------------- */
-            SpatialReference src = new SpatialReference("");
-            src.ImportFromEPSG(epsgFrom);
-            Debug.Log("SOURCE IsGeographic:" + src.IsGeographic() + " IsProjected:" + src.IsProjected());
-            SpatialReference dst = new SpatialReference("");
-            dst.ImportFromEPSG(epsgTo);
-            Debug.Log("DEST IsGeographic:" + dst.IsGeographic() + " IsProjected:" + dst.IsProjected());
-            /* -------------------------------------------------------------------- */
-            /*      making the transform                                            */
-            /* -------------------------------------------------------------------- */
-            CoordinateTransformation ct = new CoordinateTransformation(src, dst);
-            double[] p = new double[3];
-            GEOReference georef = FindObjectOfType<GEOReference>();
-            p[0] = georef.realWorldX; p[1] = georef.realWorldZ; p[2] = 0;
-            ct.TransformPoint(p);
-            Debug.Log("x:" + p[0] + " y:" + p[1] + " z:" + p[2]);
-        }
-        catch (System.Exception e)
-        {
-            Debug.Log("Error occurred: " + e.Message);
-        }
-    }
 }

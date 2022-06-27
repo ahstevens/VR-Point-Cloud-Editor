@@ -5,9 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using UnityEngine.InputSystem;
-using UnityEditor;
-using OSGeo;
-using OSGeo.OSR;
 
 public class DeletePoints : MonoBehaviour
 {
@@ -63,22 +60,6 @@ public class DeletePoints : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        GdalConfiguration.ConfigureGdal();
-
-        SpatialReference src = new SpatialReference("");
-        src.ImportFromEPSG(6344);
-        Debug.Log("SOURCE IsGeographic:" + src.IsGeographic() + " IsProjected:" + src.IsProjected());
-        SpatialReference dst = new SpatialReference("");
-        dst.ImportFromEPSG(4326);
-        Debug.Log("DEST IsGeographic:" + dst.IsGeographic() + " IsProjected:" + dst.IsProjected());
-
-        CoordinateTransformation ct = new CoordinateTransformation(src, dst);
-        double[] p = new double[3];
-        p[0] = 783382.73625; p[1] = 3313812.3895; p[2] = 0;
-        ct.TransformPoint(p);
-        Debug.Log("x:" + p[0] + " y:" + p[1] + " z:" + p[2]);
-
-
         deletionSphere = this.gameObject;
 
         deleteSphereAction.action.started += ctx => OnBeginDeleteSphere();

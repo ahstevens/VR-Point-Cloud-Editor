@@ -932,6 +932,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1570749248}
+  - {fileID: 979675195}
   m_Father: {fileID: 0}
   m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -4251,13 +4252,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 979675189}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 9
+  m_Father: {fileID: 417516344}
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &979675196
 MonoBehaviour:
@@ -7218,7 +7219,7 @@ MonoBehaviour:
   HMD: {fileID: 963194225}
   pointCloudRoot: {fileID: 1570749247}
   ENCShader: {fileID: 4800000, guid: ec5b8926f483a4b42b5399fb888e6c64, type: 3}
-  errorTexture: {fileID: 10309, guid: 0000000000000000f000000000000000, type: 0}
+  errorTexture: {fileID: 10309, guid: 0000000000000000f000000000000000, type: 3}
   adjustENCAction:
     m_UseReference: 1
     m_Action:

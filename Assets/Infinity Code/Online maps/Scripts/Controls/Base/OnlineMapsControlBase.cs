@@ -440,8 +440,7 @@ public abstract class OnlineMapsControlBase : MonoBehaviour, IOnlineMapsSavableC
     {
         if (OnGetInputPosition != null) return OnGetInputPosition();
 
-        //return Input.mousePosition;
-        return Vector2.zero;
+        return Input.mousePosition;
     }
 
     public virtual IOnlineMapsInteractiveElement GetInteractiveElement(Vector2 screenPosition)
@@ -562,11 +561,11 @@ public abstract class OnlineMapsControlBase : MonoBehaviour, IOnlineMapsSavableC
 #if UNITY_WEBGL && !UNITY_EDITOR
         return Input.GetMouseButton(0) ? 1 : 0;
 #else
-        //if (Input.touchSupported)
-        //{
-        //    if (Input.touchCount > 0) return Input.touchCount;
-        //}
-        return 0;
+        if (Input.touchSupported)
+        {
+            if (Input.touchCount > 0) return Input.touchCount;
+        }
+        return Input.GetMouseButton(0) ? 1 : 0;
 #endif
     }
 

@@ -4242,9 +4242,9 @@ MonoBehaviour:
   useSoftwareJPEGDecoder: 0
   width: 1024
   _activeTypeSettings: 
-  _zoom: 2
-  latitude: 0
-  longitude: 0.17578125
+  _zoom: 18.2
+  latitude: 29.9
+  longitude: -90
 --- !u!4 &979675195
 Transform:
   m_ObjectHideFlags: 0

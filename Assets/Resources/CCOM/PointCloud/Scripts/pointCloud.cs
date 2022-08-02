@@ -1,6 +1,5 @@
 ﻿using System;
 using UnityEngine;
-using OSGeo.OSR;
 
 //[RequireComponent(typeof(LineRenderer))]
 public class pointCloud : MonoBehaviour

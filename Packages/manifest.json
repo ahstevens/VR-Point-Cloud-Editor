@@ -6,7 +6,6 @@
     "com.unity.xr.interaction.toolkit": "2.0.2",
     "com.unity.xr.management": "4.2.1",
     "com.unity.xr.openxr": "1.4.2",
-    "com.virgis.gdal": "3.5.1",
     "com.unity.modules.ai": "1.0.0",
     "com.unity.modules.androidjni": "1.0.0",
     "com.unity.modules.animation": "1.0.0",
@@ -39,14 +38,5 @@
     "com.unity.modules.wind": "1.0.0",
     "com.unity.modules.xr": "1.0.0"
   },
-  "scopedRegistries": [
-    {
-      "name": "OpenUPM",
-      "url": "https://package.openupm.com",
-      "scopes": [
-        "com.openupm",
-        "com.virgis"
-      ]
-    }
-  ]
+  "scopedRegistries": []
 }

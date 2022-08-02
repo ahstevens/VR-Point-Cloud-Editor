@@ -2,8 +2,6 @@ using UnityEngine;
 using System.Collections;
 using UnityEngine.Networking;
 using UnityEngine.InputSystem;
-using OSGeo;
-using OSGeo.OSR;
 
 public class ENCManager : MonoBehaviour
 {
@@ -34,9 +32,6 @@ public class ENCManager : MonoBehaviour
 
         create = false;
         adjusting = false;
-
-        GdalConfiguration.ConfigureGdal();
-
 
         //OnlineMaps.instance.zoom = 17;
 
@@ -126,53 +121,53 @@ public class ENCManager : MonoBehaviour
         double minBBz = geoRef.realWorldZ + pc.bounds.min.z;
         double maxBBz = geoRef.realWorldZ + pc.bounds.max.z;
 
-        SpatialReference src = new SpatialReference("");
-        src.ImportFromEPSG(pc.EPSG);
-        Debug.Log("SOURCE IsGeographic:" + src.IsGeographic() + " IsProjected:" + src.IsProjected());
-        SpatialReference dst = new SpatialReference("");
-        dst.ImportFromEPSG(4326);
-        Debug.Log("DEST IsGeographic:" + dst.IsGeographic() + " IsProjected:" + dst.IsProjected());
-
-        CoordinateTransformation ct = new CoordinateTransformation(src, dst);
-        double[] ctr = new double[3];
-        double[] minBB = new double[3];
-        double[] maxBB = new double[3];
-        ctr[0] = minBBx + (maxBBx - minBBx) / 2.0;
-        ctr[1] = minBBz + (maxBBz - minBBz) / 2.0;
-        ctr[2] = 0;
-        minBB[0] = minBBx;
-        minBB[1] = minBBz;
-        minBB[2] = 0;
-        maxBB[0] = maxBBx;
-        maxBB[1] = maxBBz;
-        maxBB[2] = 0;
-        ct.TransformPoint(minBB);
-        ct.TransformPoint(ctr);
-        ct.TransformPoint(maxBB);
-        Debug.Log("MIN x:" + minBB[0] + " y:" + minBB[1] + " z:" + minBB[2]);
-        Debug.Log("CTR x:" + ctr[0] + " y:" + ctr[1] + " z:" + ctr[2]);
-        Debug.Log("MAX x:" + maxBB[0] + " y:" + maxBB[1] + " z:" + maxBB[2]);
-
-        OnlineMapsMarker minMark = new OnlineMapsMarker();
-        OnlineMapsMarker maxMark = new OnlineMapsMarker();
-        minMark.SetPosition(minBB[0], minBB[1]);
-        maxMark.SetPosition(maxBB[0], maxBB[1]);
-
-        OnlineMapsMarkerBase[] bbox = { minMark, maxMark };
-
-        int zoom;
-        OnlineMapsUtils.GetCenterPointAndZoom(bbox, out _, out zoom);
-
-        OnlineMaps.instance.zoom = zoom;
-
-        OnlineMaps.instance.SetPosition(ctr[1], ctr[0]);
-
-        OnlineMaps.instance.Redraw();
-
-        Vector2 distanceKM = OnlineMapsUtils.DistanceBetweenPoints(OnlineMaps.instance.topLeftPosition,
-                OnlineMaps.instance.bottomRightPosition);
-
-        OnlineMapsControlBaseDynamicMesh.instance.sizeInScene = distanceKM * 1000;
+        //SpatialReference src = new SpatialReference("");
+        //src.ImportFromEPSG(pc.EPSG);
+        //Debug.Log("SOURCE IsGeographic:" + src.IsGeographic() + " IsProjected:" + src.IsProjected());
+        //SpatialReference dst = new SpatialReference("");
+        //dst.ImportFromEPSG(4326);
+        //Debug.Log("DEST IsGeographic:" + dst.IsGeographic() + " IsProjected:" + dst.IsProjected());
+        //
+        //CoordinateTransformation ct = new CoordinateTransformation(src, dst);
+        //double[] ctr = new double[3];
+        //double[] minBB = new double[3];
+        //double[] maxBB = new double[3];
+        //ctr[0] = minBBx + (maxBBx - minBBx) / 2.0;
+        //ctr[1] = minBBz + (maxBBz - minBBz) / 2.0;
+        //ctr[2] = 0;
+        //minBB[0] = minBBx;
+        //minBB[1] = minBBz;
+        //minBB[2] = 0;
+        //maxBB[0] = maxBBx;
+        //maxBB[1] = maxBBz;
+        //maxBB[2] = 0;
+        //ct.TransformPoint(minBB);
+        //ct.TransformPoint(ctr);
+        //ct.TransformPoint(maxBB);
+        //Debug.Log("MIN x:" + minBB[0] + " y:" + minBB[1] + " z:" + minBB[2]);
+        //Debug.Log("CTR x:" + ctr[0] + " y:" + ctr[1] + " z:" + ctr[2]);
+        //Debug.Log("MAX x:" + maxBB[0] + " y:" + maxBB[1] + " z:" + maxBB[2]);
+        //
+        //OnlineMapsMarker minMark = new OnlineMapsMarker();
+        //OnlineMapsMarker maxMark = new OnlineMapsMarker();
+        //minMark.SetPosition(minBB[0], minBB[1]);
+        //maxMark.SetPosition(maxBB[0], maxBB[1]);
+        //
+        //OnlineMapsMarkerBase[] bbox = { minMark, maxMark };
+        //
+        //int zoom;
+        //OnlineMapsUtils.GetCenterPointAndZoom(bbox, out _, out zoom);
+        //
+        //OnlineMaps.instance.zoom = zoom;
+        //
+        //OnlineMaps.instance.SetPosition(ctr[1], ctr[0]);
+        //
+        //OnlineMaps.instance.Redraw();
+        //
+        //Vector2 distanceKM = OnlineMapsUtils.DistanceBetweenPoints(OnlineMaps.instance.topLeftPosition,
+        //        OnlineMaps.instance.bottomRightPosition);
+        //
+        //OnlineMapsControlBaseDynamicMesh.instance.sizeInScene = distanceKM * 1000;
 
 
         int epsg = pc.EPSG;

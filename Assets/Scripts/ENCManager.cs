@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections;
 using UnityEngine.Networking;
 using UnityEngine.InputSystem;
+using DotSpatial.Projections;
 
 public class ENCManager : MonoBehaviour
 {
@@ -32,10 +33,6 @@ public class ENCManager : MonoBehaviour
 
         create = false;
         adjusting = false;
-
-        //OnlineMaps.instance.zoom = 17;
-
-        //OnlineMaps.instance.SetPosition(-90.0632247459028, 29.9205774420515);
     }
 
     void Update()
@@ -59,17 +56,21 @@ public class ENCManager : MonoBehaviour
             if (Vector3.Dot(gaze, ctrlrDown) < 0f)
             {
                 ENC.SetActive(true);
+                FindObjectOfType<SatMapManager>().HideMap();
             }
             else
             {
                 adjusting = false;
                 ENC.SetActive(false);
+                FindObjectOfType<SatMapManager>().ShowMap();
             }
 
             if (adjusting)
             {
                 var newheight = pointCloudRoot.transform.InverseTransformPoint(controller.transform.position).y;
                 ENC.transform.localPosition = new Vector3(ENC.transform.localPosition.x, newheight, ENC.transform.localPosition.z);
+
+                FindObjectOfType<SatMapManager>().SetHeight(newheight);
             }
         }
 
@@ -83,6 +84,11 @@ public class ENCManager : MonoBehaviour
     void OnDisable()
     {
         adjustENCAction.action.Disable();
+    }
+
+    public GameObject GetENCObject()
+    {
+        return ENC;
     }
 
     public IEnumerator CreateENC(GEOReference geoRef, pointCloud pc)
@@ -120,56 +126,7 @@ public class ENCManager : MonoBehaviour
         double maxBBx = geoRef.realWorldX + pc.bounds.max.x;
         double minBBz = geoRef.realWorldZ + pc.bounds.min.z;
         double maxBBz = geoRef.realWorldZ + pc.bounds.max.z;
-
-        //SpatialReference src = new SpatialReference("");
-        //src.ImportFromEPSG(pc.EPSG);
-        //Debug.Log("SOURCE IsGeographic:" + src.IsGeographic() + " IsProjected:" + src.IsProjected());
-        //SpatialReference dst = new SpatialReference("");
-        //dst.ImportFromEPSG(4326);
-        //Debug.Log("DEST IsGeographic:" + dst.IsGeographic() + " IsProjected:" + dst.IsProjected());
-        //
-        //CoordinateTransformation ct = new CoordinateTransformation(src, dst);
-        //double[] ctr = new double[3];
-        //double[] minBB = new double[3];
-        //double[] maxBB = new double[3];
-        //ctr[0] = minBBx + (maxBBx - minBBx) / 2.0;
-        //ctr[1] = minBBz + (maxBBz - minBBz) / 2.0;
-        //ctr[2] = 0;
-        //minBB[0] = minBBx;
-        //minBB[1] = minBBz;
-        //minBB[2] = 0;
-        //maxBB[0] = maxBBx;
-        //maxBB[1] = maxBBz;
-        //maxBB[2] = 0;
-        //ct.TransformPoint(minBB);
-        //ct.TransformPoint(ctr);
-        //ct.TransformPoint(maxBB);
-        //Debug.Log("MIN x:" + minBB[0] + " y:" + minBB[1] + " z:" + minBB[2]);
-        //Debug.Log("CTR x:" + ctr[0] + " y:" + ctr[1] + " z:" + ctr[2]);
-        //Debug.Log("MAX x:" + maxBB[0] + " y:" + maxBB[1] + " z:" + maxBB[2]);
-        //
-        //OnlineMapsMarker minMark = new OnlineMapsMarker();
-        //OnlineMapsMarker maxMark = new OnlineMapsMarker();
-        //minMark.SetPosition(minBB[0], minBB[1]);
-        //maxMark.SetPosition(maxBB[0], maxBB[1]);
-        //
-        //OnlineMapsMarkerBase[] bbox = { minMark, maxMark };
-        //
-        //int zoom;
-        //OnlineMapsUtils.GetCenterPointAndZoom(bbox, out _, out zoom);
-        //
-        //OnlineMaps.instance.zoom = zoom;
-        //
-        //OnlineMaps.instance.SetPosition(ctr[1], ctr[0]);
-        //
-        //OnlineMaps.instance.Redraw();
-        //
-        //Vector2 distanceKM = OnlineMapsUtils.DistanceBetweenPoints(OnlineMaps.instance.topLeftPosition,
-        //        OnlineMaps.instance.bottomRightPosition);
-        //
-        //OnlineMapsControlBaseDynamicMesh.instance.sizeInScene = distanceKM * 1000;
-
-
+                
         int epsg = pc.EPSG;
 
         // NAD83 (2011) / UTM15N || null || 

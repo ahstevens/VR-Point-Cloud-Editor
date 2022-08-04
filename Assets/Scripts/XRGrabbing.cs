@@ -52,6 +52,10 @@ public class XRGrabbing : MonoBehaviour
 
     private void OnBeginGrab()
     {
+        // If already scaling, ignore grab action
+        if (FindObjectOfType<XRScaling>() != null && FindObjectOfType<XRScaling>().IsScaling())
+            return;
+
         grabbing = true;
         
         // Get the transformation matrix representing the object's transform in local controller space
@@ -69,5 +73,10 @@ public class XRGrabbing : MonoBehaviour
 
         if (pcs.Length > 0)
             pcs[0].ResetMiniature();
+    }
+
+    public bool IsGrabbing()
+    {
+        return grabbing;
     }
 }

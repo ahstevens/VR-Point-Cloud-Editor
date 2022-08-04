@@ -27,13 +27,9 @@ public class XRScaling : MonoBehaviour
     private GameObject scalingPointObject;
     private GameObject scaleRod;
 
-    private GameObject xrrig;
-
     // Start is called before the first frame update
     void Start()
     {
-        xrrig = this.gameObject;
-
         scalingPointObject = Instantiate(scalePointPrefab, scalePoint, Quaternion.identity);
         scalingPointObject.SetActive(false);
 
@@ -80,7 +76,11 @@ public class XRScaling : MonoBehaviour
 
     private void OnBeginScale()
     {
-        if(scalingRoot == null)
+        // If already grabbing, ignore scale action
+        if (FindObjectOfType<XRGrabbing>() != null && FindObjectOfType<XRGrabbing>().IsGrabbing())
+            return;
+
+        if (scalingRoot == null)
         {
             Debug.Log("No Scaling Root GameObject set/found!");
             return;
@@ -148,5 +148,10 @@ public class XRScaling : MonoBehaviour
     Vector3 GetMidpoint(Vector3 firstPoint, Vector3 secondPoint)
     {
         return firstPoint + (secondPoint - firstPoint) * 0.5f;
+    }
+
+    public bool IsScaling()
+    {
+        return scaling;
     }
 }

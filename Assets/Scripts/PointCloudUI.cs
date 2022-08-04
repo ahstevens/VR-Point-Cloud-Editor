@@ -27,9 +27,10 @@ public class PointCloudUI : MonoBehaviour
     public GameObject outlierNeighborText;
     public GameObject outlierDistValText;
     public GameObject outlierNeighborValText;
+    public GameObject floorText;
     public GameObject showGroundPlaneButton;
+    public GameObject autoHideGroundPlaneToggle;
     public GameObject groundPlane;
-    public GameObject createENCButton;
     public GameObject buildInfo;
 
     private Canvas thisCanvas;
@@ -61,6 +62,8 @@ public class PointCloudUI : MonoBehaviour
     private bool menuOpen;
 
     private bool fileBrowsing;
+
+    private bool autoHideGroundPlane;
 
     private bool loading;
     private bool saving;
@@ -106,8 +109,9 @@ public class PointCloudUI : MonoBehaviour
         loadingText.SetActive(false);
         loadingIcon.SetActive(false);
         resetPointCloudTransforms.gameObject.SetActive(false);
-        createENCButton.SetActive(false);
         unloadButton.SetActive(false);
+
+        autoHideGroundPlane = autoHideGroundPlaneToggle.GetComponent<Toggle>().isOn;
 
         buildInfo.GetComponent<Text>().text = Application.version;
 
@@ -143,6 +147,14 @@ public class PointCloudUI : MonoBehaviour
 
             ActivateLoadingUI(false);
             UpdateDropdownFiles();
+
+            Debug.Log("Auto-Hide Ground Plane is " + autoHideGroundPlane);
+            Debug.Log("Ground Plane Active: " + groundPlane.activeSelf);
+
+            if (groundPlane.activeSelf && autoHideGroundPlane)
+            {
+                ToggleGroundPlane();
+            }
         }
 
         // idle state
@@ -318,20 +330,14 @@ public class PointCloudUI : MonoBehaviour
         {
             loadButton.SetActive(true);
             showGroundPlaneButton.SetActive(true);
+            floorText.SetActive(true);
+            autoHideGroundPlaneToggle.SetActive(true);
 
             bool pointCloudsLoaded = pointCloudManager.getPointCloudsInScene().Length > 0;
 
             saveButton.SetActive(pointCloudsLoaded);
             fileDropdown.SetActive(pointCloudsLoaded);
             resetPointCloudTransforms.gameObject.SetActive(pointCloudsLoaded);
-
-            createENCButton.SetActive(pointCloudsLoaded);
-
-            if (pointCloudsLoaded)
-            {
-                var encChild = GameObject.Find(dd.options[dd.value].text);
-                createENCButton.GetComponent<Button>().GetComponentInChildren<Text>().text = (encChild != null && encChild.transform.childCount > 0) ? "Reload ENC" : "Create ENC";
-            }
 
             unloadButton.SetActive(pointCloudsLoaded);
 
@@ -340,11 +346,12 @@ public class PointCloudUI : MonoBehaviour
         else
         {
             showGroundPlaneButton.SetActive(false);
+            floorText.SetActive(false);
+            autoHideGroundPlaneToggle.SetActive(false);
             loadButton.SetActive(false);
             saveButton.SetActive(false);
             fileDropdown.SetActive(false);
             resetPointCloudTransforms.gameObject.SetActive(false);
-            createENCButton.SetActive(false);
             unloadButton.SetActive(false);
             buildInfo.SetActive(false);
 
@@ -477,7 +484,7 @@ public class PointCloudUI : MonoBehaviour
     {
         groundPlane.SetActive(!groundPlane.activeSelf);
 
-        showGroundPlaneButton.GetComponentInChildren<Text>().text = (groundPlane.activeSelf ? "Hide" : "Show") + " Ground Plane";
+        showGroundPlaneButton.GetComponentInChildren<Text>().text = (groundPlane.activeSelf ? "Hide" : "Show");// + " Ground Plane";
     }
 
     public void ToggleFlyingMode()
@@ -490,9 +497,10 @@ public class PointCloudUI : MonoBehaviour
             flyButton.GetComponentInChildren<Text>().text = "FLY MODE";
     }
 
-    public void CreateENC()
+    public void ToggleAutoHideGroundPlane(bool isOn)
     {
-        FindObjectOfType<ENCManager>().create = true;
+        autoHideGroundPlane = isOn;
+        Debug.Log("Auto-Hide Ground Plane is " + autoHideGroundPlane);
     }
 
     private void BlockUnloadWhileSaving()

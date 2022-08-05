@@ -189,7 +189,8 @@ public class DeletePoints : MonoBehaviour
         CancelInvoke("deleteInSphere");
         //Debug.Log("Editing Finished");
 
-        deletionOps.Add(currentDeletionOpCount);
+        if (currentDeletionOpCount > 0)
+            deletionOps.Add(currentDeletionOpCount);
     }
 
     void deleteInSphere()

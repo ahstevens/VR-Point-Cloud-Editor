@@ -1173,7 +1173,6 @@ MonoBehaviour:
   fileBrowserCanvas: {fileID: 1220974824}
   loadButton: {fileID: 1476899111}
   saveButton: {fileID: 329261446}
-  fileDropdown: {fileID: 1231932872}
   loadingText: {fileID: 1999531675}
   loadingIcon: {fileID: 213677161}
   unloadButton: {fileID: 84284024}
@@ -5971,7 +5970,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1231932873
 RectTransform:
   m_ObjectHideFlags: 0

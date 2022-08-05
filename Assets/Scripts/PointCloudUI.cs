@@ -14,7 +14,7 @@ public class PointCloudUI : MonoBehaviour
     public GameObject fileBrowserCanvas;
     public GameObject loadButton;
     public GameObject saveButton;
-    public GameObject fileDropdown;
+    //public GameObject fileDropdown;
     public GameObject loadingText;
     public GameObject loadingIcon;
     public GameObject unloadButton;
@@ -35,7 +35,7 @@ public class PointCloudUI : MonoBehaviour
 
     private Canvas thisCanvas;
 
-    private Dropdown dd;
+    //private Dropdown dd;
 
     public ColorPicker colorPicker;
 
@@ -88,7 +88,7 @@ public class PointCloudUI : MonoBehaviour
 
         thisCanvas.enabled = false;
 
-        dd = fileDropdown.GetComponent<Dropdown>();
+        //dd = fileDropdown.GetComponent<Dropdown>();
 
         pointer.enabled = false;
         
@@ -104,7 +104,7 @@ public class PointCloudUI : MonoBehaviour
             Camera.main.backgroundColor = color;
         });
 
-        fileDropdown.SetActive(false);
+        //fileDropdown.SetActive(false);
         saveButton.SetActive(false);
         loadingText.SetActive(false);
         loadingIcon.SetActive(false);
@@ -136,7 +136,6 @@ public class PointCloudUI : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
         if (connector == null)
             connector = GameObject.Find("Connector");
 
@@ -146,10 +145,7 @@ public class PointCloudUI : MonoBehaviour
             loading = false;
 
             ActivateLoadingUI(false);
-            UpdateDropdownFiles();
-
-            Debug.Log("Auto-Hide Ground Plane is " + autoHideGroundPlane);
-            Debug.Log("Ground Plane Active: " + groundPlane.activeSelf);
+            //UpdateDropdownFiles();
 
             if (groundPlane.activeSelf && autoHideGroundPlane)
             {
@@ -283,7 +279,8 @@ public class PointCloudUI : MonoBehaviour
         FileBrowser.SetExcludedExtensions(".lnk", ".tmp", ".zip", ".rar", ".exe");
         FileBrowser.AddQuickLink("Project Data", Application.dataPath, null);
 
-        StartCoroutine(ShowSaveDialogCoroutine(dd.options[dd.value].text + "_edit.laz"));
+        //StartCoroutine(ShowSaveDialogCoroutine(dd.options[dd.value].text + "_edit.laz"));
+        StartCoroutine(ShowSaveDialogCoroutine(pointCloudManager.getPointCloudsInScene()[0].name + "_edit.laz"));
     }
 
     IEnumerator ShowSaveDialogCoroutine(string filename)
@@ -295,8 +292,10 @@ public class PointCloudUI : MonoBehaviour
         if (FileBrowser.Success)
         {
             var pcs = pointCloudManager.getPointCloudsInScene();
-            Debug.Log("Saving point cloud " + pcs[dd.value].ID + " to " + FileBrowser.Result[0] + "/" + filename);
-            pointCloudManager.SaveLAZFile(FileBrowser.Result[0] + "/" + filename, pcs[dd.value].ID);
+            //Debug.Log("Saving point cloud " + pcs[dd.value].ID + " to " + FileBrowser.Result[0] + "/" + filename);
+            Debug.Log("Saving point cloud " + pcs[0].ID + " to " + FileBrowser.Result[0] + "/" + filename);
+            //pointCloudManager.SaveLAZFile(FileBrowser.Result[0] + "/" + filename, pcs[dd.value].ID);
+            pointCloudManager.SaveLAZFile(FileBrowser.Result[0] + "/" + filename, pcs[0].ID);
             lastSaveDirectory = FileBrowser.Result[0];
         }
 
@@ -307,41 +306,44 @@ public class PointCloudUI : MonoBehaviour
     {
         var pcs = pointCloudManager.getPointCloudsInScene();
 
-        pointCloudManager.UnLoad(pcs[dd.value].ID);
+        //pointCloudManager.UnLoad(pcs[dd.value].ID);
+        pointCloudManager.UnLoad(pcs[0].ID);
 
-        UpdateDropdownFiles();
+        //UpdateDropdownFiles();
     }
 
-    private void UpdateDropdownFiles()
-    {
-        dd.options.Clear();
-
-        var pcs = pointCloudManager.getPointCloudsInScene();
-
-        foreach (var pc in pcs)
-            dd.options.Add(new Dropdown.OptionData(pc.name));
-
-        dd.RefreshShownValue();
-    }
+    //private void UpdateDropdownFiles()
+    //{
+    //    dd.options.Clear();
+    //
+    //    var pcs = pointCloudManager.getPointCloudsInScene();
+    //
+    //    foreach (var pc in pcs)
+    //        dd.options.Add(new Dropdown.OptionData(pc.name));
+    //
+    //    dd.RefreshShownValue();
+    //}
 
     private void ActivateLoadAndSaveUI(bool activate)
     {
         if (activate)
         {
+            bool pointCloudsLoaded = pointCloudManager.getPointCloudsInScene().Length > 0;
+
             loadButton.SetActive(true);
+            loadButton.GetComponent<Button>().interactable = !pointCloudsLoaded;
+
             showGroundPlaneButton.SetActive(true);
             floorText.SetActive(true);
             autoHideGroundPlaneToggle.SetActive(true);
 
-            bool pointCloudsLoaded = pointCloudManager.getPointCloudsInScene().Length > 0;
-
             saveButton.SetActive(pointCloudsLoaded);
-            fileDropdown.SetActive(pointCloudsLoaded);
+            //fileDropdown.SetActive(pointCloudsLoaded);
             resetPointCloudTransforms.gameObject.SetActive(pointCloudsLoaded);
 
             unloadButton.SetActive(pointCloudsLoaded);
 
-            ActivateOutliersUI(pointCloudsLoaded);            
+            ActivateOutliersUI(pointCloudsLoaded);                     
         }
         else
         {
@@ -350,7 +352,7 @@ public class PointCloudUI : MonoBehaviour
             autoHideGroundPlaneToggle.SetActive(false);
             loadButton.SetActive(false);
             saveButton.SetActive(false);
-            fileDropdown.SetActive(false);
+            //fileDropdown.SetActive(false);
             resetPointCloudTransforms.gameObject.SetActive(false);
             unloadButton.SetActive(false);
             buildInfo.SetActive(false);
@@ -443,14 +445,17 @@ public class PointCloudUI : MonoBehaviour
         var d = showingOutliers ? outliersDistance : 0f;
         var n = showingOutliers ? outlierNeighborCount : 0;
 
-        pointCloudManager.HighlightOutliers(d, n, pcs[dd.value].ID);
+        //pointCloudManager.HighlightOutliers(d, n, pcs[dd.value].ID);
+        pointCloudManager.HighlightOutliers(d, n, pcs[0].ID);
     }
 
     public void DeleteOutliers()
     {
         var pcs = pointCloudManager.getPointCloudsInScene();
-        pointCloudManager.HighlightOutliers(outliersDistance, outlierNeighborCount, pcs[dd.value].ID);
-        pointCloudManager.DeleteOutliers(pcs[dd.value].ID);
+        //pointCloudManager.HighlightOutliers(outliersDistance, outlierNeighborCount, pcs[dd.value].ID);
+        pointCloudManager.HighlightOutliers(outliersDistance, outlierNeighborCount, pcs[0].ID);
+        //pointCloudManager.DeleteOutliers(pcs[dd.value].ID);
+        pointCloudManager.DeleteOutliers(pcs[0].ID);
         showingOutliers = false;
         outlierShowButton.GetComponent<Button>().GetComponentInChildren<Text>().text = "Show";
     }
@@ -500,7 +505,6 @@ public class PointCloudUI : MonoBehaviour
     public void ToggleAutoHideGroundPlane(bool isOn)
     {
         autoHideGroundPlane = isOn;
-        Debug.Log("Auto-Hide Ground Plane is " + autoHideGroundPlane);
     }
 
     private void BlockUnloadWhileSaving()

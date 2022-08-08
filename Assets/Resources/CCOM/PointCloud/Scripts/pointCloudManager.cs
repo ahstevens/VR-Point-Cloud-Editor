@@ -824,10 +824,7 @@ public class pointCloudManager : MonoBehaviour
         FindObjectOfType<SatMapManager>().CreateSatelliteMap(getReferenceScript(), pc);
 
         // create ENC
-        var encm = FindObjectOfType<ENCManager>();
-        encm.geoReference = getReferenceScript();
-        encm.pointCloud = pc;
-        encm.StartCoroutine(encm.CreateENC(getReferenceScript(), pc));
+        FindObjectOfType<ENCManager>().StartCoroutine(FindObjectOfType<ENCManager>().CreateENC(getReferenceScript(), pc));
     }
 
     public static void AddSecretBoxForDeletedPoints(GameObject pointCloud)

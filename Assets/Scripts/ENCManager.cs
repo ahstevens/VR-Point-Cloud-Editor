@@ -23,8 +23,6 @@ public class ENCManager : MonoBehaviour
         get { return _refreshing; }
     }
 
-    public GEOReference geoReference;
-    public pointCloud pointCloud;
     public bool loaded
     {
         get { return _loaded; }
@@ -50,16 +48,6 @@ public class ENCManager : MonoBehaviour
 
     void Update()
     {
-        if (geoReference == null)
-            geoReference = FindObjectOfType<GEOReference>();
-
-        if (create)
-        {
-            if (geoReference != null && pointCloud != null)
-                StartCoroutine(CreateENC(geoReference, pointCloud));
-
-            create = false;
-        }
         
         var gaze = HMD.transform.forward;
         var ctrlrDown = -controller.transform.up;

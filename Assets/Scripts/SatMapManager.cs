@@ -8,16 +8,53 @@ public class SatMapManager : MonoBehaviour
     [SerializeField]
     GameObject map;
 
+    private bool refreshed;
+
+    private float elapsedTime = 0f;
+    private bool flip = false;
+
     // Start is called before the first frame update
     void Start()
     {
         HideMap();
+        refreshed = false;
+
+        OnlineMapsProvider[] providers = OnlineMapsProvider.GetProviders();
+        foreach (OnlineMapsProvider provider in providers)
+        {
+            Debug.Log(provider.id);
+            foreach (OnlineMapsProvider.MapType type in provider.types)
+            {
+                Debug.Log(type);
+            }
+        }
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        if (map.activeSelf)
+        {
+            elapsedTime += Time.deltaTime;
+
+            if (elapsedTime >= 5f)
+            {
+                elapsedTime = 0f;
+
+                if (flip)
+                    OnlineMaps.instance.mapType = "google.satellite";
+                else
+                    OnlineMaps.instance.mapType = "arcgis.worldimagery";
+
+                flip = !flip;
+            }
+
+            if (!refreshed && FindObjectOfType<ENCManager>().loaded)
+            {
+                OnlineMaps.instance.Redraw();
+                refreshed = true;
+            }
+        }
     }
 
     public void ShowMap()
@@ -41,6 +78,8 @@ public class SatMapManager : MonoBehaviour
 
     public void CreateSatelliteMap(GEOReference geoRef, pointCloud pc)
     {
+        refreshed = false;
+
         ShowMap();
 
         int epsg = pc.EPSG;
@@ -122,8 +161,6 @@ public class SatMapManager : MonoBehaviour
         //Debug.Log("Ratio: " + ratio);
 
         OnlineMaps.instance.floatZoom = (float)zoom + (1f - ratio);
-
-        OnlineMaps.instance.Redraw();
 
         OnlineMapsControlBaseDynamicMesh.instance.sizeInScene = bbRange;
 

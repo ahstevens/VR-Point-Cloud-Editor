@@ -17,6 +17,7 @@ public class PointCloudUI : MonoBehaviour
     //public GameObject fileDropdown;
     public GameObject loadingText;
     public GameObject loadingIcon;
+    public GameObject refreshENCButton;
     public GameObject unloadButton;
     public GameObject outlierText;
     public GameObject outlierShowButton;
@@ -245,6 +246,12 @@ public class PointCloudUI : MonoBehaviour
         FileBrowser.SetExcludedExtensions(".lnk", ".tmp", ".zip", ".rar", ".exe");
         FileBrowser.AddQuickLink("Project Data", Application.dataPath, null);
 
+        if (UserSettings.instance.GetPreferences().lastLoadDirectory != Application.dataPath)
+            FileBrowser.AddQuickLink("Last Load", UserSettings.instance.GetPreferences().lastLoadDirectory, null);
+
+        if (UserSettings.instance.GetPreferences().lastSaveDirectory != Application.dataPath)
+            FileBrowser.AddQuickLink("Last Save", UserSettings.instance.GetPreferences().lastSaveDirectory, null);
+
         StartCoroutine(ShowLoadDialogCoroutine());
     }
 
@@ -263,6 +270,8 @@ public class PointCloudUI : MonoBehaviour
             }
 
             lastLoadDirectory = Path.GetDirectoryName(FileBrowser.Result[0]);
+            UserSettings.instance.GetPreferences().lastLoadDirectory = lastLoadDirectory;
+            UserSettings.instance.SaveToFile();
         }
 
         fileBrowsing = false;
@@ -278,6 +287,12 @@ public class PointCloudUI : MonoBehaviour
         FileBrowser.SetDefaultFilter(".las");
         FileBrowser.SetExcludedExtensions(".lnk", ".tmp", ".zip", ".rar", ".exe");
         FileBrowser.AddQuickLink("Project Data", Application.dataPath, null);
+
+        if (UserSettings.instance.GetPreferences().lastLoadDirectory != Application.dataPath)
+            FileBrowser.AddQuickLink("Last Load", UserSettings.instance.GetPreferences().lastLoadDirectory, null);
+
+        if (UserSettings.instance.GetPreferences().lastSaveDirectory != Application.dataPath)
+            FileBrowser.AddQuickLink("Last Save", UserSettings.instance.GetPreferences().lastSaveDirectory, null);
 
         //StartCoroutine(ShowSaveDialogCoroutine(dd.options[dd.value].text + "_edit.laz"));
         StartCoroutine(ShowSaveDialogCoroutine(pointCloudManager.getPointCloudsInScene()[0].name + "_edit.laz"));
@@ -297,6 +312,8 @@ public class PointCloudUI : MonoBehaviour
             //pointCloudManager.SaveLAZFile(FileBrowser.Result[0] + "/" + filename, pcs[dd.value].ID);
             pointCloudManager.SaveLAZFile(FileBrowser.Result[0] + "/" + filename, pcs[0].ID);
             lastSaveDirectory = FileBrowser.Result[0];
+            UserSettings.instance.GetPreferences().lastSaveDirectory = lastSaveDirectory;
+            UserSettings.instance.SaveToFile();
         }
 
         fileBrowsing = false;
@@ -341,6 +358,23 @@ public class PointCloudUI : MonoBehaviour
             //fileDropdown.SetActive(pointCloudsLoaded);
             resetPointCloudTransforms.gameObject.SetActive(pointCloudsLoaded);
 
+            refreshENCButton.SetActive(pointCloudsLoaded);
+            if (pointCloudsLoaded)
+            {
+                Button b = refreshENCButton.GetComponent<Button>();
+
+                if (FindObjectOfType<ENCManager>().refreshing)
+                {
+                    b.GetComponentInChildren<Text>().text = "Refreshing...";
+                    refreshENCButton.GetComponent<Button>().interactable = false;
+                }
+                else
+                {
+                    b.GetComponentInChildren<Text>().text = "Refresh ENC";
+                    refreshENCButton.GetComponent<Button>().interactable = true;
+                }
+            }
+
             unloadButton.SetActive(pointCloudsLoaded);
 
             ActivateOutliersUI(pointCloudsLoaded);                     
@@ -353,6 +387,7 @@ public class PointCloudUI : MonoBehaviour
             loadButton.SetActive(false);
             saveButton.SetActive(false);
             //fileDropdown.SetActive(false);
+            resetPointCloudTransforms.gameObject.SetActive(false);
             resetPointCloudTransforms.gameObject.SetActive(false);
             unloadButton.SetActive(false);
             buildInfo.SetActive(false);
@@ -531,5 +566,10 @@ public class PointCloudUI : MonoBehaviour
 
             unloadButton.GetComponent<Button>().interactable = false;
         }
+    }
+
+    public void RefreshENC()
+    {
+        StartCoroutine(FindObjectOfType<ENCManager>().CreateENC(FindObjectOfType<GEOReference>(), pointCloudManager.getPointCloudsInScene()[0], true));
     }
 }

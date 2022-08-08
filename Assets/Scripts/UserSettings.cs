@@ -5,32 +5,44 @@ using UnityEngine;
 public class UserSettings : MonoBehaviour
 {
     [SerializeField]
-    public struct Preferences
+    public class Preferences
     {
-        public string lastLoadDirectory;
-        public string lastSaveDirectory;
-        public float cursorSize;
-        public float cursorMinSize;
-        public float cursorMaxSize;
-        public float cursorDistance;
-        public float cursorMinDistance;
-        public float cursorMaxDistance;
-        public Color backgroundColor;
-        public bool showGroundPlane;
-        public bool autoHideGroundPlaneOnLoad;
-        public Vector3 fitDimensionsOnLoad;
-        public float distanceOnLoad;
-        public int outlierNeighborCount;
-        public float outlierDistance;
-        public float nearPlaneDistance;
+        public string lastLoadDirectory = Application.dataPath;
+        public string lastSaveDirectory = Application.dataPath;
+        public float cursorSize = 0.1f;
+        public float cursorMinSize = 0.01f;
+        public float cursorMaxSize = 0.5f;
+        public float cursorDistance = 0.25f;
+        public float cursorMinDistance = 0.1f;
+        public float cursorMaxDistance = 2f;
+        public Color backgroundColor = Color.black;
+        public bool showGroundPlane = true;
+        public bool autoHideGroundPlaneOnLoad = true;
+        public Vector3 fitDimensionsOnLoad = Vector3.one;
+        public float distanceOnLoad = 0.75f;
+        public int outlierNeighborCount = 5;
+        public float outlierDistance = 5f;
+        public float nearPlaneDistance = 0.01f;
     }
 
     Preferences preferences;
 
+    private static UserSettings _instance;
+
+    public static UserSettings instance
+    {
+        get { return _instance; }
+    }
+
+    private void Awake()
+    {
+        _instance = this;
+        preferences = LoadFromFile();
+    }
+
     // Start is called before the first frame update
     void Start()
     {
-        LoadFromFile();
     }
 
     // Update is called once per frame
@@ -44,17 +56,33 @@ public class UserSettings : MonoBehaviour
         return preferences;
     }
 
-    public void LoadFromFile()
+    public Preferences LoadFromFile()
     {
+        Preferences p;
+
         if (System.IO.File.Exists(Application.dataPath + "/../userPreferences.json"))
-            preferences = ImportJson<Preferences>(Application.dataPath + "/../userPreferences.json");
+        {
+            Debug.Log("Found userPreferences.json; Loading values from file...");
+            p = ImportJson<Preferences>(Application.dataPath + "/../userPreferences.json");
+        }
         else
-            Debug.Log("userPreferences.json is missing!");
+        {
+            Debug.Log("userPreferences.json is missing! Loading defaults...");
+            p = new Preferences();
+            SaveToFile(p);
+        }
+
+        return p;
     }
 
     public void SaveToFile()
     {
-        System.IO.File.WriteAllText(Application.dataPath + "/../userPreferences.json", JsonUtility.ToJson(preferences, true));
+        SaveToFile(preferences);
+    }
+
+    public void SaveToFile(Preferences prefs)
+    {
+        System.IO.File.WriteAllText(Application.dataPath + "/../userPreferences.json", JsonUtility.ToJson(prefs, true));
     }
 
     public void LoadFromPlayerPrefs(int slot)

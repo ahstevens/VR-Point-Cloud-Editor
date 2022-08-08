@@ -18,21 +18,34 @@ public class ENCManager : MonoBehaviour
 
     public int resolution = 4096;
 
-    public bool create;
+    public bool refreshing
+    {
+        get { return _refreshing; }
+    }
 
     public GEOReference geoReference;
     public pointCloud pointCloud;
+    public bool loaded
+    {
+        get { return _loaded; }
+    }
 
     private GameObject ENC;
+    private string encFileLocation;
     private bool adjusting;
+
+    private bool _refreshing;
+    private bool _loaded;
 
     void Start()
     {
         adjustENCAction.action.started += ctx => BeginAdjustENCHeight();
         adjustENCAction.action.canceled += ctx => EndAdjustENCHeight();
 
-        create = false;
         adjusting = false;
+
+        _refreshing = false;
+        _loaded = false;
     }
 
     void Update()
@@ -91,9 +104,13 @@ public class ENCManager : MonoBehaviour
         return ENC;
     }
 
-    public IEnumerator CreateENC(GEOReference geoRef, pointCloud pc)
+    public IEnumerator CreateENC(GEOReference geoRef, pointCloud pc, bool forceRefresh = false)
     {
-        DestroyENC();
+        _refreshing = true;
+
+        encFileLocation = Application.dataPath + "/ENCs" + "/ENC_" + pc.name + ".png";
+
+        DestroyENC(forceRefresh);
 
         var encMat = new Material(ENCShader);
 
@@ -112,65 +129,92 @@ public class ENCManager : MonoBehaviour
 
         Renderer rend = ENC.GetComponent<Renderer>();
         rend.material = encMat;
+
+        _refreshing = false;
+        _loaded = true;
     }
 
-    private void DestroyENC()
+    private void DestroyENC(bool deleteCached = false)
     {
         if (ENC != null)
+        {
             Destroy(ENC);
+
+            if (deleteCached && System.IO.File.Exists(encFileLocation))
+            {
+                System.IO.File.Delete(encFileLocation);
+            }
+
+            _loaded = false;
+        }
     }
 
     public IEnumerator GetTexture(GEOReference geoRef, pointCloud pc, Material encMat)
     {
-        double minBBx = geoRef.realWorldX + pc.bounds.min.x;
-        double maxBBx = geoRef.realWorldX + pc.bounds.max.x;
-        double minBBz = geoRef.realWorldZ + pc.bounds.min.z;
-        double maxBBz = geoRef.realWorldZ + pc.bounds.max.z;
-                
-        int epsg = pc.EPSG;
-
-        // NAD83 (2011) / UTM15N || null || 
-        if (epsg == 6344 || epsg == 0 || epsg == 32767)
-            epsg = 26915; // NAD83 / UTM15N
-
-        string url = $"https://gis.charttools.noaa.gov/arcgis/rest/services/MCS/ENCOnline/MapServer/exts/MaritimeChartService/WMSServer?LAYERS=0,1,2,3,4,5,6,7&FORMAT=image%2Fpng&CRS=EPSG:{epsg}&SERVICE=WMS&REQUEST=GetMap&WIDTH={resolution}&HEIGHT={resolution}&BBOX={minBBx},{minBBz},{maxBBx},{maxBBz}";
-
-        Debug.Log(url);
-        UnityWebRequest www = UnityWebRequestTexture.GetTexture(url);
-
-        Debug.Log("Downloading ENC image... ");
-        float tick = Time.realtimeSinceStartup;
-        www.SendWebRequest();
-
-        while (!www.isDone)
+        if (System.IO.File.Exists(encFileLocation))
         {
-            if (www.downloadProgress > 0)
-                Debug.Log("Downloading: " + www.downloadProgress * 100 + "%");
-            yield return null;
-        }
-
-        Debug.Log("ENC image downloaded in " + (Time.realtimeSinceStartup - tick) + " seconds");
-
-        bool success = www.result == UnityWebRequest.Result.Success;
-
-        if (success)
-        {
-            Debug.Log("Converting image to Texture2D... ");
-            tick = Time.realtimeSinceStartup;
-            Texture2D encTex = ((DownloadHandlerTexture)www.downloadHandler).texture;
-            encMat.mainTexture = encTex;
-            Debug.Log("Image converted to Texture2D in " + (Time.realtimeSinceStartup - tick) + " seconds");
-
-            Debug.Log("Saving texture to disk... ");
-            tick = Time.realtimeSinceStartup;
-            yield return SaveTexture(encTex, pc.name);
-            Debug.Log("Texture saved in " + (Time.realtimeSinceStartup - tick) + " seconds");
+            Debug.Log("Found existing ENC file " + encFileLocation);
+            Texture2D tex = new(2, 2);
+            tex.LoadImage(System.IO.File.ReadAllBytes(encFileLocation));
+            encMat.mainTexture = tex;
         }
         else
         {
-            Debug.Log(www.error);
+            double minBBx = geoRef.realWorldX + pc.bounds.min.x;
+            double maxBBx = geoRef.realWorldX + pc.bounds.max.x;
+            double minBBz = geoRef.realWorldZ + pc.bounds.min.z;
+            double maxBBz = geoRef.realWorldZ + pc.bounds.max.z;
 
-            encMat.mainTexture = errorTexture;
+            int epsg = pc.EPSG;
+
+            // NAD83 (2011) / UTM15N || null || 
+            if (epsg == 6344 || epsg == 0 || epsg == 32767)
+                epsg = 26915; // NAD83 / UTM15N
+
+            string url = $"https://gis.charttools.noaa.gov/arcgis/rest/services/MCS/ENCOnline/MapServer/exts/MaritimeChartService/WMSServer?LAYERS=0,1,2,3,4,5,6,7&FORMAT=image%2Fpng&CRS=EPSG:{epsg}&SERVICE=WMS&REQUEST=GetMap&WIDTH={resolution}&HEIGHT={resolution}&BBOX={minBBx},{minBBz},{maxBBx},{maxBBz}";
+
+            Debug.Log(url);
+            UnityWebRequest www = UnityWebRequestTexture.GetTexture(url);
+
+            Debug.Log("Downloading ENC image... ");
+            float tick = Time.realtimeSinceStartup;
+            www.SendWebRequest();
+
+            bool doneDownloading = false;
+            while (!www.isDone)
+            {
+                if (www.downloadProgress > 0 && ! doneDownloading)
+                    Debug.Log("Downloading: " + www.downloadProgress * 100 + "%");
+
+                if (www.downloadProgress >= 1f)
+                    doneDownloading = true;
+
+                yield return null;
+            }
+
+            Debug.Log("ENC image downloaded in " + (Time.realtimeSinceStartup - tick) + " seconds");
+
+            bool success = www.result == UnityWebRequest.Result.Success;
+
+            if (success)
+            {
+                Debug.Log("Converting image to Texture2D... ");
+                tick = Time.realtimeSinceStartup;
+                Texture2D encTex = ((DownloadHandlerTexture)www.downloadHandler).texture;
+                encMat.mainTexture = encTex;
+                Debug.Log("Image converted to Texture2D in " + (Time.realtimeSinceStartup - tick) + " seconds");
+
+                Debug.Log("Saving texture to disk... ");
+                tick = Time.realtimeSinceStartup;
+                yield return SaveTexture(encTex, pc.name);
+                Debug.Log("Texture saved in " + (Time.realtimeSinceStartup - tick) + " seconds");
+            }
+            else
+            {
+                Debug.Log(www.error);
+
+                encMat.mainTexture = errorTexture;
+            }
         }
     }
 
@@ -183,8 +227,8 @@ public class ENCManager : MonoBehaviour
             System.IO.Directory.CreateDirectory(dirPath);
         }
         //System.IO.File.WriteAllBytes(dirPath + "/ENC_" + name + ".png", bytes);
-        yield return System.IO.File.WriteAllBytesAsync(dirPath + "/ENC_" + name + ".png", bytes);
-        Debug.Log(bytes.Length / 1024 + "Kb was saved as: " + dirPath);
+        yield return System.IO.File.WriteAllBytesAsync(encFileLocation, bytes);
+        Debug.Log(bytes.Length / 1024 + "Kb was saved as: " + encFileLocation);
 #if UNITY_EDITOR
         UnityEditor.AssetDatabase.Refresh();
 #endif

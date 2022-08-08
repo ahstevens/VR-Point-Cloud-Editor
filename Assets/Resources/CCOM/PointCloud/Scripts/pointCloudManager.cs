@@ -385,7 +385,10 @@ public class pointCloudManager : MonoBehaviour
 
                 if (pointClouds.Count == 0)
                 {
-                    pcComponent.ResetMiniature();
+                    pcComponent.ResetMiniature(
+                        UserSettings.instance.GetPreferences().fitSizeOnLoad,
+                        UserSettings.instance.GetPreferences().distanceOnLoad
+                    );
 
                     CreateMaps(pcComponent);
                 }

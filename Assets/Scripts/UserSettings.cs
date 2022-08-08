@@ -15,14 +15,15 @@ public class UserSettings : MonoBehaviour
         public float cursorDistance = 0.25f;
         public float cursorMinDistance = 0.1f;
         public float cursorMaxDistance = 2f;
+        public float cursorDeletionRate = 0.25f;
         public Color backgroundColor = Color.black;
+        public float fitSizeOnLoad = 1f;
+        public float distanceOnLoad = 0.75f;
+        public float nearPlaneDistance = 0.01f;
         public bool showGroundPlane = true;
         public bool autoHideGroundPlaneOnLoad = true;
-        public Vector3 fitDimensionsOnLoad = Vector3.one;
-        public float distanceOnLoad = 0.75f;
         public int outlierNeighborCount = 5;
         public float outlierDistance = 5f;
-        public float nearPlaneDistance = 0.01f;
     }
 
     Preferences preferences;
@@ -43,6 +44,8 @@ public class UserSettings : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        Camera.main.nearClipPlane = preferences.nearPlaneDistance;
+        Camera.main.backgroundColor = preferences.backgroundColor;
     }
 
     // Update is called once per frame
@@ -87,21 +90,19 @@ public class UserSettings : MonoBehaviour
 
     public void LoadFromPlayerPrefs(int slot)
     {
-        preferences.backgroundColor = Color.red;
         preferences.lastLoadDirectory = PlayerPrefs.GetString("lastLoadDirectory" + slot);
         preferences.lastSaveDirectory = PlayerPrefs.GetString("lastSaveDirectory" + slot);
-        preferences.cursorSize = PlayerPrefs.GetFloat("" + slot);
-        preferences.cursorMinSize = PlayerPrefs.GetFloat("" + slot);
-        preferences.cursorMaxSize = PlayerPrefs.GetFloat("" + slot);
-        preferences.cursorDistance = PlayerPrefs.GetFloat("" + slot);
-        preferences.cursorMinDistance = PlayerPrefs.GetFloat("" + slot);
-        preferences.cursorMaxDistance = PlayerPrefs.GetFloat("" + slot);
+        preferences.cursorSize = PlayerPrefs.GetFloat("cursorSize" + slot);
+        preferences.cursorMinSize = PlayerPrefs.GetFloat("cursorMinSize" + slot);
+        preferences.cursorMaxSize = PlayerPrefs.GetFloat("cursorMaxSize" + slot);
+        preferences.cursorDistance = PlayerPrefs.GetFloat("cursorDistance" + slot);
+        preferences.cursorMinDistance = PlayerPrefs.GetFloat("cursorMinDistance" + slot);
+        preferences.cursorMaxDistance = PlayerPrefs.GetFloat("cursorMaxDistance" + slot);
+        preferences.cursorDeletionRate = PlayerPrefs.GetFloat("cursorDeletionRate" + slot);
         ColorUtility.TryParseHtmlString("#" + PlayerPrefs.GetString("backgroundColor" + slot), out preferences.backgroundColor);
         preferences.showGroundPlane = PlayerPrefs.GetInt("showGroundPlane" + slot) == 1;
         preferences.autoHideGroundPlaneOnLoad = PlayerPrefs.GetInt("autoHideGroundPlaneOnLoad" + slot) == 1;
-        preferences.fitDimensionsOnLoad.x = PlayerPrefs.GetFloat("fitXDimensionOnLoad" + slot);
-        preferences.fitDimensionsOnLoad.y = PlayerPrefs.GetFloat("fitYDimensionOnLoad" + slot);
-        preferences.fitDimensionsOnLoad.z = PlayerPrefs.GetFloat("fitZDimensionOnLoad" + slot);
+        preferences.fitSizeOnLoad = PlayerPrefs.GetFloat("fitSizeOnLoad" + slot);
         preferences.distanceOnLoad = PlayerPrefs.GetFloat("distanceOnLoad" + slot);
         preferences.outlierNeighborCount = PlayerPrefs.GetInt("outlierNeighborCount" + slot);
         preferences.outlierDistance = PlayerPrefs.GetFloat("outlierDistance" + slot);
@@ -118,12 +119,11 @@ public class UserSettings : MonoBehaviour
         PlayerPrefs.SetFloat("cursorDistance" + slot, preferences.cursorDistance);
         PlayerPrefs.SetFloat("cursorMinDistance" + slot, preferences.cursorMinDistance);
         PlayerPrefs.SetFloat("cursorMaxDistance" + slot, preferences.cursorMaxDistance);
+        PlayerPrefs.SetFloat("cursorDeletionRate" + slot, preferences.cursorDeletionRate);
         PlayerPrefs.SetString("backgroundColor" + slot, ColorUtility.ToHtmlStringRGB(preferences.backgroundColor));
         PlayerPrefs.SetInt("showGroundPlane" + slot, preferences.showGroundPlane ? 1 : 0);
         PlayerPrefs.SetInt("autoHideGroundPlaneOnLoad" + slot, preferences.autoHideGroundPlaneOnLoad ? 1 : 0);
-        PlayerPrefs.SetFloat("fitXDimensionOnLoad" + slot, preferences.fitDimensionsOnLoad.x);
-        PlayerPrefs.SetFloat("fitYDimensionOnLoad" + slot, preferences.fitDimensionsOnLoad.y);
-        PlayerPrefs.SetFloat("fitZDimensionOnLoad" + slot, preferences.fitDimensionsOnLoad.z);
+        PlayerPrefs.SetFloat("fitSizeOnLoad" + slot, preferences.fitSizeOnLoad);
         PlayerPrefs.SetFloat("distanceOnLoad" + slot, preferences.distanceOnLoad);
         PlayerPrefs.SetInt("outlierNeighborCount" + slot, preferences.outlierNeighborCount);
         PlayerPrefs.SetFloat("outlierDistance" + slot, preferences.outlierDistance);

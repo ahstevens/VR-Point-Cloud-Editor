@@ -24,12 +24,12 @@ public class DeletePoints : MonoBehaviour
     public InputActionProperty hapticAction;
     public float moveAndResizeThumbstickDeadzone = 0.2f;
     public float moveAndResizeTouchpadDelta = 0.2f;
-    public float minimumSphereSize = 0.01f;
-    public float maximumSphereSize = 0.5f;
-    public float minimumSphereOffset = 0.1f;
-    public float maximumSphereOffset = 2f;
+    public float minimumSphereSize;
+    public float maximumSphereSize;
+    public float minimumSphereOffset;
+    public float maximumSphereOffset;
 
-    public float deleteRate = 0.25f;
+    public float deleteRate;
 
     public HapticPattern deleteHaptic;
     public HapticPattern undoHaptic;
@@ -79,6 +79,17 @@ public class DeletePoints : MonoBehaviour
 
         deletionOps = new List<int>();
         currentDeletionOpCount = 0;
+        
+        minimumSphereSize = UserSettings.instance.GetPreferences().cursorMinSize;
+        maximumSphereSize = UserSettings.instance.GetPreferences().cursorMaxSize;
+        minimumSphereOffset = UserSettings.instance.GetPreferences().cursorMinDistance;
+        maximumSphereOffset = UserSettings.instance.GetPreferences().cursorMaxDistance;
+
+        deleteRate = UserSettings.instance.GetPreferences().cursorDeletionRate;
+
+        deletionSphere.transform.localScale = Vector3.one * UserSettings.instance.GetPreferences().cursorSize;
+
+        deletionSphere.transform.localPosition = Vector3.forward * UserSettings.instance.GetPreferences().cursorDistance;
 
         setHighlightDeletedPointsActive(true);
     }

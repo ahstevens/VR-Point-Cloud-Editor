@@ -19,15 +19,11 @@ public class SatMapManager : MonoBehaviour
         HideMap();
         refreshed = false;
 
-        OnlineMapsProvider[] providers = OnlineMapsProvider.GetProviders();
-        foreach (OnlineMapsProvider provider in providers)
-        {
-            Debug.Log(provider.id);
-            foreach (OnlineMapsProvider.MapType type in provider.types)
-            {
-                Debug.Log(type);
-            }
-        }
+        // Subscribe to the event of success download tile.
+        OnlineMapsTile.OnTileDownloaded += OnTileDownloaded;
+
+        // Intercepts requests to the download of the tile.
+        OnlineMapsTileManager.OnStartDownloadTile += OnStartDownloadTile;
     }
 
     // Update is called once per frame
@@ -42,13 +38,14 @@ public class SatMapManager : MonoBehaviour
                 elapsedTime = 0f;
 
                 if (flip)
-                    OnlineMaps.instance.mapType = "google.satellite";
-                else
                     OnlineMaps.instance.mapType = "arcgis.worldimagery";
+                else
+                    OnlineMaps.instance.mapType = "google.satellite";
 
                 flip = !flip;
             }
 
+            // Need to redraw the map after everything is loaded
             if (!refreshed && FindObjectOfType<ENCManager>().loaded)
             {
                 OnlineMaps.instance.Redraw();
@@ -170,5 +167,84 @@ public class SatMapManager : MonoBehaviour
         var newPos = new Vector3(pc.bounds.center.x, pc.groundLevel, pc.bounds.center.z) + mapAdjustment;
 
         OnlineMaps.instance.gameObject.transform.localPosition = newPos;
+    }
+
+    /// <summary>
+    /// Gets the local path for tile.
+    /// </summary>
+    /// <param name="tile">Reference to tile</param>
+    /// <returns>Local path for tile</returns>
+    private static string GetTilePath(OnlineMapsTile tile)
+    {
+        OnlineMapsRasterTile rTile = tile as OnlineMapsRasterTile;
+        string[] parts =
+        {
+                Application.dataPath,
+                "Maps",
+                "OnlineMapsTileCache",
+                rTile.mapType.provider.id,
+                rTile.mapType.id,
+                tile.zoom.ToString(),
+                tile.x.ToString(),
+                tile.y + ".png"
+            };
+        return string.Join("/", parts);
+    }
+
+    /// <summary>
+    /// This method is called when loading the tile.
+    /// </summary>
+    /// <param name="tile">Reference to tile</param>
+    private void OnStartDownloadTile(OnlineMapsTile tile)
+    {
+        // Get local path.
+        string path = GetTilePath(tile);
+
+        // If the tile is cached.
+        if (System.IO.File.Exists(path))
+        {
+            // Load tile texture from cache.
+            Texture2D tileTexture = new Texture2D(256, 256, TextureFormat.RGB24, false);
+            tileTexture.LoadImage(System.IO.File.ReadAllBytes(path));
+            tileTexture.wrapMode = TextureWrapMode.Clamp;
+
+            // Send texture to map.
+            if (OnlineMapsControlBase.instance.resultIsTexture)
+            {
+                (tile as OnlineMapsRasterTile).ApplyTexture(tileTexture);
+                OnlineMaps.instance.buffer.ApplyTile(tile);
+                OnlineMapsUtils.Destroy(tileTexture);
+            }
+            else
+            {
+                tile.texture = tileTexture;
+                tile.status = OnlineMapsTileStatus.loaded;
+            }
+
+            // Redraw map.
+            OnlineMaps.instance.Redraw();
+        }
+        else
+        {
+            // If the tile is not cached, download tile with a standard loader.
+            OnlineMapsTileManager.StartDownloadTile(tile);
+        }
+    }
+
+    /// <summary>
+    /// This method is called when tile is success downloaded.
+    /// </summary>
+    /// <param name="tile">Reference to tile.</param>
+    private void OnTileDownloaded(OnlineMapsTile tile)
+    {
+        // Get local path.
+        string path = GetTilePath(tile);
+
+        // Cache tile.
+        System.IO.FileInfo fileInfo = new System.IO.FileInfo(path);
+        System.IO.DirectoryInfo directory = fileInfo.Directory;
+        if (!directory.Exists) directory.Create();
+
+        System.IO.File.WriteAllBytes(path, tile.www.bytes);
     }
 }

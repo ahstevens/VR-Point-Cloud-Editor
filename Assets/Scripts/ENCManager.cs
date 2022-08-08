@@ -96,7 +96,7 @@ public class ENCManager : MonoBehaviour
     {
         _refreshing = true;
 
-        encFileLocation = Application.dataPath + "/ENCs" + "/ENC_" + pc.name + ".png";
+        encFileLocation = Application.dataPath + "/Maps/ENCs" + "/ENC_" + pc.name + ".png";
 
         DestroyENC(forceRefresh);
 
@@ -209,7 +209,7 @@ public class ENCManager : MonoBehaviour
     IEnumerator SaveTexture(Texture2D texture, string name)
     {
         byte[] bytes = texture.EncodeToPNG();
-        var dirPath = Application.dataPath + "/ENCs";
+        var dirPath = Application.dataPath + "/Maps/ENCs";
         if (!System.IO.Directory.Exists(dirPath))
         {
             System.IO.Directory.CreateDirectory(dirPath);

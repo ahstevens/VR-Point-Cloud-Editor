@@ -640,13 +640,31 @@
             ]
         },
         {
-            "name": "ENC",
+            "name": "Map",
             "id": "924d85b1-b1b7-477d-b7c2-d27ab2026760",
             "actions": [
                 {
-                    "name": "Adjust ENC Height",
+                    "name": "Adjust Map Height",
                     "type": "Button",
                     "id": "9f9dc503-c6fe-4318-a634-72a99b17c966",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Change Map Type",
+                    "type": "Value",
+                    "id": "08ffbbef-10e6-4162-a8d0-30dfac6ba51e",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "Toggle Persistent Map",
+                    "type": "Button",
+                    "id": "e68e5bbd-6b10-47f9-baa0-a656ef426b1e",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -657,11 +675,193 @@
                 {
                     "name": "",
                     "id": "602265a8-5522-4815-898a-12cc20866c9f",
-                    "path": "<XRController>{RightHand}/gripPressed",
+                    "path": "<ViveController>{RightHand}/menu",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Adjust ENC Height",
+                    "action": "Adjust Map Height",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "85a57c8e-9910-4740-9592-35b81833977e",
+                    "path": "<ValveIndexController>{RightHand}/trackpadTouched",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Adjust Map Height",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "2fa66eec-4a58-46d3-bb28-ae80cb3531e2",
+                    "path": "<OculusTouchController>{RightHand}/secondaryButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Adjust Map Height",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "7c74a63a-34ff-4b66-b3c9-a8502dfd0be9",
+                    "path": "<WMRSpatialController>{RightHand}/menu",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Adjust Map Height",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "e0c2a910-0a7b-4eb6-a651-d2f9d1fb83e7",
+                    "path": "<ViveController>{LeftHand}/trackpad",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Change Map Type",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "628cb199-aa6c-4a10-a14f-3b153c38cb73",
+                    "path": "<ValveIndexController>{LeftHand}/thumbstick",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Change Map Type",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "f1b4a1e2-da8e-4a4d-907b-96a8a00ae41d",
+                    "path": "<OculusTouchController>{LeftHand}/thumbstick",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Change Map Type",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "1b10f7af-4a0c-485d-b749-0aabf67a8dc2",
+                    "path": "<WMRSpatialController>{LeftHand}/touchpad",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Change Map Type",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "7ae06cf5-2c37-44a1-87c1-a84e31ee4e3f",
+                    "path": "<ViveController>{LeftHand}/trackpadClicked",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Toggle Persistent Map",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "4208455c-5ce3-4f05-865d-3a8d5dbea35d",
+                    "path": "<ValveIndexController>{LeftHand}/thumbstickClicked",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Toggle Persistent Map",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "4f41c602-65cd-495a-b5ed-76505f3aeb55",
+                    "path": "<OculusTouchController>{LeftHand}/thumbstickClicked",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Toggle Persistent Map",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "0dd99cbc-1516-4084-99f4-d54c86bbaf1f",
+                    "path": "<WMRSpatialController>/touchpadClicked",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Toggle Persistent Map",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        },
+        {
+            "name": "UI",
+            "id": "696b2baf-ae2c-4dc8-b56f-edfd7365b513",
+            "actions": [
+                {
+                    "name": "Open UI",
+                    "type": "Button",
+                    "id": "1a768ed0-db2d-4061-9505-25dc3a3450ef",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "3950c49a-1f72-4cf5-b5b0-43a45c31be39",
+                    "path": "<ViveController>{LeftHand}/menu",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Open UI",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "91ed9b8d-c83c-4097-a2c6-9a51cade84f8",
+                    "path": "<ValveIndexController>{LeftHand}/primaryButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Open UI",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "063da460-6806-46c1-ad07-cf3658253304",
+                    "path": "<OculusTouchController>{LeftHand}/primaryButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Open UI",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "be27569c-0d9c-4fe9-ad0d-b8e5bd5afd3c",
+                    "path": "<WMRSpatialController>{LeftHand}/menu",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Open UI",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

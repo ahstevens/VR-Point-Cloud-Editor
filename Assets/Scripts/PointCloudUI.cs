@@ -9,7 +9,7 @@ using HSVPicker;
 
 public class PointCloudUI : MonoBehaviour
 {
-    public InputAction openMenu;
+    public InputActionReference openMenu;
 
     public GameObject fileBrowserCanvas;
     public GameObject loadButton;
@@ -80,8 +80,8 @@ public class PointCloudUI : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        openMenu.started += ctx => OpenMenu();
-        openMenu.canceled += ctx => CloseMenu();
+        openMenu.action.started += ctx => OpenMenu();
+        openMenu.action.canceled += ctx => CloseMenu();
 
         menuOpen = false;
 
@@ -192,12 +192,12 @@ public class PointCloudUI : MonoBehaviour
 
     private void OnEnable()
     {
-        openMenu.Enable();        
+        openMenu.action.Enable();        
     }
 
     private void OnDisable()
     {
-        openMenu.Disable();
+        openMenu.action.Disable();
     }
 
     private void OpenMenu()
@@ -363,7 +363,7 @@ public class PointCloudUI : MonoBehaviour
             {
                 Button b = refreshENCButton.GetComponent<Button>();
 
-                if (FindObjectOfType<ENCManager>().refreshing)
+                if (FindObjectOfType<MapManager>().refreshing)
                 {
                     b.GetComponentInChildren<Text>().text = "Refreshing...";
                     refreshENCButton.GetComponent<Button>().interactable = false;
@@ -570,6 +570,6 @@ public class PointCloudUI : MonoBehaviour
 
     public void RefreshENC()
     {
-        StartCoroutine(FindObjectOfType<ENCManager>().CreateENC(FindObjectOfType<GEOReference>(), pointCloudManager.getPointCloudsInScene()[0], true));
+        StartCoroutine(FindObjectOfType<MapManager>().CreateENC(FindObjectOfType<GEOReference>(), pointCloudManager.getPointCloudsInScene()[0], true));
     }
 }

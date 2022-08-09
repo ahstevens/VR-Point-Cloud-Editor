@@ -24,6 +24,7 @@ public class UserSettings : MonoBehaviour
         public bool autoHideGroundPlaneOnLoad = true;
         public int outlierNeighborCount = 5;
         public float outlierDistance = 5f;
+        public int encResolution = 4096;
     }
 
     Preferences preferences;
@@ -46,6 +47,14 @@ public class UserSettings : MonoBehaviour
     {
         Camera.main.nearClipPlane = preferences.nearPlaneDistance;
         Camera.main.backgroundColor = preferences.backgroundColor;
+
+        if (!preferences.showGroundPlane)
+            FindObjectOfType<PointCloudUI>().ToggleGroundPlane();
+
+        FindObjectOfType<PointCloudUI>().ToggleAutoHideGroundPlane(preferences.autoHideGroundPlaneOnLoad);
+
+        GameObject.Find("OutlierDistanceSlider").GetComponent<UnityEngine.UI.Slider>().value = preferences.outlierDistance;
+        GameObject.Find("OutlierCountSlider").GetComponent<UnityEngine.UI.Slider>().value = preferences.outlierNeighborCount;
     }
 
     // Update is called once per frame
@@ -107,6 +116,7 @@ public class UserSettings : MonoBehaviour
         preferences.outlierNeighborCount = PlayerPrefs.GetInt("outlierNeighborCount" + slot);
         preferences.outlierDistance = PlayerPrefs.GetFloat("outlierDistance" + slot);
         preferences.nearPlaneDistance = PlayerPrefs.GetFloat("nearPlaneDistance" + slot);
+        preferences.encResolution = PlayerPrefs.GetInt("encResolution" + slot);
     }
 
     public void SaveToPlayerPrefs(int slot)
@@ -128,6 +138,7 @@ public class UserSettings : MonoBehaviour
         PlayerPrefs.SetInt("outlierNeighborCount" + slot, preferences.outlierNeighborCount);
         PlayerPrefs.SetFloat("outlierDistance" + slot, preferences.outlierDistance);
         PlayerPrefs.SetFloat("nearPlaneDistance" + slot, preferences.nearPlaneDistance);
+        PlayerPrefs.SetFloat("encResolution" + slot, preferences.encResolution);
     }
 
     public static T ImportJson<T>(string path)

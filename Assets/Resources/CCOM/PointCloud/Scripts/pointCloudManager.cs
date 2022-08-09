@@ -234,8 +234,6 @@ public class pointCloudManager : MonoBehaviour
             }
         }
 
-        FindObjectOfType<SatMapManager>().HideMap();
-
         return result;
     }
 	
@@ -390,7 +388,7 @@ public class pointCloudManager : MonoBehaviour
                         UserSettings.instance.GetPreferences().distanceOnLoad
                     );
 
-                    CreateMaps(pcComponent);
+                    FindObjectOfType<MapManager>().CreateMaps(getReferenceScript(), pcComponent);                    
                 }
             }
 
@@ -819,15 +817,6 @@ public class pointCloudManager : MonoBehaviour
         } 
 
         return result;
-    }
-
-    private static void CreateMaps(pointCloud pc)
-    {
-        // create satellite map
-        FindObjectOfType<SatMapManager>().CreateSatelliteMap(getReferenceScript(), pc);
-
-        // create ENC
-        FindObjectOfType<ENCManager>().StartCoroutine(FindObjectOfType<ENCManager>().CreateENC(getReferenceScript(), pc));
     }
 
     public static void AddSecretBoxForDeletedPoints(GameObject pointCloud)

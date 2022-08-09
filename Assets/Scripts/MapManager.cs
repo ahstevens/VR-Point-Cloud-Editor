@@ -159,7 +159,7 @@ public class MapManager : MonoBehaviour
 
             if (_adjustingHeight)
             {
-                SetHeight(pointCloudRoot.transform.InverseTransformPoint(GameObject.Find("LeftHand Controller").transform.position).y);
+                SetHeight(pointCloudRoot.transform.InverseTransformPoint(GameObject.Find("RightHand Controller").transform.position).y);
             }
 
             // Need to redraw the map after everything is loaded
@@ -185,7 +185,7 @@ public class MapManager : MonoBehaviour
 
     private void BeginAdjustMapHeight()
     {
-        if (!_loaded)
+        if (!_loaded || currentMap == MAPTYPE.NONE)
             return;
 
         _adjustingHeight = true;
@@ -212,8 +212,8 @@ public class MapManager : MonoBehaviour
 
     public void SetHeight(float height)
     {
-        ENC.SetActive(true);
-        SatMap.SetActive(true);
+        //ENC.SetActive(true);
+        //SatMap.SetActive(true);
 
         ENC.transform.localPosition = new Vector3(ENC.transform.localPosition.x, height, ENC.transform.localPosition.z);
 
@@ -223,8 +223,8 @@ public class MapManager : MonoBehaviour
             SatMap.transform.localPosition.z
         );
 
-        ENC.SetActive(false);
-        SatMap.SetActive(false);
+        //ENC.SetActive(false);
+        //SatMap.SetActive(false);
     }
 
     public void CreateMaps(GEOReference geoRef, pointCloud pc)

@@ -107,7 +107,7 @@ public class MapManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (_loaded)
+        if (_loaded && pointCloudManager.getPointCloudsInScene().Length > 0)
         {
             if (_changingMap)
             {
@@ -169,6 +169,13 @@ public class MapManager : MonoBehaviour
                 satMapInitialRefresh = true;
             }
         }
+        else
+        {
+            SatMap.SetActive(false);
+
+            if (ENC != null)
+                ENC.SetActive(false);
+        }
     }
 
     void OnEnable()
@@ -212,9 +219,6 @@ public class MapManager : MonoBehaviour
 
     public void SetHeight(float height)
     {
-        //ENC.SetActive(true);
-        //SatMap.SetActive(true);
-
         ENC.transform.localPosition = new Vector3(ENC.transform.localPosition.x, height, ENC.transform.localPosition.z);
 
         SatMap.transform.localPosition = new Vector3(
@@ -222,9 +226,6 @@ public class MapManager : MonoBehaviour
             height,
             SatMap.transform.localPosition.z
         );
-
-        //ENC.SetActive(false);
-        //SatMap.SetActive(false);
     }
 
     public void CreateMaps(GEOReference geoRef, pointCloud pc)
@@ -258,6 +259,8 @@ public class MapManager : MonoBehaviour
 
         Renderer rend = ENC.GetComponent<Renderer>();
         rend.material = encMat;
+
+        ENC.SetActive(false);
 
         _refreshing = false;
         _loaded = true;
@@ -368,10 +371,11 @@ public class MapManager : MonoBehaviour
     }
 
 
-
     public void CreateSatelliteMap(GEOReference geoRef, pointCloud pc)
     {
         satMapInitialRefresh = false;
+
+        var wasActive = SatMap.activeSelf;
 
         SatMap.SetActive(true);
 
@@ -463,6 +467,8 @@ public class MapManager : MonoBehaviour
         var newPos = new Vector3(pc.bounds.center.x, pc.groundLevel, pc.bounds.center.z) + mapAdjustment;
 
         SatMap.transform.localPosition = newPos;
+
+        SatMap.SetActive(wasActive);
     }
 
     /// <summary>

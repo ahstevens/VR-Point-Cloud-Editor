@@ -29,14 +29,12 @@ screens.txt
 precision.txt
 xrflyingcalibration.txt*
 EPSG.txt
+userPreferences.json
 
 Assets/Resources/CCOM/PointCloud/Data
 Assets/Resources/CCOM/PointCloud/Data.meta
 Assets/Maps
 Assets/Maps.meta
-Assets/Conda
-Assets/Conda.meta
-Assets/StreamingAssets*
 
 *.dll.old
 *.log

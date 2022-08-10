@@ -474,9 +474,14 @@ public class PointCloudUI : MonoBehaviour
 
     public void resetPointCloudsTransforms()
     {
-        resettableObject.transform.position = Vector3.zero;
-        resettableObject.transform.rotation = Quaternion.identity;
-        resettableObject.transform.localScale = Vector3.one;
+        //resettableObject.transform.position = Vector3.zero;
+        //resettableObject.transform.rotation = Quaternion.identity;
+        //resettableObject.transform.localScale = Vector3.one;
+
+        pointCloudManager.getPointCloudsInScene()[0].ResetMiniature(
+            UserSettings.instance.GetPreferences().fitSizeOnLoad, 
+            UserSettings.instance.GetPreferences().distanceOnLoad
+        );
     }
     
     public void HighlightOutliers()

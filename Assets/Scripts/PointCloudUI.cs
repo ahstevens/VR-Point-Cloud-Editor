@@ -159,6 +159,8 @@ public class PointCloudUI : MonoBehaviour
             {
                 ToggleGroundPlane();
             }
+
+            CloseMenu();
         }
 
         // idle state

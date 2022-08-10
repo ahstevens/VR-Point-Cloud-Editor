@@ -202,37 +202,59 @@ public class PointCloudUI : MonoBehaviour
 
     private void OpenMenu()
     {
-        thisCanvas.enabled = true;
-        menuOpen = true;
-
-        if (!xrf.enabled)
+        if (!thisCanvas.enabled)
         {
-            editingCursor.SetActive(false);
-            connector.SetActive(false);
+            thisCanvas.enabled = true;
+            menuOpen = true;
 
-            if (pointer)
-                pointer.enabled = true;
+            if (!xrf.enabled)
+            {
+                editingCursor.SetActive(false);
+                connector.SetActive(false);
+
+                if (pointer)
+                    pointer.enabled = true;
+            }
+        }
+        else
+        {
+            menuOpen = false;
+
+            if (fileBrowsing)
+            {
+                fileBrowsing = false;
+                fileBrowserCanvas.SetActive(false);
+            }
+
+            if (!xrf.enabled)
+            {
+                editingCursor.SetActive(true);
+                connector.SetActive(true);
+
+                if (pointer)
+                    pointer.enabled = false;
+            }
         }
     }
 
     private void CloseMenu()
     {        
-        menuOpen = false;
-
-        if (fileBrowsing)
-        {
-            fileBrowsing = false;
-            fileBrowserCanvas.SetActive(false);
-        }
-
-        if (!xrf.enabled)
-        {
-            editingCursor.SetActive(true);
-            connector.SetActive(true);
-
-            if (pointer)
-                pointer.enabled = false;
-        }
+        //menuOpen = false;
+        //
+        //if (fileBrowsing)
+        //{
+        //    fileBrowsing = false;
+        //    fileBrowserCanvas.SetActive(false);
+        //}
+        //
+        //if (!xrf.enabled)
+        //{
+        //    editingCursor.SetActive(true);
+        //    connector.SetActive(true);
+        //
+        //    if (pointer)
+        //        pointer.enabled = false;
+        //}
     }
 
     public void LoadFile()

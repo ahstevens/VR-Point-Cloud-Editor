@@ -80,8 +80,8 @@ public class PointCloudUI : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        openMenu.action.started += ctx => OpenMenu();
-        openMenu.action.canceled += ctx => CloseMenu();
+        openMenu.action.started += ctx => OpenMenuAction();
+        openMenu.action.canceled += ctx => CloseMenuAction();
 
         menuOpen = false;
 
@@ -200,61 +200,59 @@ public class PointCloudUI : MonoBehaviour
         openMenu.action.Disable();
     }
 
-    private void OpenMenu()
+    private void OpenMenuAction()
     {
-        if (!thisCanvas.enabled)
+        if (UserSettings.instance.GetPreferences().stickyUI && thisCanvas.enabled == true)
         {
-            thisCanvas.enabled = true;
-            menuOpen = true;
-
-            if (!xrf.enabled)
-            {
-                editingCursor.SetActive(false);
-                connector.SetActive(false);
-
-                if (pointer)
-                    pointer.enabled = true;
-            }
+            CloseMenu();
         }
         else
         {
-            menuOpen = false;
+            OpenMenu();
+        }
+    }
 
-            if (fileBrowsing)
-            {
-                fileBrowsing = false;
-                fileBrowserCanvas.SetActive(false);
-            }
+    private void CloseMenuAction()
+    {
+        if (!UserSettings.instance.GetPreferences().stickyUI)
+        {
+            CloseMenu();
+        }
+    }
 
-            if (!xrf.enabled)
-            {
-                editingCursor.SetActive(true);
-                connector.SetActive(true);
+    private void OpenMenu()
+    {
+        thisCanvas.enabled = true;
+        menuOpen = true;
 
-                if (pointer)
-                    pointer.enabled = false;
-            }
+        if (!xrf.enabled)
+        {
+            editingCursor.SetActive(false);
+            connector.SetActive(false);
+
+            if (pointer)
+                pointer.enabled = true;
         }
     }
 
     private void CloseMenu()
-    {        
-        //menuOpen = false;
-        //
-        //if (fileBrowsing)
-        //{
-        //    fileBrowsing = false;
-        //    fileBrowserCanvas.SetActive(false);
-        //}
-        //
-        //if (!xrf.enabled)
-        //{
-        //    editingCursor.SetActive(true);
-        //    connector.SetActive(true);
-        //
-        //    if (pointer)
-        //        pointer.enabled = false;
-        //}
+    {
+        menuOpen = false;
+
+        if (fileBrowsing)
+        {
+            fileBrowsing = false;
+            fileBrowserCanvas.SetActive(false);
+        }
+
+        if (!xrf.enabled)
+        {
+            editingCursor.SetActive(true);
+            connector.SetActive(true);
+
+            if (pointer)
+                pointer.enabled = false;
+        }
     }
 
     public void LoadFile()

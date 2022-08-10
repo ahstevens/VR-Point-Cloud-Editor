@@ -140,12 +140,14 @@ public class MapManager : MonoBehaviour
                     break;
                 case MAPTYPE.ARCGIS:
                     SatMap.SetActive(true);
+                    OnlineMaps.instance.countParentLevels = 1;
                     OnlineMaps.instance.mapType = "arcgis.worldimagery";
                     if (ENC != null)
                         ENC.SetActive(false);
                     break;
                 case MAPTYPE.GOOGLE:
                     SatMap.SetActive(true);
+                    OnlineMaps.instance.countParentLevels = 1;
                     OnlineMaps.instance.mapType = "google.satellite";
                     if (ENC != null)
                         ENC.SetActive(false);

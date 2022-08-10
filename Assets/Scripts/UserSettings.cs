@@ -62,7 +62,8 @@ public class UserSettings : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        if (UnityEngine.InputSystem.Keyboard.current.escapeKey.wasPressedThisFrame)
+            Application.Quit();
     }
 
     public Preferences GetPreferences()

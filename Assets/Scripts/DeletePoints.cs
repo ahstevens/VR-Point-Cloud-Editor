@@ -94,6 +94,16 @@ public class DeletePoints : MonoBehaviour
         setHighlightDeletedPointsActive(true);
     }
 
+    private void OnApplicationQuit()
+    {
+        if (UserSettings.instance.GetPreferences().saveCursorOnExit)
+        {
+            UserSettings.instance.GetPreferences().cursorSize = deletionSphere.transform.localScale.x;
+            UserSettings.instance.GetPreferences().cursorDistance = deletionSphere.transform.localPosition.z;
+            UserSettings.instance.SaveToFile();
+        }
+    }
+
     // Update is called once per frame
     void Update()
     {

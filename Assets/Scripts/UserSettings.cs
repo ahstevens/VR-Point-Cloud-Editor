@@ -7,15 +7,16 @@ public class UserSettings : MonoBehaviour
     [SerializeField]
     public class Preferences
     {
-        public string lastLoadDirectory = Application.dataPath;
-        public string lastSaveDirectory = Application.dataPath;
+        public string lastLoadDirectory = "";
+        public string lastSaveDirectory = "";
         public float cursorSize = 0.1f;
         public float cursorMinSize = 0.01f;
         public float cursorMaxSize = 0.5f;
         public float cursorDistance = 0.25f;
         public float cursorMinDistance = 0.1f;
         public float cursorMaxDistance = 2f;
-        public float cursorDeletionRate = 0.25f;
+        public bool saveCursorOnExit = true;
+        public float cursorDeletionRate = 0.1f;
         public Color backgroundColor = Color.black;
         public float fitSizeOnLoad = 1f;
         public float distanceOnLoad = 0.75f;
@@ -108,6 +109,7 @@ public class UserSettings : MonoBehaviour
         preferences.cursorDistance = PlayerPrefs.GetFloat("cursorDistance" + slot);
         preferences.cursorMinDistance = PlayerPrefs.GetFloat("cursorMinDistance" + slot);
         preferences.cursorMaxDistance = PlayerPrefs.GetFloat("cursorMaxDistance" + slot);
+        preferences.saveCursorOnExit = PlayerPrefs.GetInt("saveCursorOnExit" + slot) == 1;
         preferences.cursorDeletionRate = PlayerPrefs.GetFloat("cursorDeletionRate" + slot);
         ColorUtility.TryParseHtmlString("#" + PlayerPrefs.GetString("backgroundColor" + slot), out preferences.backgroundColor);
         preferences.showGroundPlane = PlayerPrefs.GetInt("showGroundPlane" + slot) == 1;
@@ -131,6 +133,7 @@ public class UserSettings : MonoBehaviour
         PlayerPrefs.SetFloat("cursorDistance" + slot, preferences.cursorDistance);
         PlayerPrefs.SetFloat("cursorMinDistance" + slot, preferences.cursorMinDistance);
         PlayerPrefs.SetFloat("cursorMaxDistance" + slot, preferences.cursorMaxDistance);
+        PlayerPrefs.SetInt("saveCursorOnExit" + slot, preferences.saveCursorOnExit ? 1 : 0);
         PlayerPrefs.SetFloat("cursorDeletionRate" + slot, preferences.cursorDeletionRate);
         PlayerPrefs.SetString("backgroundColor" + slot, ColorUtility.ToHtmlStringRGB(preferences.backgroundColor));
         PlayerPrefs.SetInt("showGroundPlane" + slot, preferences.showGroundPlane ? 1 : 0);

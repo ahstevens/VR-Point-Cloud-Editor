@@ -124,8 +124,15 @@ public class PointCloudUI : MonoBehaviour
 
         showingOutliers = false;
 
-        lastSaveDirectory = null;
-        lastLoadDirectory = null;
+        lastLoadDirectory = lastSaveDirectory = null;
+
+        if (UserSettings.instance.GetPreferences().lastLoadDirectory != "" &&
+            Directory.Exists(UserSettings.instance.GetPreferences().lastLoadDirectory))
+            lastLoadDirectory = UserSettings.instance.GetPreferences().lastLoadDirectory;
+
+        if (UserSettings.instance.GetPreferences().lastSaveDirectory != "" &&
+            Directory.Exists(UserSettings.instance.GetPreferences().lastSaveDirectory))
+            lastSaveDirectory = UserSettings.instance.GetPreferences().lastSaveDirectory;
 
         AdjustOutlierDistance(outliersDistance);
         AdjustOutlierNeighborCount(outlierNeighborCount);
@@ -266,10 +273,10 @@ public class PointCloudUI : MonoBehaviour
         FileBrowser.SetExcludedExtensions(".lnk", ".tmp", ".zip", ".rar", ".exe");
         FileBrowser.AddQuickLink("Project Data", Application.dataPath, null);
 
-        if (UserSettings.instance.GetPreferences().lastLoadDirectory != Application.dataPath)
+        if (UserSettings.instance.GetPreferences().lastLoadDirectory != "")
             FileBrowser.AddQuickLink("Last Load", UserSettings.instance.GetPreferences().lastLoadDirectory, null);
 
-        if (UserSettings.instance.GetPreferences().lastSaveDirectory != Application.dataPath)
+        if (UserSettings.instance.GetPreferences().lastSaveDirectory != "")
             FileBrowser.AddQuickLink("Last Save", UserSettings.instance.GetPreferences().lastSaveDirectory, null);
 
         StartCoroutine(ShowLoadDialogCoroutine());
@@ -308,10 +315,10 @@ public class PointCloudUI : MonoBehaviour
         FileBrowser.SetExcludedExtensions(".lnk", ".tmp", ".zip", ".rar", ".exe");
         FileBrowser.AddQuickLink("Project Data", Application.dataPath, null);
 
-        if (UserSettings.instance.GetPreferences().lastLoadDirectory != Application.dataPath)
+        if (UserSettings.instance.GetPreferences().lastLoadDirectory != "")
             FileBrowser.AddQuickLink("Last Load", UserSettings.instance.GetPreferences().lastLoadDirectory, null);
 
-        if (UserSettings.instance.GetPreferences().lastSaveDirectory != Application.dataPath)
+        if (UserSettings.instance.GetPreferences().lastSaveDirectory != "")
             FileBrowser.AddQuickLink("Last Save", UserSettings.instance.GetPreferences().lastSaveDirectory, null);
 
         //StartCoroutine(ShowSaveDialogCoroutine(dd.options[dd.value].text + "_edit.laz"));

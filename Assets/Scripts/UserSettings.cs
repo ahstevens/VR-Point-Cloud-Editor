@@ -27,6 +27,7 @@ public class UserSettings : MonoBehaviour
         public float outlierDistance = 5f;
         public int encResolution = 4096;
         public bool stickyUI = true;
+        public bool stickyMaps = false;
     }
 
     Preferences preferences;
@@ -122,6 +123,7 @@ public class UserSettings : MonoBehaviour
         preferences.nearPlaneDistance = PlayerPrefs.GetFloat("nearPlaneDistance" + slot);
         preferences.encResolution = PlayerPrefs.GetInt("encResolution" + slot);
         preferences.stickyUI = PlayerPrefs.GetInt("stickyUI" + slot) == 1;
+        preferences.stickyMaps = PlayerPrefs.GetInt("stickyMaps" + slot) == 1;
     }
 
     public void SaveToPlayerPrefs(int slot)
@@ -146,6 +148,7 @@ public class UserSettings : MonoBehaviour
         PlayerPrefs.SetFloat("nearPlaneDistance" + slot, preferences.nearPlaneDistance);
         PlayerPrefs.SetFloat("encResolution" + slot, preferences.encResolution);
         PlayerPrefs.SetInt("stickyUI" + slot, preferences.stickyUI ? 1 : 0);
+        PlayerPrefs.SetInt("stickyMaps" + slot, preferences.stickyMaps ? 1 : 0);
     }
 
     public static T ImportJson<T>(string path)

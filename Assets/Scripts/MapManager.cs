@@ -15,6 +15,7 @@ public class MapManager : MonoBehaviour
 
     public InputActionProperty adjustMapHeightAction;
     public InputActionProperty changeMapAction;
+    public InputActionProperty stickMapAction;
 
     private GameObject ENC;
     private int encResolution;
@@ -63,6 +64,8 @@ public class MapManager : MonoBehaviour
 
     MAPTYPE currentMap;
 
+    private bool mapStuck;
+
     bool satMapInitialRefresh;
 
     float deadzone = 0.2f;
@@ -90,6 +93,9 @@ public class MapManager : MonoBehaviour
         changeMapAction.action.started += ctx => BeginChangeMap();
         changeMapAction.action.canceled += ctx => EndChangeMap();
 
+        stickMapAction.action.started += ctx => BeginStickMap();
+        stickMapAction.action.canceled += ctx => EndStickMap();
+
         encResolution = UserSettings.instance.GetPreferences().encResolution;
 
         _changingMap = false;
@@ -100,6 +106,7 @@ public class MapManager : MonoBehaviour
 
         currentMap = MAPTYPE.NONE;
 
+        mapStuck = false;
         satMapInitialRefresh = false;
 
         // Intercepts requests to the download of the tile.
@@ -197,12 +204,14 @@ public class MapManager : MonoBehaviour
     {
         adjustMapHeightAction.action.Enable();
         changeMapAction.action.Enable();
+        stickMapAction.action.Enable();
     }
 
     void OnDisable()
     {
         adjustMapHeightAction.action.Disable();
         changeMapAction.action.Disable();
+        stickMapAction.action.Disable();
     }
 
     private void BeginAdjustMapHeight()
@@ -230,6 +239,20 @@ public class MapManager : MonoBehaviour
     {
         _changingMap = false;
 
+        if (UserSettings.instance.GetPreferences().stickyMaps && !mapStuck)
+            currentMap = MAPTYPE.NONE;
+    }
+
+    private void BeginStickMap()
+    {
+        if (UserSettings.instance.GetPreferences().stickyMaps && !mapStuck)
+            mapStuck = true;        
+        else
+            mapStuck = false;
+    }
+
+    private void EndStickMap()
+    {
     }
 
     public void SetHeight(float height)

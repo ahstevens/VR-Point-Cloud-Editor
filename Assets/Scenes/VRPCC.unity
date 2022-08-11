@@ -4397,7 +4397,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!23 &979675193
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -4461,7 +4461,7 @@ MonoBehaviour:
   dispatchEvents: 1
   dragMarkerHoldingCTRL: 0
   emptyColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
-  height: 2048
+  height: 4096
   labels: 1
   language: en
   lockRedraw: 0
@@ -4485,7 +4485,7 @@ MonoBehaviour:
   useCurrentZoomTiles: 0
   useProxy: 1
   useSoftwareJPEGDecoder: 0
-  width: 2048
+  width: 4096
   _activeTypeSettings: 
   _zoom: 18.2
   latitude: 29.9

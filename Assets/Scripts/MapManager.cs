@@ -76,6 +76,11 @@ public class MapManager : MonoBehaviour
         WEST
     }
 
+    /// <summary>
+    /// Empty tile color
+    /// </summary>
+    private Color emptyColorArcGIS = new Color32(203, 203, 203, 255);
+
     // Start is called before the first frame update
     void Start()
     {
@@ -97,11 +102,19 @@ public class MapManager : MonoBehaviour
 
         satMapInitialRefresh = false;
 
+        // Intercepts requests to the download of the tile.
+        OnlineMapsTileManager.OnStartDownloadTile += OnStartDownloadTile;
+
         // Subscribe to the event of success download tile.
         OnlineMapsTile.OnTileDownloaded += OnTileDownloaded;
 
-        // Intercepts requests to the download of the tile.
-        OnlineMapsTileManager.OnStartDownloadTile += OnStartDownloadTile;
+        // Subscribe to tile loaded event
+        //OnlineMapsTileManager.OnTileLoaded += OnTileLoaded;
+
+        OnlineMaps.instance.countParentLevels = 1;
+        OnlineMaps.instance.width = 4096;
+        OnlineMaps.instance.height = 4096;
+        SatMap.SetActive(false);
     }
 
     // Update is called once per frame
@@ -536,11 +549,18 @@ public class MapManager : MonoBehaviour
     }
 
     /// <summary>
-    /// This method is called when tile is success downloaded.
+    /// This method is called when tile is successfully downloaded.
     /// </summary>
     /// <param name="tile">Reference to tile.</param>
     private void OnTileDownloaded(OnlineMapsTile tile)
     {
+
+        if ((tile as OnlineMapsRasterTile).mapType.provider.id == "arcgis" && ArcGISTileEmpty(tile))
+        {
+            tile.status = OnlineMapsTileStatus.error;
+            return;
+        }
+
         // Get local path.
         string path = GetTilePath(tile);
 
@@ -564,5 +584,25 @@ public class MapManager : MonoBehaviour
         if (absAngle > 135f)
             return SECTOR.WEST;
         return angle >= 0f ? SECTOR.NORTH : SECTOR.SOUTH;
+    }
+
+    /// <summary>
+    /// This method is called when tile is success downloaded.
+    /// </summary>
+    /// <param name="tile">Reference to tile.</param>
+    private bool ArcGISTileEmpty(OnlineMapsTile tile)
+    {
+        // Get pixels from texture corners
+        Texture2D texture = tile.texture;
+        Color c1 = texture.GetPixel(1, 1);
+        Color c2 = texture.GetPixel(254, 254);
+
+        // If both colors are empty, the tile is empty
+        if (c1 == emptyColorArcGIS && c2 == emptyColorArcGIS)
+        {
+            return true;
+        }
+
+        return false;
     }
 }

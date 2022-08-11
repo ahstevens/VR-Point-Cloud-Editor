@@ -20,7 +20,7 @@ public class UserSettings : MonoBehaviour
         public Color backgroundColor = Color.black;
         public float fitSizeOnLoad = 1f;
         public float distanceOnLoad = 0.75f;
-        public float nearPlaneDistance = 0.01f;
+        public float nearPlaneDistance = 0.1f;
         public bool showGroundPlane = true;
         public bool autoHideGroundPlaneOnLoad = true;
         public int outlierNeighborCount = 5;

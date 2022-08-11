@@ -5257,6 +5257,19 @@ MonoBehaviour:
       m_Flags: 0
     m_Reference: {fileID: 2221588521701731089, guid: bc5d5383aa166484ea2f603c8a1dc8e1,
       type: 3}
+  stickMapAction:
+    m_UseReference: 1
+    m_Action:
+      m_Name: Stick Map
+      m_Type: 0
+      m_ExpectedControlType: 
+      m_Id: a76fa558-ea1e-44cb-aebc-1806997a4fab
+      m_Processors: 
+      m_Interactions: 
+      m_SingletonActionBindings: []
+      m_Flags: 0
+    m_Reference: {fileID: -7552373063415700227, guid: bc5d5383aa166484ea2f603c8a1dc8e1,
+      type: 3}
   SatMap: {fileID: 979675189}
 --- !u!4 &1104787288
 Transform:

@@ -85,7 +85,7 @@ public class DeletePoints : MonoBehaviour
         minimumSphereOffset = UserSettings.instance.preferences.cursorDistanceMin;
         maximumSphereOffset = UserSettings.instance.preferences.cursorDistanceMax;
 
-        deleteRate = UserSettings.instance.preferences.cursorDeletionRate;
+        deleteRate = 1f / UserSettings.instance.preferences.cursorDeletionRate;
 
         deletionSphere.transform.localScale = Vector3.one * UserSettings.instance.preferences.cursorRadius;
 

@@ -8,12 +8,12 @@ public class UserSettings : MonoBehaviour
     {
         public bool autoHideGroundPlaneOnLoad = true;
         public Color backgroundColor = Color.black;
-        public float cursorDeletionRate = 0.1f;
+        public float cursorDeletionRate = 10f;
         public float cursorDistance = 0.25f;
-        public float cursorDistanceMax = 2f;
+        public float cursorDistanceMax = 1f;
         public float cursorDistanceMin = 0.1f;
-        public float cursorRadius = 0.1f;
-        public float cursorRadiusMax = 0.5f;
+        public float cursorRadius = 0.05f;
+        public float cursorRadiusMax = 0.25f;
         public float cursorRadiusMin = 0.01f;
         public float distanceOnLoad = 0.75f;
         public int encResolution = 4096;

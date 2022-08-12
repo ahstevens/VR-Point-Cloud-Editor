@@ -80,10 +80,10 @@ public class DeletePoints : MonoBehaviour
         deletionOps = new List<int>();
         currentDeletionOpCount = 0;
         
-        minimumSphereRadius = UserSettings.instance.GetPreferences().cursorMinRadius;
-        maximumSphereRadius = UserSettings.instance.GetPreferences().cursorMaxRadius;
-        minimumSphereOffset = UserSettings.instance.GetPreferences().cursorMinDistance;
-        maximumSphereOffset = UserSettings.instance.GetPreferences().cursorMaxDistance;
+        minimumSphereRadius = UserSettings.instance.GetPreferences().cursorRadiusMin;
+        maximumSphereRadius = UserSettings.instance.GetPreferences().cursorRadiusMax;
+        minimumSphereOffset = UserSettings.instance.GetPreferences().cursorDistanceMin;
+        maximumSphereOffset = UserSettings.instance.GetPreferences().cursorDistanceMax;
 
         deleteRate = UserSettings.instance.GetPreferences().cursorDeletionRate;
 

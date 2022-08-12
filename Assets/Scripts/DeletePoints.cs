@@ -24,8 +24,8 @@ public class DeletePoints : MonoBehaviour
     public InputActionProperty hapticAction;
     public float moveAndResizeThumbstickDeadzone = 0.2f;
     public float moveAndResizeTouchpadDelta = 0.2f;
-    public float minimumSphereSize;
-    public float maximumSphereSize;
+    public float minimumSphereRadius;
+    public float maximumSphereRadius;
     public float minimumSphereOffset;
     public float maximumSphereOffset;
 
@@ -48,7 +48,7 @@ public class DeletePoints : MonoBehaviour
     private bool verticalSwipe;
     private Vector2 initialTouchpadTouchPoint;
     private Vector2 initialTouchpadMeasurementPoint;
-    private float initialSphereSize;
+    private float initialSphereRadius;
     private float initialSphereDistance;
 
     public Material CursorMaterial;
@@ -80,14 +80,14 @@ public class DeletePoints : MonoBehaviour
         deletionOps = new List<int>();
         currentDeletionOpCount = 0;
         
-        minimumSphereSize = UserSettings.instance.GetPreferences().cursorMinSize;
-        maximumSphereSize = UserSettings.instance.GetPreferences().cursorMaxSize;
+        minimumSphereRadius = UserSettings.instance.GetPreferences().cursorMinRadius;
+        maximumSphereRadius = UserSettings.instance.GetPreferences().cursorMaxRadius;
         minimumSphereOffset = UserSettings.instance.GetPreferences().cursorMinDistance;
         maximumSphereOffset = UserSettings.instance.GetPreferences().cursorMaxDistance;
 
         deleteRate = UserSettings.instance.GetPreferences().cursorDeletionRate;
 
-        deletionSphere.transform.localScale = Vector3.one * UserSettings.instance.GetPreferences().cursorSize;
+        deletionSphere.transform.localScale = Vector3.one * UserSettings.instance.GetPreferences().cursorRadius;
 
         deletionSphere.transform.localPosition = Vector3.forward * UserSettings.instance.GetPreferences().cursorDistance;
 
@@ -98,7 +98,7 @@ public class DeletePoints : MonoBehaviour
     {
         if (UserSettings.instance.GetPreferences().saveCursorOnExit)
         {
-            UserSettings.instance.GetPreferences().cursorSize = deletionSphere.transform.localScale.x;
+            UserSettings.instance.GetPreferences().cursorRadius = deletionSphere.transform.localScale.x;
             UserSettings.instance.GetPreferences().cursorDistance = deletionSphere.transform.localPosition.z;
             UserSettings.instance.SaveToFile();
         }
@@ -126,7 +126,7 @@ public class DeletePoints : MonoBehaviour
                     {
                         resizing = true; // horizontal swipe
                         movingOrResizing = false;
-                        initialSphereSize = deletionSphere.transform.localScale.x;
+                        initialSphereRadius = deletionSphere.transform.localScale.x;
                     }
                     else
                     {
@@ -299,10 +299,10 @@ public class DeletePoints : MonoBehaviour
 
             var size = deletionSphere.transform.localScale.x * scaleFactor;            
 
-            if (size < minimumSphereSize)
-                size = minimumSphereSize;            
-            else if (size > maximumSphereSize)            
-                size = maximumSphereSize;            
+            if (size < minimumSphereRadius)
+                size = minimumSphereRadius;            
+            else if (size > maximumSphereRadius)            
+                size = maximumSphereRadius;            
 
             deletionSphere.transform.localScale = Vector3.one * size;
 
@@ -366,20 +366,20 @@ public class DeletePoints : MonoBehaviour
         {
             float dx = sample.x - initialTouchpadMeasurementPoint.x;
 
-            float range = maximumSphereSize - minimumSphereSize;
+            float range = maximumSphereRadius - minimumSphereRadius;
 
-            var size = initialSphereSize + dx * range;
+            var size = initialSphereRadius + dx * range;
 
-            if (size > maximumSphereSize)
+            if (size > maximumSphereRadius)
             {
-                size = maximumSphereSize;
-                initialSphereSize = maximumSphereSize;
+                size = maximumSphereRadius;
+                initialSphereRadius = maximumSphereRadius;
                 initialTouchpadMeasurementPoint.x = sample.x;
             }
-            else if (size < minimumSphereSize)
+            else if (size < minimumSphereRadius)
             {
-                size = minimumSphereSize;
-                initialSphereSize = minimumSphereSize;
+                size = minimumSphereRadius;
+                initialSphereRadius = minimumSphereRadius;
                 initialTouchpadMeasurementPoint.x = sample.x;
             }
 

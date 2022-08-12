@@ -9,9 +9,9 @@ public class UserSettings : MonoBehaviour
     {
         public string lastLoadDirectory = "";
         public string lastSaveDirectory = "";
-        public float cursorSize = 0.1f;
-        public float cursorMinSize = 0.01f;
-        public float cursorMaxSize = 0.5f;
+        public float cursorRadius = 0.1f;
+        public float cursorMinRadius = 0.01f;
+        public float cursorMaxRadius = 0.5f;
         public float cursorDistance = 0.25f;
         public float cursorMinDistance = 0.1f;
         public float cursorMaxDistance = 2f;
@@ -105,9 +105,9 @@ public class UserSettings : MonoBehaviour
     {
         preferences.lastLoadDirectory = PlayerPrefs.GetString("lastLoadDirectory" + slot);
         preferences.lastSaveDirectory = PlayerPrefs.GetString("lastSaveDirectory" + slot);
-        preferences.cursorSize = PlayerPrefs.GetFloat("cursorSize" + slot);
-        preferences.cursorMinSize = PlayerPrefs.GetFloat("cursorMinSize" + slot);
-        preferences.cursorMaxSize = PlayerPrefs.GetFloat("cursorMaxSize" + slot);
+        preferences.cursorRadius = PlayerPrefs.GetFloat("cursorRadius" + slot);
+        preferences.cursorMinRadius = PlayerPrefs.GetFloat("cursorMinRadius" + slot);
+        preferences.cursorMaxRadius = PlayerPrefs.GetFloat("cursorMaxRadius" + slot);
         preferences.cursorDistance = PlayerPrefs.GetFloat("cursorDistance" + slot);
         preferences.cursorMinDistance = PlayerPrefs.GetFloat("cursorMinDistance" + slot);
         preferences.cursorMaxDistance = PlayerPrefs.GetFloat("cursorMaxDistance" + slot);
@@ -130,9 +130,9 @@ public class UserSettings : MonoBehaviour
     {
         PlayerPrefs.SetString("lastLoadDirectory" + slot, preferences.lastLoadDirectory);
         PlayerPrefs.SetString("lastSaveDirectory" + slot, preferences.lastSaveDirectory);
-        PlayerPrefs.SetFloat("cursorsize" + slot, preferences.cursorSize);
-        PlayerPrefs.SetFloat("cursorMinSize" + slot, preferences.cursorMinSize);
-        PlayerPrefs.SetFloat("cursorMaxSize" + slot, preferences.cursorMaxSize);
+        PlayerPrefs.SetFloat("cursorRadius" + slot, preferences.cursorRadius);
+        PlayerPrefs.SetFloat("cursorMinSize" + slot, preferences.cursorMinRadius);
+        PlayerPrefs.SetFloat("cursorMaxSize" + slot, preferences.cursorMaxRadius);
         PlayerPrefs.SetFloat("cursorDistance" + slot, preferences.cursorDistance);
         PlayerPrefs.SetFloat("cursorMinDistance" + slot, preferences.cursorMinDistance);
         PlayerPrefs.SetFloat("cursorMaxDistance" + slot, preferences.cursorMaxDistance);

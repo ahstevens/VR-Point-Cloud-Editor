@@ -96,7 +96,7 @@ public class MapManager : MonoBehaviour
         stickMapAction.action.started += ctx => BeginStickMap();
         stickMapAction.action.canceled += ctx => EndStickMap();
 
-        encResolution = UserSettings.instance.GetPreferences().encResolution;
+        encResolution = UserSettings.instance.preferences.encResolution;
 
         _changingMap = false;
         _adjustingHeight = false;
@@ -239,13 +239,13 @@ public class MapManager : MonoBehaviour
     {
         _changingMap = false;
 
-        if (UserSettings.instance.GetPreferences().stickyMaps && !mapStuck)
+        if (UserSettings.instance.preferences.stickyMaps && !mapStuck)
             currentMap = MAPTYPE.NONE;
     }
 
     private void BeginStickMap()
     {
-        if (UserSettings.instance.GetPreferences().stickyMaps && !mapStuck)
+        if (UserSettings.instance.preferences.stickyMaps && !mapStuck)
             mapStuck = true;        
         else
             mapStuck = false;

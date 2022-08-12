@@ -4,10 +4,8 @@ using UnityEngine;
 
 public class Connector : MonoBehaviour
 {
-    public GameObject connectedObject;
-
-    [SerializeField]
-    private GameObject connector;
+    public GameObject connectedObject;    
+    public GameObject connector;
 
     // Start is called before the first frame update
     void Start()

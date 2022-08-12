@@ -124,13 +124,13 @@ public class PointCloudUI : MonoBehaviour
 
         lastLoadDirectory = lastSaveDirectory = null;
 
-        if (UserSettings.instance.GetPreferences().lastLoadDirectory != "" &&
-            Directory.Exists(UserSettings.instance.GetPreferences().lastLoadDirectory))
-            lastLoadDirectory = UserSettings.instance.GetPreferences().lastLoadDirectory;
+        if (UserSettings.instance.preferences.lastLoadDirectory != "" &&
+            Directory.Exists(UserSettings.instance.preferences.lastLoadDirectory))
+            lastLoadDirectory = UserSettings.instance.preferences.lastLoadDirectory;
 
-        if (UserSettings.instance.GetPreferences().lastSaveDirectory != "" &&
-            Directory.Exists(UserSettings.instance.GetPreferences().lastSaveDirectory))
-            lastSaveDirectory = UserSettings.instance.GetPreferences().lastSaveDirectory;
+        if (UserSettings.instance.preferences.lastSaveDirectory != "" &&
+            Directory.Exists(UserSettings.instance.preferences.lastSaveDirectory))
+            lastSaveDirectory = UserSettings.instance.preferences.lastSaveDirectory;
 
         AdjustOutlierDistance(outliersDistance);
         AdjustOutlierNeighborCount(outlierNeighborCount);
@@ -138,7 +138,7 @@ public class PointCloudUI : MonoBehaviour
         if (groundPlane == null)
             groundPlane = GameObject.Find("Ground Plane");
 
-        if (UserSettings.instance.GetPreferences().stickyUI)
+        if (UserSettings.instance.preferences.stickyUI)
             OpenMenu();
     }
 
@@ -209,7 +209,7 @@ public class PointCloudUI : MonoBehaviour
 
     private void OpenMenuAction()
     {
-        if (UserSettings.instance.GetPreferences().stickyUI && thisCanvas.enabled == true)
+        if (UserSettings.instance.preferences.stickyUI && thisCanvas.enabled == true)
         {
             CloseMenu();
         }
@@ -221,7 +221,7 @@ public class PointCloudUI : MonoBehaviour
 
     private void CloseMenuAction()
     {
-        if (!UserSettings.instance.GetPreferences().stickyUI)
+        if (!UserSettings.instance.preferences.stickyUI)
         {
             CloseMenu();
         }
@@ -273,11 +273,11 @@ public class PointCloudUI : MonoBehaviour
         FileBrowser.SetExcludedExtensions(".lnk", ".tmp", ".zip", ".rar", ".exe");
         FileBrowser.AddQuickLink("Project Data", Application.dataPath, null);
 
-        if (UserSettings.instance.GetPreferences().lastLoadDirectory != "")
-            FileBrowser.AddQuickLink("Last Load", UserSettings.instance.GetPreferences().lastLoadDirectory, null);
+        if (UserSettings.instance.preferences.lastLoadDirectory != "")
+            FileBrowser.AddQuickLink("Last Load", UserSettings.instance.preferences.lastLoadDirectory, null);
 
-        if (UserSettings.instance.GetPreferences().lastSaveDirectory != "")
-            FileBrowser.AddQuickLink("Last Save", UserSettings.instance.GetPreferences().lastSaveDirectory, null);
+        if (UserSettings.instance.preferences.lastSaveDirectory != "")
+            FileBrowser.AddQuickLink("Last Save", UserSettings.instance.preferences.lastSaveDirectory, null);
 
         StartCoroutine(ShowLoadDialogCoroutine());
     }
@@ -297,7 +297,7 @@ public class PointCloudUI : MonoBehaviour
             }
 
             lastLoadDirectory = Path.GetDirectoryName(FileBrowser.Result[0]);
-            UserSettings.instance.GetPreferences().lastLoadDirectory = lastLoadDirectory;
+            UserSettings.instance.preferences.lastLoadDirectory = lastLoadDirectory;
             UserSettings.instance.SaveToFile();
         }
 
@@ -315,11 +315,11 @@ public class PointCloudUI : MonoBehaviour
         FileBrowser.SetExcludedExtensions(".lnk", ".tmp", ".zip", ".rar", ".exe");
         FileBrowser.AddQuickLink("Project Data", Application.dataPath, null);
 
-        if (UserSettings.instance.GetPreferences().lastLoadDirectory != "")
-            FileBrowser.AddQuickLink("Last Load", UserSettings.instance.GetPreferences().lastLoadDirectory, null);
+        if (UserSettings.instance.preferences.lastLoadDirectory != "")
+            FileBrowser.AddQuickLink("Last Load", UserSettings.instance.preferences.lastLoadDirectory, null);
 
-        if (UserSettings.instance.GetPreferences().lastSaveDirectory != "")
-            FileBrowser.AddQuickLink("Last Save", UserSettings.instance.GetPreferences().lastSaveDirectory, null);
+        if (UserSettings.instance.preferences.lastSaveDirectory != "")
+            FileBrowser.AddQuickLink("Last Save", UserSettings.instance.preferences.lastSaveDirectory, null);
 
         //StartCoroutine(ShowSaveDialogCoroutine(dd.options[dd.value].text + "_edit.laz"));
         StartCoroutine(ShowSaveDialogCoroutine(pointCloudManager.getPointCloudsInScene()[0].name + "_edit.laz"));
@@ -339,7 +339,7 @@ public class PointCloudUI : MonoBehaviour
             //pointCloudManager.SaveLAZFile(FileBrowser.Result[0] + "/" + filename, pcs[dd.value].ID);
             pointCloudManager.SaveLAZFile(FileBrowser.Result[0] + "/" + filename, pcs[0].ID);
             lastSaveDirectory = FileBrowser.Result[0];
-            UserSettings.instance.GetPreferences().lastSaveDirectory = lastSaveDirectory;
+            UserSettings.instance.preferences.lastSaveDirectory = lastSaveDirectory;
             UserSettings.instance.SaveToFile();
         }
 
@@ -479,8 +479,8 @@ public class PointCloudUI : MonoBehaviour
         //resettableObject.transform.localScale = Vector3.one;
 
         pointCloudManager.getPointCloudsInScene()[0].ResetMiniature(
-            UserSettings.instance.GetPreferences().fitSizeOnLoad, 
-            UserSettings.instance.GetPreferences().distanceOnLoad
+            UserSettings.instance.preferences.fitSizeOnLoad, 
+            UserSettings.instance.preferences.distanceOnLoad
         );
     }
     

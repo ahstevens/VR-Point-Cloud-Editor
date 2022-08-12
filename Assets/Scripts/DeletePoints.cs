@@ -80,26 +80,26 @@ public class DeletePoints : MonoBehaviour
         deletionOps = new List<int>();
         currentDeletionOpCount = 0;
         
-        minimumSphereRadius = UserSettings.instance.GetPreferences().cursorRadiusMin;
-        maximumSphereRadius = UserSettings.instance.GetPreferences().cursorRadiusMax;
-        minimumSphereOffset = UserSettings.instance.GetPreferences().cursorDistanceMin;
-        maximumSphereOffset = UserSettings.instance.GetPreferences().cursorDistanceMax;
+        minimumSphereRadius = UserSettings.instance.preferences.cursorRadiusMin;
+        maximumSphereRadius = UserSettings.instance.preferences.cursorRadiusMax;
+        minimumSphereOffset = UserSettings.instance.preferences.cursorDistanceMin;
+        maximumSphereOffset = UserSettings.instance.preferences.cursorDistanceMax;
 
-        deleteRate = UserSettings.instance.GetPreferences().cursorDeletionRate;
+        deleteRate = UserSettings.instance.preferences.cursorDeletionRate;
 
-        deletionSphere.transform.localScale = Vector3.one * UserSettings.instance.GetPreferences().cursorRadius;
+        deletionSphere.transform.localScale = Vector3.one * UserSettings.instance.preferences.cursorRadius;
 
-        deletionSphere.transform.localPosition = Vector3.forward * UserSettings.instance.GetPreferences().cursorDistance;
+        deletionSphere.transform.localPosition = Vector3.forward * UserSettings.instance.preferences.cursorDistance;
 
         setHighlightDeletedPointsActive(true);
     }
 
     private void OnApplicationQuit()
     {
-        if (UserSettings.instance.GetPreferences().saveCursorOnExit)
+        if (UserSettings.instance.preferences.saveCursorOnExit)
         {
-            UserSettings.instance.GetPreferences().cursorRadius = deletionSphere.transform.localScale.x;
-            UserSettings.instance.GetPreferences().cursorDistance = deletionSphere.transform.localPosition.z;
+            UserSettings.instance.preferences.cursorRadius = deletionSphere.transform.localScale.x;
+            UserSettings.instance.preferences.cursorDistance = deletionSphere.transform.localPosition.z;
             UserSettings.instance.SaveToFile();
         }
     }

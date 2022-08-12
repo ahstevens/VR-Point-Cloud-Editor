@@ -73,8 +73,8 @@ public class XRGrabbing : MonoBehaviour
 
         if (pcs.Length > 0)
             pcs[0].ResetMiniature(
-                        UserSettings.instance.GetPreferences().fitSizeOnLoad,
-                        UserSettings.instance.GetPreferences().distanceOnLoad
+                        UserSettings.instance.preferences.fitSizeOnLoad,
+                        UserSettings.instance.preferences.distanceOnLoad
                     );
     }
 

@@ -3175,8 +3175,8 @@ MonoBehaviour:
       type: 3}
   moveAndResizeThumbstickDeadzone: 0.3
   moveAndResizeTouchpadDelta: 0.2
-  minimumSphereSize: 0.01
-  maximumSphereSize: 0.5
+  minimumSphereRadius: 0
+  maximumSphereRadius: 0
   minimumSphereOffset: 0.1
   maximumSphereOffset: 2
   deleteRate: 0.1
@@ -4006,7 +4006,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Reset Transforms
+  m_Text: Reset View
 --- !u!222 &877425146
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -4146,8 +4146,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
-  m_AnchoredPosition: {x: 61.5, y: 269.00003}
-  m_SizeDelta: {x: 92, y: 30}
+  m_AnchoredPosition: {x: 54.600002, y: 269.00003}
+  m_SizeDelta: {x: 107.5, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &935916103 stripped
 RectTransform:
@@ -8776,8 +8776,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
-  m_AnchoredPosition: {x: -47.4, y: 269}
-  m_SizeDelta: {x: 120, y: 30}
+  m_AnchoredPosition: {x: -54.3, y: 269}
+  m_SizeDelta: {x: 107.5, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2023643300
 MonoBehaviour:

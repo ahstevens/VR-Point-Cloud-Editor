@@ -6,13 +6,12 @@ public class Connector : MonoBehaviour
 {
     public GameObject connectedObject;
 
+    [SerializeField]
     private GameObject connector;
 
     // Start is called before the first frame update
     void Start()
     {
-        connector = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-        connector.name = "Connector";
         connector.transform.parent = this.transform;
         connector.transform.localRotation = Quaternion.Euler(90, 0, 0);
         connector.transform.localScale = new Vector3(0.001f, 0.01f, 0.001f);

@@ -56,7 +56,7 @@ public class PointCloudUI : MonoBehaviour
 
     public UnityEngine.XR.Interaction.Toolkit.XRInteractorLineVisual pointer;
 
-    private GameObject connector;
+    public GameObject connector;
 
     private bool colorPickerActive;
 
@@ -92,8 +92,6 @@ public class PointCloudUI : MonoBehaviour
         //dd = fileDropdown.GetComponent<Dropdown>();
 
         pointer.enabled = false;
-        
-        connector = GameObject.Find("Connector");
 
         colorPickerActive = false;
         colorPicker.gameObject.SetActive(false);
@@ -139,14 +137,14 @@ public class PointCloudUI : MonoBehaviour
 
         if (groundPlane == null)
             groundPlane = GameObject.Find("Ground Plane");
+
+        if (UserSettings.instance.GetPreferences().stickyUI)
+            OpenMenu();
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (connector == null)
-            connector = GameObject.Find("Connector");
-
         // just finished loading a file
         if (loading && !pointCloudManager.isWaitingToLoad)
         {

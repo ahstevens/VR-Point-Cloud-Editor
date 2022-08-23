@@ -119,6 +119,8 @@ public class pointCloudManager : MonoBehaviour
 
     private static Material deletedPointsBox;
 
+    private static string demoFile;
+
     static private GEOReference getReferenceScript()
     {
         GameObject geoReference = GameObject.Find("UnityZeroGeoReference");
@@ -462,6 +464,8 @@ public class pointCloudManager : MonoBehaviour
 
     void Start()
     {
+        demoFile = Application.dataPath + "/sample";
+
         deletedPointsBox = new Material(Shader.Find("Unlit/Color"));
         deletedPointsBox.color = Camera.main.backgroundColor;
 
@@ -486,6 +490,27 @@ public class pointCloudManager : MonoBehaviour
         if (Keyboard.current.pKey.wasPressedThisFrame)
         {
             renderPointClouds = !renderPointClouds;
+        }
+
+        if (Keyboard.current.dKey.wasPressedThisFrame)
+        {
+            bool demoLas = File.Exists(demoFile + ".las");
+            bool demoLaz = File.Exists(demoFile + ".laz");
+
+            if (demoLas || demoLaz)
+            {
+                var pcs = getPointCloudsInScene();
+
+                if (pcs != null)
+                    for (int i = 0; i < pcs.Length; ++i)
+                        UnLoad(pcs[i].ID);
+
+                pointCloudManager.loadLAZFile(demoFile + ".la" + (demoLas ? "s" : "z"));
+            }
+            else
+            {
+                Debug.Log("Demo file " + demoFile + " not found!");
+            }
         }
     }
 

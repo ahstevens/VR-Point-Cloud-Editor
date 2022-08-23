@@ -290,11 +290,7 @@ public class PointCloudUI : MonoBehaviour
 
         if (FileBrowser.Success)
         {
-            if (pointCloudManager.loadLAZFile(FileBrowser.Result[0]))
-            {
-                loading = true;
-                ActivateLoadingUI(true);
-            }
+            LoadFile(FileBrowser.Result[0]);
 
             lastLoadDirectory = Path.GetDirectoryName(FileBrowser.Result[0]);
             UserSettings.instance.preferences.lastLoadDirectory = lastLoadDirectory;
@@ -302,6 +298,19 @@ public class PointCloudUI : MonoBehaviour
         }
 
         fileBrowsing = false;
+    }
+
+    public bool LoadFile(string filePath)
+    {
+        if (pointCloudManager.loadLAZFile(FileBrowser.Result[0]))
+        {
+            loading = true;
+            ActivateLoadingUI(true);
+            fileBrowsing = false;
+            return true;
+        }
+
+        return false;
     }
 
     public void SaveFile()

@@ -31,6 +31,12 @@ public class pointCloud : MonoBehaviour
     void Update()
     {
         DrawBounds(bounds);
+
+        if (UnityEngine.InputSystem.Keyboard.current.vKey.wasPressedThisFrame)
+            ResetMiniature(
+                UserSettings.instance.preferences.fitSizeOnLoad,
+                UserSettings.instance.preferences.distanceOnLoad
+            );
     }
 
     public void ResetMiniature(float size = 1f, float distance = 0.75f)

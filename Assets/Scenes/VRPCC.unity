@@ -407,7 +407,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 486264991}
         m_TargetAssemblyTypeName: PointCloudUI, Assembly-CSharp
-        m_MethodName: UnloadFile
+        m_MethodName: CloseButton
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

@@ -138,6 +138,14 @@ public class PointCloudUI : MonoBehaviour
         if (groundPlane == null)
             groundPlane = GameObject.Find("Ground Plane");
 
+        if (pointCloudManager.commandLineMode)
+        {
+            loadButton.GetComponentInChildren<Text>().text = "Revert";
+            saveButton.GetComponentInChildren<Text>().text = "Save";
+            unloadButton.GetComponentInChildren<Text>().text = "Quit";
+        }
+
+
         if (UserSettings.instance.preferences.openMenuOnStart)
             OpenMenu();
     }
@@ -170,7 +178,7 @@ public class PointCloudUI : MonoBehaviour
         if (!colorPickerActive)
         {
             // reduced UI
-            if (fileBrowsing || loading || saving)
+            if (fileBrowsing || loading)
             {
                 ActivateColorPickerUI(false);
 
@@ -193,6 +201,9 @@ public class PointCloudUI : MonoBehaviour
                 panel.SetActive(true);                
             }
         }
+
+        if (pointCloudManager.commandLineMode && saving && pointCloudManager.IsLastAsyncSaveFinished())
+            Application.Quit();
 
         BlockUnloadWhileSaving();
     }
@@ -264,22 +275,30 @@ public class PointCloudUI : MonoBehaviour
 
     public void LoadFile()
     {
-        fileBrowsing = true;
+        if (pointCloudManager.commandLineMode)
+        {
+            UnloadFile();
+            LoadFile(pointCloudManager.commandLineInputFile);
+        }
+        else
+        {
+            fileBrowsing = true;
 
-        fileBrowserCanvas.SetActive(true);
+            fileBrowserCanvas.SetActive(true);
 
-        FileBrowser.SetFilters(true, new FileBrowser.Filter("Point Clouds", ".las", ".laz"));
-        FileBrowser.SetDefaultFilter(".las");
-        FileBrowser.SetExcludedExtensions(".lnk", ".tmp", ".zip", ".rar", ".exe");
-        FileBrowser.AddQuickLink("Project Data", Application.dataPath, null);
+            FileBrowser.SetFilters(true, new FileBrowser.Filter("Point Clouds", ".las", ".laz"));
+            FileBrowser.SetDefaultFilter(".las");
+            FileBrowser.SetExcludedExtensions(".lnk", ".tmp", ".zip", ".rar", ".exe");
+            FileBrowser.AddQuickLink("Project Data", Application.dataPath, null);
 
-        if (UserSettings.instance.preferences.lastLoadDirectory != "")
-            FileBrowser.AddQuickLink("Last Load", UserSettings.instance.preferences.lastLoadDirectory, null);
+            if (UserSettings.instance.preferences.lastLoadDirectory != "")
+                FileBrowser.AddQuickLink("Last Load", UserSettings.instance.preferences.lastLoadDirectory, null);
 
-        if (UserSettings.instance.preferences.lastSaveDirectory != "")
-            FileBrowser.AddQuickLink("Last Save", UserSettings.instance.preferences.lastSaveDirectory, null);
+            if (UserSettings.instance.preferences.lastSaveDirectory != "")
+                FileBrowser.AddQuickLink("Last Save", UserSettings.instance.preferences.lastSaveDirectory, null);
 
-        StartCoroutine(ShowLoadDialogCoroutine());
+            StartCoroutine(ShowLoadDialogCoroutine());
+        }
     }
 
     IEnumerator ShowLoadDialogCoroutine()
@@ -302,7 +321,7 @@ public class PointCloudUI : MonoBehaviour
 
     public bool LoadFile(string filePath)
     {
-        if (pointCloudManager.loadLAZFile(FileBrowser.Result[0]))
+        if (pointCloudManager.loadLAZFile(filePath))
         {
             loading = true;
             ActivateLoadingUI(true);
@@ -315,23 +334,35 @@ public class PointCloudUI : MonoBehaviour
 
     public void SaveFile()
     {
-        fileBrowsing = true;
+        if (pointCloudManager.commandLineMode)
+        {
+            if (pointCloudManager.commandLineOutputFile != "")
+                pointCloudManager.SaveLAZFile(pointCloudManager.commandLineOutputFile, pointCloudManager.getPointCloudsInScene()[0].ID);
+            else
+                pointCloudManager.SaveLAZFile(pointCloudManager.commandLineInputFile, pointCloudManager.getPointCloudsInScene()[0].ID);
 
-        fileBrowserCanvas.SetActive(true);
+            saving = true;
+        }
+        else
+        {
+            fileBrowsing = true;
 
-        FileBrowser.SetFilters(true, new FileBrowser.Filter("Point Clouds", ".las", ".laz"));
-        FileBrowser.SetDefaultFilter(".las");
-        FileBrowser.SetExcludedExtensions(".lnk", ".tmp", ".zip", ".rar", ".exe");
-        FileBrowser.AddQuickLink("Project Data", Application.dataPath, null);
+            fileBrowserCanvas.SetActive(true);
 
-        if (UserSettings.instance.preferences.lastLoadDirectory != "")
-            FileBrowser.AddQuickLink("Last Load", UserSettings.instance.preferences.lastLoadDirectory, null);
+            FileBrowser.SetFilters(true, new FileBrowser.Filter("Point Clouds", ".las", ".laz"));
+            FileBrowser.SetDefaultFilter(".las");
+            FileBrowser.SetExcludedExtensions(".lnk", ".tmp", ".zip", ".rar", ".exe");
+            FileBrowser.AddQuickLink("Project Data", Application.dataPath, null);
 
-        if (UserSettings.instance.preferences.lastSaveDirectory != "")
-            FileBrowser.AddQuickLink("Last Save", UserSettings.instance.preferences.lastSaveDirectory, null);
+            if (UserSettings.instance.preferences.lastLoadDirectory != "")
+                FileBrowser.AddQuickLink("Last Load", UserSettings.instance.preferences.lastLoadDirectory, null);
 
-        //StartCoroutine(ShowSaveDialogCoroutine(dd.options[dd.value].text + "_edit.laz"));
-        StartCoroutine(ShowSaveDialogCoroutine(pointCloudManager.getPointCloudsInScene()[0].name + "_edit.laz"));
+            if (UserSettings.instance.preferences.lastSaveDirectory != "")
+                FileBrowser.AddQuickLink("Last Save", UserSettings.instance.preferences.lastSaveDirectory, null);
+
+            //StartCoroutine(ShowSaveDialogCoroutine(dd.options[dd.value].text + "_edit.laz"));
+            StartCoroutine(ShowSaveDialogCoroutine(pointCloudManager.getPointCloudsInScene()[0].name + "_edit.laz"));
+        }
     }
 
     IEnumerator ShowSaveDialogCoroutine(string filename)
@@ -353,6 +384,14 @@ public class PointCloudUI : MonoBehaviour
         }
 
         fileBrowsing = false;
+    }
+
+    public void CloseButton()
+    {
+        if (pointCloudManager.commandLineMode)
+            Application.Quit();
+        else
+            UnloadFile();
     }
 
     public void UnloadFile()
@@ -384,7 +423,7 @@ public class PointCloudUI : MonoBehaviour
             bool pointCloudsLoaded = pointCloudManager.getPointCloudsInScene().Length > 0;
 
             loadButton.SetActive(true);
-            loadButton.GetComponent<Button>().interactable = !pointCloudsLoaded;
+            loadButton.GetComponent<Button>().interactable = !pointCloudsLoaded || pointCloudManager.commandLineMode;
 
             showGroundPlaneButton.SetActive(true);
             floorText.SetActive(true);
@@ -424,7 +463,7 @@ public class PointCloudUI : MonoBehaviour
             saveButton.SetActive(false);
             //fileDropdown.SetActive(false);
             resetPointCloudTransforms.gameObject.SetActive(false);
-            resetPointCloudTransforms.gameObject.SetActive(false);
+            refreshENCButton.gameObject.SetActive(false);
             unloadButton.SetActive(false);
             buildInfo.SetActive(false);
 

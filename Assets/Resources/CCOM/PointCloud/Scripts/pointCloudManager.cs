@@ -121,6 +121,145 @@ public class pointCloudManager : MonoBehaviour
 
     private static string demoFile;
 
+    private static bool _commandLineMode = false;
+    public static bool commandLineMode
+    {
+        get { return _commandLineMode; }
+    }
+
+    private static string _commandLineInputFile;
+    public static string commandLineInputFile
+    {
+        get { return _commandLineInputFile; }
+    }
+
+    private static string _commandLineOutputFile;
+    public static string commandLineOutputFile
+    {
+        get { return _commandLineOutputFile; }
+    }
+
+    static int screenIndex = 0;
+
+    private void Awake()
+    {
+        // find command line input file, if supplied
+        string[] arguments = Environment.GetCommandLineArgs();
+
+        _commandLineInputFile = "";
+        _commandLineOutputFile = "";
+
+        for (int i = 1; i < arguments.Length; ++i)
+        {
+            if (arguments[i] == "-i" && i != arguments.Length - 1)
+            {
+                _commandLineInputFile = arguments[i + 1];
+                _commandLineMode = true;
+            }
+
+            if (arguments[i] == "-o" && i != arguments.Length - 1)
+            {
+                _commandLineOutputFile = arguments[i + 1];
+            }
+        }
+    }
+
+    void Start()
+    {
+        demoFile = Application.dataPath + "/sample";
+
+        deletedPointsBox = new Material(Shader.Find("Unlit/Color"));
+        deletedPointsBox.color = Camera.main.backgroundColor;
+
+        OnValidate();
+    }
+
+    void Update()
+    {
+        deletedPointsBox.color = Camera.main.backgroundColor;
+
+        checkIsAsyncLoadFinished();
+
+        if (Camera.onPostRender != OnPostRenderCallback && pointClouds == null)
+        {
+            reInitialize();
+        }
+        else if (Camera.onPostRender != OnPostRenderCallback)
+        {
+            Camera.onPostRender = OnPostRenderCallback;
+        }
+
+        if (Keyboard.current.pKey.wasPressedThisFrame)
+        {
+            renderPointClouds = !renderPointClouds;
+        }
+
+        if (Keyboard.current.dKey.wasPressedThisFrame)
+        {
+            bool demoLas = File.Exists(demoFile + ".las");
+            bool demoLaz = File.Exists(demoFile + ".laz");
+
+            if (demoLas || demoLaz)
+            {
+                var pcs = getPointCloudsInScene();
+
+                if (pcs != null)
+                    for (int i = 0; i < pcs.Length; ++i)
+                        UnLoad(pcs[i].ID);
+
+                pointCloudManager.loadLAZFile(demoFile + ".la" + (demoLas ? "s" : "z"));
+            }
+            else
+            {
+                Debug.Log("Demo file " + demoFile + " not found!");
+            }
+        }
+
+        if (_commandLineInputFile != "" && !isWaitingToLoad && getPointCloudsInScene().Length == 0)
+        {
+            if (pointCloudManager.loadLAZFile(_commandLineInputFile))
+            {
+                Debug.Log("Successfully loaded " + _commandLineInputFile);
+            }
+            else
+            {
+                Debug.Log("Error loading " + _commandLineInputFile);
+            }
+        }
+    }
+
+    void OnValidate()
+    {
+        Camera.onPostRender = pointCloudManager.OnPostRenderCallback;
+
+#if UNITY_EDITOR
+        EditorSceneManager.sceneSaved -= OnSceneSaveCallback;
+        EditorSceneManager.sceneSaved += OnSceneSaveCallback;
+
+        EditorApplication.playModeStateChanged -= ClearPointCloudsOnPlayModeExit;
+        EditorApplication.playModeStateChanged += ClearPointCloudsOnPlayModeExit;
+#endif
+        OnSceneStartFromUnity(Marshal.StringToHGlobalAnsi(Application.dataPath));
+
+        pointCloud[] pointClouds = (pointCloud[])GameObject.FindObjectsOfType(typeof(pointCloud));
+        for (int i = 0; i < pointClouds.Length; i++)
+        {
+            IntPtr strPtr = Marshal.StringToHGlobalAnsi(pointClouds[i].pathToRawData);
+            IntPtr IDStrPtr = Marshal.StringToHGlobalAnsi(pointClouds[i].ID);
+
+            if (ValidatePointCloudGMFromUnity(strPtr, IDStrPtr))
+            {
+                if (toLoadList == null)
+                    toLoadList = new List<string>();
+
+                toLoadList.Add(pointClouds[i].ID);
+            }
+
+            Marshal.FreeHGlobal(strPtr);
+            Marshal.FreeHGlobal(IDStrPtr);
+        }
+    }
+
     static private GEOReference getReferenceScript()
     {
         GameObject geoReference = GameObject.Find("UnityZeroGeoReference");
@@ -417,38 +556,6 @@ public class pointCloudManager : MonoBehaviour
 #endif
     }
 
-    void OnValidate()
-    {
-        Camera.onPostRender = pointCloudManager.OnPostRenderCallback;
-
-#if UNITY_EDITOR
-        EditorSceneManager.sceneSaved -= OnSceneSaveCallback;
-        EditorSceneManager.sceneSaved += OnSceneSaveCallback;
-
-        EditorApplication.playModeStateChanged -= ClearPointCloudsOnPlayModeExit;
-        EditorApplication.playModeStateChanged += ClearPointCloudsOnPlayModeExit;
-#endif
-        OnSceneStartFromUnity(Marshal.StringToHGlobalAnsi(Application.dataPath));
-
-        pointCloud[] pointClouds = (pointCloud[])GameObject.FindObjectsOfType(typeof(pointCloud));
-        for (int i = 0; i < pointClouds.Length; i++)
-        {
-            IntPtr strPtr = Marshal.StringToHGlobalAnsi(pointClouds[i].pathToRawData);
-            IntPtr IDStrPtr = Marshal.StringToHGlobalAnsi(pointClouds[i].ID);
-
-            if (ValidatePointCloudGMFromUnity(strPtr, IDStrPtr))
-            {
-                if (toLoadList == null)
-                    toLoadList = new List<string>();
-
-                toLoadList.Add(pointClouds[i].ID);
-            }
-			
-			Marshal.FreeHGlobal(strPtr);
-			Marshal.FreeHGlobal(IDStrPtr);
-        }
-    }
-
 #if UNITY_EDITOR
     private static void ClearPointCloudsOnPlayModeExit(PlayModeStateChange state)
     {
@@ -461,60 +568,6 @@ public class pointCloudManager : MonoBehaviour
         }
     }
 #endif
-
-    void Start()
-    {
-        demoFile = Application.dataPath + "/sample";
-
-        deletedPointsBox = new Material(Shader.Find("Unlit/Color"));
-        deletedPointsBox.color = Camera.main.backgroundColor;
-
-        OnValidate();
-    }
-
-    void Update()
-    {
-        deletedPointsBox.color = Camera.main.backgroundColor;
-
-        checkIsAsyncLoadFinished();
-
-        if (Camera.onPostRender != OnPostRenderCallback && pointClouds == null)
-        {
-            reInitialize();
-        }
-        else if (Camera.onPostRender != OnPostRenderCallback)
-        {
-            Camera.onPostRender = OnPostRenderCallback;
-        }
-
-        if (Keyboard.current.pKey.wasPressedThisFrame)
-        {
-            renderPointClouds = !renderPointClouds;
-        }
-
-        if (Keyboard.current.dKey.wasPressedThisFrame)
-        {
-            bool demoLas = File.Exists(demoFile + ".las");
-            bool demoLaz = File.Exists(demoFile + ".laz");
-
-            if (demoLas || demoLaz)
-            {
-                var pcs = getPointCloudsInScene();
-
-                if (pcs != null)
-                    for (int i = 0; i < pcs.Length; ++i)
-                        UnLoad(pcs[i].ID);
-
-                pointCloudManager.loadLAZFile(demoFile + ".la" + (demoLas ? "s" : "z"));
-            }
-            else
-            {
-                Debug.Log("Demo file " + demoFile + " not found!");
-            }
-        }
-    }
-
-    static int screenIndex = 0;
 
     public static void OnPostRenderCallback(Camera cam)
     {

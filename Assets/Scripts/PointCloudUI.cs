@@ -138,7 +138,7 @@ public class PointCloudUI : MonoBehaviour
         if (groundPlane == null)
             groundPlane = GameObject.Find("Ground Plane");
 
-        if (UserSettings.instance.preferences.stickyUI)
+        if (UserSettings.instance.preferences.openMenuOnStart)
             OpenMenu();
     }
 

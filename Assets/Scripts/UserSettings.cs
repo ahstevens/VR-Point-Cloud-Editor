@@ -21,6 +21,7 @@ public class UserSettings : MonoBehaviour
         public string lastLoadDirectory = "";
         public string lastSaveDirectory = "";
         public float nearPlaneDistance = 0.1f;
+        public bool openMenuOnStart = true;
         public float outlierDistance = 5f;
         public int outlierNeighborCount = 5;
         public bool saveCursorOnExit = true;
@@ -116,6 +117,7 @@ public class UserSettings : MonoBehaviour
         _prefs.lastLoadDirectory = PlayerPrefs.GetString("lastLoadDirectory" + slot);
         _prefs.lastSaveDirectory = PlayerPrefs.GetString("lastSaveDirectory" + slot);
         _prefs.nearPlaneDistance = PlayerPrefs.GetFloat("nearPlaneDistance" + slot);
+        _prefs.openMenuOnStart = PlayerPrefs.GetInt("openMenuOnStart" + slot) == 1;
         _prefs.outlierDistance = PlayerPrefs.GetFloat("outlierDistance" + slot);
         _prefs.outlierNeighborCount = PlayerPrefs.GetInt("outlierNeighborCount" + slot);
         _prefs.saveCursorOnExit = PlayerPrefs.GetInt("saveCursorOnExit" + slot) == 1;
@@ -141,6 +143,7 @@ public class UserSettings : MonoBehaviour
         PlayerPrefs.SetString("lastLoadDirectory" + slot, _prefs.lastLoadDirectory);
         PlayerPrefs.SetString("lastSaveDirectory" + slot, _prefs.lastSaveDirectory);
         PlayerPrefs.SetFloat("nearPlaneDistance" + slot, _prefs.nearPlaneDistance);
+        PlayerPrefs.SetInt("openMenuOnStart" + slot, _prefs.openMenuOnStart ? 1 : 0);
         PlayerPrefs.SetFloat("outlierDistance" + slot, _prefs.outlierDistance);
         PlayerPrefs.SetInt("outlierNeighborCount" + slot, _prefs.outlierNeighborCount);
         PlayerPrefs.SetInt("saveCursorOnExit" + slot, _prefs.saveCursorOnExit ? 1 : 0);

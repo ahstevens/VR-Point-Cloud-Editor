@@ -118,10 +118,10 @@ public class pointCloudManagerWindow : EditorWindow
             EditorSceneManager.sceneSaved += pointCloudManager.OnSceneSaveCallback;
         }
 
-        pointCloudManager.checkIsAsyncLoadFinished();
+        pointCloudManager.CheckIsAsyncLoadFinished();
 
-        if (getPointCloudManagerGameObject() == null)
-            createPointCloudManagerGameObject();
+        if (GetPointCloudManagerGameObject() == null)
+            CreatePointCloudManagerGameObject();
     }
 
     void OnInspectorUpdate()
@@ -134,7 +134,7 @@ public class pointCloudManagerWindow : EditorWindow
         string currentFile = EditorUtility.OpenFilePanel("Choose file", "", "laz,las,cpc");
         if (currentFile == "")
             return currentFile;
-        pointCloudManager.loadLAZFile(currentFile);
+        pointCloudManager.LoadLAZFile(currentFile);
 
         return currentFile;
     }
@@ -148,7 +148,7 @@ public class pointCloudManagerWindow : EditorWindow
         pointCloudManager.SaveLAZFile(saveToFile, pointCloudID);
     }
 
-    private GameObject getPointCloudManagerGameObject()
+    private GameObject GetPointCloudManagerGameObject()
     {
         GameObject pointCloudManager = GameObject.Find("pointCloudManager");
         if (pointCloudManager == null)
@@ -157,7 +157,7 @@ public class pointCloudManagerWindow : EditorWindow
         return pointCloudManager;
     }
 
-    private void createPointCloudManagerGameObject()
+    private void CreatePointCloudManagerGameObject()
     {
         GameObject pointCloudManager = new GameObject("pointCloudManager");
 

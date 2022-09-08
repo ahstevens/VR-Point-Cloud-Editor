@@ -130,7 +130,7 @@ public class MapManager : MonoBehaviour
         if (!UserSettings.instance.preferences.enableMaps)
             return;
 
-        if (_loaded && pointCloudManager.getPointCloudsInScene().Length > 0)
+        if (_loaded && pointCloudManager.GetPointCloudsInScene().Length > 0)
         {
             if (_changingMap)
             {

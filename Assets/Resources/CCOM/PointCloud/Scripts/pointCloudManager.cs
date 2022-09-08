@@ -160,70 +160,6 @@ public class pointCloudManager : MonoBehaviour
         }
     }
 
-    void Start()
-    {
-        demoFile = Application.dataPath + "/sample";
-
-        deletedPointsBox = new Material(Shader.Find("Unlit/Color"));
-        deletedPointsBox.color = Camera.main.backgroundColor;
-
-        OnValidate();
-
-        if (_commandLineInputFile != "")
-        {
-            if (pointCloudManager.loadLAZFile(_commandLineInputFile))
-            {                
-                Debug.Log("Successfully loaded " + _commandLineInputFile);
-            }
-            else
-            {
-                Debug.Log("Error loading " + _commandLineInputFile);                
-            }
-        }
-    }
-
-    void Update()
-    {
-        deletedPointsBox.color = Camera.main.backgroundColor;
-
-        checkIsAsyncLoadFinished();
-
-        if (Camera.onPostRender != OnPostRenderCallback && pointClouds == null)
-        {
-            reInitialize();
-        }
-        else if (Camera.onPostRender != OnPostRenderCallback)
-        {
-            Camera.onPostRender = OnPostRenderCallback;
-        }
-
-        if (Keyboard.current.pKey.wasPressedThisFrame)
-        {
-            renderPointClouds = !renderPointClouds;
-        }
-
-        if (Keyboard.current.dKey.wasPressedThisFrame)
-        {
-            bool demoLas = File.Exists(demoFile + ".las");
-            bool demoLaz = File.Exists(demoFile + ".laz");
-
-            if (demoLas || demoLaz)
-            {
-                var pcs = getPointCloudsInScene();
-
-                if (pcs != null)
-                    for (int i = 0; i < pcs.Length; ++i)
-                        UnLoad(pcs[i].ID);
-
-                pointCloudManager.loadLAZFile(demoFile + ".la" + (demoLas ? "s" : "z"));
-            }
-            else
-            {
-                Debug.Log("Demo file " + demoFile + " not found!");
-            }
-        }
-    }
-
     void OnValidate()
     {
         Camera.onPostRender = pointCloudManager.OnPostRenderCallback;
@@ -256,7 +192,71 @@ public class pointCloudManager : MonoBehaviour
         }
     }
 
-    static private GEOReference getReferenceScript()
+    void Start()
+    {
+        demoFile = Application.dataPath + "/sample";
+
+        deletedPointsBox = new Material(Shader.Find("Unlit/Color"));
+        deletedPointsBox.color = Camera.main.backgroundColor;
+
+        OnValidate();
+
+        if (_commandLineInputFile != "")
+        {
+            if (pointCloudManager.LoadLAZFile(_commandLineInputFile))
+            {                
+                Debug.Log("Successfully loaded " + _commandLineInputFile);
+            }
+            else
+            {
+                Debug.Log("Error loading " + _commandLineInputFile);                
+            }
+        }
+    }
+
+    void Update()
+    {
+        deletedPointsBox.color = Camera.main.backgroundColor;
+
+        CheckIsAsyncLoadFinished();
+
+        if (Camera.onPostRender != OnPostRenderCallback && pointClouds == null)
+        {
+            Reinitialize();
+        }
+        else if (Camera.onPostRender != OnPostRenderCallback)
+        {
+            Camera.onPostRender = OnPostRenderCallback;
+        }
+
+        if (Keyboard.current.pKey.wasPressedThisFrame)
+        {
+            renderPointClouds = !renderPointClouds;
+        }
+
+        if (Keyboard.current.dKey.wasPressedThisFrame)
+        {
+            bool demoLas = File.Exists(demoFile + ".las");
+            bool demoLaz = File.Exists(demoFile + ".laz");
+
+            if (demoLas || demoLaz)
+            {
+                var pcs = GetPointCloudsInScene();
+
+                if (pcs != null)
+                    for (int i = 0; i < pcs.Length; ++i)
+                        UnLoad(pcs[i].ID);
+
+                pointCloudManager.LoadLAZFile(demoFile + ".la" + (demoLas ? "s" : "z"));
+            }
+            else
+            {
+                Debug.Log("Demo file " + demoFile + " not found!");
+            }
+        }
+    }
+
+    static private GEOReference GetGeoReference()
     {
         GameObject geoReference = GameObject.Find("UnityZeroGeoReference");
         if (geoReference == null)
@@ -265,7 +265,7 @@ public class pointCloudManager : MonoBehaviour
         return geoReference.GetComponent<GEOReference>();
     }
 
-    private static void createGEOReference(Vector3 GEOPosition, int UTMZone)
+    private static void CreateGEOReference(Vector3 GEOPosition, int UTMZone)
     {
         GameObject geoReference = new GameObject("UnityZeroGeoReference");
         geoReference.transform.position = new Vector3(0.0f, 0.0f, 0.0f);
@@ -279,7 +279,7 @@ public class pointCloudManager : MonoBehaviour
         scriptClass.UTMZone = UTMZone;
     }
 
-    public static bool loadLAZFile(string filePath, GameObject reinitialization = null)
+    public static bool LoadLAZFile(string filePath, GameObject reinitialization = null)
     {
         IntPtr strPtr = Marshal.StringToHGlobalAnsi(filePath);
         string LAZFileName = Path.GetFileNameWithoutExtension(filePath);
@@ -386,13 +386,13 @@ public class pointCloudManager : MonoBehaviour
 		Marshal.FreeHGlobal(IDStrPtr);
     }
 
-    public static pointCloud[] getPointCloudsInScene()
+    public static pointCloud[] GetPointCloudsInScene()
     {
         pointCloud[] pointClouds = (pointCloud[])FindObjectsOfType(typeof(pointCloud));
         return pointClouds;
     }
 
-    public void reInitialize()
+    public void Reinitialize()
     {
         Camera.onPostRender += OnPostRenderCallback;
 
@@ -418,7 +418,7 @@ public class pointCloudManager : MonoBehaviour
         Marshal.FreeHGlobal(targetPercentOFPoints);
     }
 
-    public static void checkIsAsyncLoadFinished()
+    public static void CheckIsAsyncLoadFinished()
     {
         if (!isWaitingToLoad)
             return;
@@ -487,14 +487,14 @@ public class pointCloudManager : MonoBehaviour
 
             pcComponent.groundLevel = (float)adjustmentResult[12];
 
-            if (getReferenceScript() == null)
+            if (GetGeoReference() == null)
             {
-                createGEOReference(new Vector3((float)adjustmentResult[3], 0.0f, (float)adjustmentResult[4]), pcComponent.UTMZone);
+                CreateGEOReference(new Vector3((float)adjustmentResult[3], 0.0f, (float)adjustmentResult[4]), pcComponent.UTMZone);
             }
             else
             {
-                pcComponent.initialXShift = -(getReferenceScript().realWorldX - adjustmentResult[3]);
-                pcComponent.initialZShift = -(getReferenceScript().realWorldZ - adjustmentResult[4]);
+                pcComponent.initialXShift = -(GetGeoReference().realWorldX - adjustmentResult[3]);
+                pcComponent.initialZShift = -(GetGeoReference().realWorldZ - adjustmentResult[4]);
             }
 
             // Default value for y, it should be calculated but for now it is a magic number.
@@ -516,7 +516,7 @@ public class pointCloudManager : MonoBehaviour
                     );
 
                     if (UserSettings.instance.preferences.enableMaps)
-                        FindObjectOfType<MapManager>().CreateMaps(getReferenceScript(), pcComponent);                    
+                        FindObjectOfType<MapManager>().CreateMaps(GetGeoReference(), pcComponent);                    
                 }
             }
 
@@ -548,7 +548,7 @@ public class pointCloudManager : MonoBehaviour
     {
         if (state == PlayModeStateChange.ExitingPlayMode)
         {
-            foreach (var pc in getPointCloudsInScene())
+            foreach (var pc in GetPointCloudsInScene())
             {
                 UnLoad(pc.ID);
             }
@@ -605,7 +605,7 @@ public class pointCloudManager : MonoBehaviour
             float[] worldArray = new float[16];
             GCHandle pointerWorld;
 
-            pointCloud[] pointClouds_ = getPointCloudsInScene();
+            pointCloud[] pointClouds_ = GetPointCloudsInScene();
             for (int i = 0; i < pointClouds_.Length; i++)
             {
                 world = pointClouds_[i].gameObject.transform.localToWorldMatrix;
@@ -633,7 +633,7 @@ public class pointCloudManager : MonoBehaviour
 
     public static void OnSceneSaveCallback(Scene scene)
     {
-        pointCloud[] pointCloudsInScene = getPointCloudsInScene();
+        pointCloud[] pointCloudsInScene = GetPointCloudsInScene();
         for (int i = 0; i < pointCloudsInScene.Length; i++)
         {
             string extension = Path.GetExtension(pointCloudsInScene[i].pathToRawData);
@@ -670,7 +670,7 @@ public class pointCloudManager : MonoBehaviour
         Camera.onPostRender -= OnPostRenderCallback;
     }
 
-    public static void setHighlightDeletedPoints(bool active)
+    public static void SetHighlightDeletedPoints(bool active)
     {
         setHighlightDeletedPointsActive(active);
     }

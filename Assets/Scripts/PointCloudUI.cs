@@ -15,8 +15,6 @@ public class PointCloudUI : MonoBehaviour
     public GameObject loadButton;
     public GameObject saveButton;
     //public GameObject fileDropdown;
-    public GameObject loadingText;
-    public GameObject loadingIcon;
     public GameObject refreshENCButton;
     public GameObject unloadButton;
     public GameObject outlierText;
@@ -105,12 +103,10 @@ public class PointCloudUI : MonoBehaviour
 
         //fileDropdown.SetActive(false);
         saveButton.SetActive(false);
-        loadingText.SetActive(false);
-        loadingIcon.SetActive(false);
         resetPointCloudTransforms.gameObject.SetActive(false);
         unloadButton.SetActive(false);
 
-        autoHideGroundPlane = autoHideGroundPlaneToggle.GetComponent<Toggle>().isOn;
+        autoHideGroundPlane = autoHideGroundPlaneToggle.GetComponent<Toggle>().isOn = UserSettings.instance.preferences.autoHideGroundPlaneOnLoad; ;
 
         buildInfo.GetComponent<Text>().text = Application.version;
 
@@ -143,6 +139,8 @@ public class PointCloudUI : MonoBehaviour
             loadButton.GetComponentInChildren<Text>().text = "Revert";
             saveButton.GetComponentInChildren<Text>().text = "Save";
             unloadButton.GetComponentInChildren<Text>().text = "Quit";
+
+            loading = true;
         }
 
 
@@ -152,33 +150,53 @@ public class PointCloudUI : MonoBehaviour
 
     // Update is called once per frame
     void Update()
-    {
-        // just finished loading a file
-        if (loading && !pointCloudManager.isWaitingToLoad)
+    {        
+        if (loading)
         {
-            loading = false;
-
-            ActivateLoadingUI(false);
-            //UpdateDropdownFiles();
-
-            if (groundPlane.activeSelf && autoHideGroundPlane)
+            if (pointCloudManager.isWaitingToLoad)
             {
-                ToggleGroundPlane();
+                loadButton.GetComponent<Button>().interactable = false;
+                loadButton.GetComponentInChildren<Text>().fontSize = 36;
+
+                int numberOfElipsis = 0 + (int)(4f * (Time.timeSinceLevelLoad % 1f));
+                loadButton.GetComponentInChildren<Text>().text = "Loading" + new string('.', numberOfElipsis) + new string(' ', 3 - numberOfElipsis);
+
+                //unloadButton.GetComponent<Button>().interactable = false;
             }
+            else // just finished loading a file
+            {
+                loadButton.GetComponent<Button>().interactable = true;
+                loadButton.GetComponentInChildren<Text>().fontSize = 60;
+                loadButton.GetComponentInChildren<Text>().text = pointCloudManager.commandLineMode ? "Revert" : "Load";
 
-            CloseMenu();
+                //unloadButton.GetComponent<Button>().interactable = true;
+
+                loading = false;
+
+                //ActivateLoadingUI(false);
+                //UpdateDropdownFiles();
+
+                if (groundPlane.activeSelf && autoHideGroundPlane)
+                {
+                    ToggleGroundPlane();
+                }
+
+                //CloseMenu();
+            }
         }
-
-        // idle state
-        if (!loading && !menuOpen)
+        else
         {
-            thisCanvas.enabled = false;
+            // idle state
+            if (!menuOpen)
+                thisCanvas.enabled = false;
         }
+
+        
 
         if (!colorPickerActive)
         {
             // reduced UI
-            if (fileBrowsing || loading)
+            if (fileBrowsing)
             {
                 ActivateColorPickerUI(false);
 
@@ -275,7 +293,7 @@ public class PointCloudUI : MonoBehaviour
 
     public void LoadFile()
     {
-        if (pointCloudManager.commandLineMode)
+        if (pointCloudManager.commandLineMode) // this resets the point cloud in command line mode
         {
             UnloadFile();
             LoadFile(pointCloudManager.commandLineInputFile);
@@ -286,7 +304,7 @@ public class PointCloudUI : MonoBehaviour
 
             fileBrowserCanvas.SetActive(true);
 
-            FileBrowser.SetFilters(true, new FileBrowser.Filter("Point Clouds", ".las", ".laz"));
+            FileBrowser.SetFilters(true, new FileBrowser.Filter("Point Clouds", ".las", ".laz", ".npz"));
             FileBrowser.SetDefaultFilter(".las");
             FileBrowser.SetExcludedExtensions(".lnk", ".tmp", ".zip", ".rar", ".exe");
             FileBrowser.AddQuickLink("Project Data", Application.dataPath, null);
@@ -324,7 +342,7 @@ public class PointCloudUI : MonoBehaviour
         if (pointCloudManager.loadLAZFile(filePath))
         {
             loading = true;
-            ActivateLoadingUI(true);
+            //ActivateLoadingUI(true);
             fileBrowsing = false;
             return true;
         }
@@ -349,7 +367,7 @@ public class PointCloudUI : MonoBehaviour
 
             fileBrowserCanvas.SetActive(true);
 
-            FileBrowser.SetFilters(true, new FileBrowser.Filter("Point Clouds", ".las", ".laz"));
+            FileBrowser.SetFilters(true, new FileBrowser.Filter("Point Clouds", ".las", ".laz", ".npz"));
             FileBrowser.SetDefaultFilter(".las");
             FileBrowser.SetExcludedExtensions(".lnk", ".tmp", ".zip", ".rar", ".exe");
             FileBrowser.AddQuickLink("Project Data", Application.dataPath, null);
@@ -361,7 +379,8 @@ public class PointCloudUI : MonoBehaviour
                 FileBrowser.AddQuickLink("Last Save", UserSettings.instance.preferences.lastSaveDirectory, null);
 
             //StartCoroutine(ShowSaveDialogCoroutine(dd.options[dd.value].text + "_edit.laz"));
-            StartCoroutine(ShowSaveDialogCoroutine(pointCloudManager.getPointCloudsInScene()[0].name + "_edit.laz"));
+            var pc = pointCloudManager.getPointCloudsInScene()[0];
+            StartCoroutine(ShowSaveDialogCoroutine(pc.name + "_edit" + (pc.pathToRawData[^3..] == "npz" ? ".npz" : ".laz")));
         }
     }
 
@@ -369,7 +388,7 @@ public class PointCloudUI : MonoBehaviour
     {
         yield return FileBrowser.WaitForSaveDialog(FileBrowser.PickMode.Folders, false, lastSaveDirectory == null ? lastLoadDirectory : lastSaveDirectory, null, "Select Folder to Save " + filename, "Save");
 
-        Debug.Log(FileBrowser.Success);
+        //Debug.Log(FileBrowser.Success);
 
         if (FileBrowser.Success)
         {
@@ -503,20 +522,6 @@ public class PointCloudUI : MonoBehaviour
         {
             colorPickerButton.gameObject.SetActive(false);
             colorPicker.gameObject.SetActive(false);
-        }
-    }
-
-    private void ActivateLoadingUI(bool activate)
-    {
-        if (activate)
-        {
-            loadingText.SetActive(true);
-            loadingIcon.SetActive(true);
-        }
-        else
-        {
-            loadingText.SetActive(false);
-            loadingIcon.SetActive(false);
         }
     }
 

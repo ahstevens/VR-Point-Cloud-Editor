@@ -98,17 +98,11 @@ public class pointCloudManager : MonoBehaviour
 
     [DllImport("PointCloudPlugin")]
     private static extern void setScreenIndex(int newScreenIndex);
-	
-    List<Vector3> vertexData;
-    List<Color32> vertexColors;
+
     public GameObject pointCloudGameObject;
-    private List<List<LineRenderer>> octreeDepthViualizations;
     public static List<pointCloud> pointClouds;
     public static List<string> toLoadList;
     public static List<LODInformation> LODSettings;
-#if FRUSTUMCULLING_TEST
-    public Camera frustumCullingTestCamera;
-#endif // FRUSTUMCULLING_TEST
 
     public static bool isWaitingToLoad = false;
     public static string filePathForAsyncLoad = "";
@@ -138,6 +132,8 @@ public class pointCloudManager : MonoBehaviour
     {
         get { return _commandLineOutputFile; }
     }
+
+    private static bool firstFrame = true;
 
     static int screenIndex = 0;
 
@@ -172,6 +168,18 @@ public class pointCloudManager : MonoBehaviour
         deletedPointsBox.color = Camera.main.backgroundColor;
 
         OnValidate();
+
+        if (_commandLineInputFile != "")
+        {
+            if (pointCloudManager.loadLAZFile(_commandLineInputFile))
+            {                
+                Debug.Log("Successfully loaded " + _commandLineInputFile);
+            }
+            else
+            {
+                Debug.Log("Error loading " + _commandLineInputFile);                
+            }
+        }
     }
 
     void Update()
@@ -212,18 +220,6 @@ public class pointCloudManager : MonoBehaviour
             else
             {
                 Debug.Log("Demo file " + demoFile + " not found!");
-            }
-        }
-
-        if (_commandLineInputFile != "" && !isWaitingToLoad && getPointCloudsInScene().Length == 0)
-        {
-            if (pointCloudManager.loadLAZFile(_commandLineInputFile))
-            {
-                Debug.Log("Successfully loaded " + _commandLineInputFile);
-            }
-            else
-            {
-                Debug.Log("Error loading " + _commandLineInputFile);
             }
         }
     }
@@ -267,16 +263,6 @@ public class pointCloudManager : MonoBehaviour
             return null;
 
         return geoReference.GetComponent<GEOReference>();
-    }
-
-    static private float getGEOScale()
-    {
-        GEOReference scriptClass = getReferenceScript();
-
-        if (scriptClass == null)
-            return 1.0f;
-
-        return scriptClass.scale;
     }
 
     private static void createGEOReference(Vector3 GEOPosition, int UTMZone)
@@ -402,7 +388,7 @@ public class pointCloudManager : MonoBehaviour
 
     public static pointCloud[] getPointCloudsInScene()
     {
-        pointCloud[] pointClouds = (pointCloud[])GameObject.FindObjectsOfType(typeof(pointCloud));
+        pointCloud[] pointClouds = (pointCloud[])FindObjectsOfType(typeof(pointCloud));
         return pointClouds;
     }
 
@@ -529,7 +515,8 @@ public class pointCloudManager : MonoBehaviour
                         UserSettings.instance.preferences.distanceOnLoad
                     );
 
-                    FindObjectOfType<MapManager>().CreateMaps(getReferenceScript(), pcComponent);                    
+                    if (UserSettings.instance.preferences.enableMaps)
+                        FindObjectOfType<MapManager>().CreateMaps(getReferenceScript(), pcComponent);                    
                 }
             }
 
@@ -662,168 +649,25 @@ public class pointCloudManager : MonoBehaviour
             }
         }
     }
+    public static void OnSceneStart()
+    {
+        if (firstFrame)
+        {
+            firstFrame = false;
+            Camera.onPostRender -= pointCloudManager.OnPostRenderCallback;
+            Camera.onPostRender += pointCloudManager.OnPostRenderCallback;
+            OnSceneStart();
+        }
+        OnSceneStartFromUnity(Marshal.StringToHGlobalAnsi(Application.dataPath));
+    }
 
     private void OnDestroy()
     {
 #if UNITY_EDITOR
         EditorSceneManager.sceneSaved -= OnSceneSaveCallback;
+        EditorUtility.ClearProgressBar();
 #endif
         Camera.onPostRender -= OnPostRenderCallback;
-    }
-
-    public static void SetFrustumCulling(bool active)
-    {
-        setFrustumCulling(active);
-    }
-
-    public static void SetLODSystemActive(bool active)
-    {
-        setLODSystemActive(active);
-    }
-
-    public static void SetLODInfo(float maxDistance, float targetPercentOFPoints, int LODIndex, int pointCloudIndex)
-    {
-        float[] valuesArray = new float[2];
-        valuesArray[0] = maxDistance;
-        valuesArray[1] = targetPercentOFPoints;
-
-        GCHandle valuePointer = GCHandle.Alloc(valuesArray, GCHandleType.Pinned);
-        setLODInfo(valuePointer.AddrOfPinnedObject(), LODIndex, pointCloudIndex);
-        valuePointer.Free();
-    }
-
-    public static LineRenderer lineToClosestPoint;
-    public static Vector3 closestPointPosition;
-    public static GameObject getPointGameObjectForSearch()
-    {
-        GameObject pointRepresentation = GameObject.Find("PointRepresentation_PointCloudPlugin");
-        if (pointRepresentation == null /*&& EditorApplication.isPlaying*/)
-        {
-            pointRepresentation = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            pointRepresentation.name = "PointRepresentation_PointCloudPlugin";
-            pointRepresentation.GetComponent<Renderer>().material.SetColor("_Color", Color.blue);
-        }
-
-        closestPointPosition = new Vector3(10.0f, 10.0f, 10.0f);
-
-        float[] initialPointPosition = new float[3];
-        initialPointPosition[0] = pointRepresentation.transform.position.x;
-        initialPointPosition[1] = pointRepresentation.transform.position.y;
-        initialPointPosition[2] = pointRepresentation.transform.position.z;
-
-        GCHandle initialPointPositionPointer = GCHandle.Alloc(initialPointPosition, GCHandleType.Pinned);
-        RequestClosestPointToPointFromUnity(initialPointPositionPointer.AddrOfPinnedObject());
-
-        float[] closestPointPositionFromDLL = new float[3];
-        Marshal.Copy(initialPointPositionPointer.AddrOfPinnedObject(), closestPointPositionFromDLL, 0, 3);
-        closestPointPosition.x = closestPointPositionFromDLL[0];
-        closestPointPosition.y = closestPointPositionFromDLL[1];
-        closestPointPosition.z = closestPointPositionFromDLL[2];
-
-        initialPointPositionPointer.Free();
-
-        if (lineToClosestPoint == null /*&& EditorApplication.isPlaying*/)
-        {
-            GameObject gObject = new GameObject("lineToClosestPoint_LineRenderer");
-            lineToClosestPoint = gObject.AddComponent<LineRenderer>();
-            lineToClosestPoint.material = new Material(Shader.Find("Sprites/Default"));
-            lineToClosestPoint.startColor = Color.green;
-            lineToClosestPoint.endColor = Color.green;
-
-            lineToClosestPoint.widthMultiplier = 2.0f;
-            lineToClosestPoint.positionCount = 2;
-        }
-
-        lineToClosestPoint.SetPosition(0, pointRepresentation.transform.position);
-        lineToClosestPoint.SetPosition(1, closestPointPosition);
-
-        return pointRepresentation;
-    }
-
-    public static GameObject getTestSphereGameObject()
-    {
-        GameObject testSphereGameObject = GameObject.Find("TestSphereGameObject_PointCloudPlugin");
-        if (testSphereGameObject == null /*&& EditorApplication.isPlaying*/)
-        {
-            testSphereGameObject = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            testSphereGameObject.name = "TestSphereGameObject_PointCloudPlugin";
-            testSphereGameObject.GetComponent<Renderer>().material.SetColor("_Color", Color.green);
-        }
-
-        GameObject pointRepresentation = GameObject.Find("PointRepresentation_PointCloudPlugin");
-        if (pointRepresentation != null)
-            testSphereGameObject.transform.position = pointRepresentation.transform.position;
-
-        return testSphereGameObject;
-    }
-
-    public static bool testIsAtleastOnePointInSphere()
-    {
-        GameObject testSphereGameObject = getTestSphereGameObject();
-
-        float[] center = new float[3];
-        center[0] = testSphereGameObject.transform.position.x;
-        center[1] = testSphereGameObject.transform.position.y;
-        center[2] = testSphereGameObject.transform.position.z;
-
-        GCHandle toDelete = GCHandle.Alloc(center.ToArray(), GCHandleType.Pinned);
-
-        if (RequestIsAtleastOnePointInSphereFromUnity(toDelete.AddrOfPinnedObject(), testSphereGameObject.transform.localScale.x / 2.0f))
-        {
-            Debug.Log("Atleast one point found in sphere!");
-            return true;
-        }
-        else
-        {
-            Debug.Log("No points found!");
-            return false;
-        }
-    }
-
-    public static GameObject getPointGameObjectForSearch_Fast()
-    {
-        GameObject pointRepresentation = GameObject.Find("PointRepresentation_PointCloudPlugin");
-        if (pointRepresentation == null /*&& EditorApplication.isPlaying*/)
-        {
-            pointRepresentation = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            pointRepresentation.name = "PointRepresentation_PointCloudPlugin";
-            pointRepresentation.GetComponent<Renderer>().material.SetColor("_Color", Color.blue);
-        }
-
-        closestPointPosition = new Vector3(10.0f, 10.0f, 10.0f);
-
-        float[] initialPointPosition = new float[3];
-        initialPointPosition[0] = pointRepresentation.transform.position.x;
-        initialPointPosition[1] = pointRepresentation.transform.position.y;
-        initialPointPosition[2] = pointRepresentation.transform.position.z;
-
-        GCHandle initialPointPositionPointer = GCHandle.Alloc(initialPointPosition, GCHandleType.Pinned);
-        RequestClosestPointInSphereFromUnity(initialPointPositionPointer.AddrOfPinnedObject(), 0.0f);
-
-        float[] closestPointPositionFromDLL = new float[3];
-        Marshal.Copy(initialPointPositionPointer.AddrOfPinnedObject(), closestPointPositionFromDLL, 0, 3);
-        closestPointPosition.x = closestPointPositionFromDLL[0];
-        closestPointPosition.y = closestPointPositionFromDLL[1];
-        closestPointPosition.z = closestPointPositionFromDLL[2];
-
-        initialPointPositionPointer.Free();
-
-        if (lineToClosestPoint == null /*&& EditorApplication.isPlaying*/)
-        {
-            GameObject gObject = new GameObject("lineToClosestPoint_LineRenderer");
-            lineToClosestPoint = gObject.AddComponent<LineRenderer>();
-            lineToClosestPoint.material = new Material(Shader.Find("Sprites/Default"));
-            lineToClosestPoint.startColor = Color.green;
-            lineToClosestPoint.endColor = Color.green;
-
-            lineToClosestPoint.widthMultiplier = 2.0f;
-            lineToClosestPoint.positionCount = 2;
-        }
-
-        lineToClosestPoint.SetPosition(0, pointRepresentation.transform.position);
-        lineToClosestPoint.SetPosition(1, closestPointPosition);
-
-        return pointRepresentation;
     }
 
     public static void setHighlightDeletedPoints(bool active)
@@ -865,18 +709,6 @@ public class pointCloudManager : MonoBehaviour
 		IntPtr IDStrPtr = Marshal.StringToHGlobalAnsi(pointCloudID);
         deleteOutliers(IDStrPtr);
 		Marshal.FreeHGlobal(IDStrPtr);
-    }
-    private static bool firstFrame = true;
-    public static void OnSceneStart()
-    {
-        if (firstFrame)
-        {
-            firstFrame = false;
-            Camera.onPostRender -= pointCloudManager.OnPostRenderCallback;
-            Camera.onPostRender += pointCloudManager.OnPostRenderCallback;
-            OnSceneStart();
-        }
-        OnSceneStartFromUnity(Marshal.StringToHGlobalAnsi(Application.dataPath));
     }
 
     public static String GetNewID()

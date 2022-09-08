@@ -127,6 +127,9 @@ public class MapManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (!UserSettings.instance.preferences.enableMaps)
+            return;
+
         if (_loaded && pointCloudManager.getPointCloudsInScene().Length > 0)
         {
             if (_changingMap)

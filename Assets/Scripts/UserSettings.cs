@@ -8,14 +8,15 @@ public class UserSettings : MonoBehaviour
     {
         public bool autoHideGroundPlaneOnLoad = true;
         public Color backgroundColor = Color.black;
-        public float cursorDeletionRate = 10f;
-        public float cursorDistance = 0.25f;
+        public float cursorDeletionRate = 25f;
+        public float cursorDistance = 0.20f;
         public float cursorDistanceMax = 1f;
         public float cursorDistanceMin = 0.1f;
         public float cursorRadius = 0.05f;
         public float cursorRadiusMax = 0.25f;
         public float cursorRadiusMin = 0.01f;
         public float distanceOnLoad = 0.75f;
+        public bool enableMaps = true;
         public int encResolution = 4096;
         public float fitSizeOnLoad = 1f;
         public string lastLoadDirectory = "";
@@ -112,6 +113,7 @@ public class UserSettings : MonoBehaviour
         _prefs.cursorRadiusMax = PlayerPrefs.GetFloat("cursorRadiusMax" + slot);
         _prefs.cursorRadiusMin = PlayerPrefs.GetFloat("cursorRadiusMin" + slot);
         _prefs.distanceOnLoad = PlayerPrefs.GetFloat("distanceOnLoad" + slot);
+        _prefs.enableMaps = PlayerPrefs.GetInt("enableMaps" + slot) == 1;
         _prefs.encResolution = PlayerPrefs.GetInt("encResolution" + slot);
         _prefs.fitSizeOnLoad = PlayerPrefs.GetFloat("fitSizeOnLoad" + slot);
         _prefs.lastLoadDirectory = PlayerPrefs.GetString("lastLoadDirectory" + slot);
@@ -138,6 +140,7 @@ public class UserSettings : MonoBehaviour
         PlayerPrefs.SetFloat("cursorRadiusMax" + slot, _prefs.cursorRadiusMax);
         PlayerPrefs.SetFloat("cursorRadiusMin" + slot, _prefs.cursorRadiusMin);
         PlayerPrefs.SetFloat("distanceOnLoad" + slot, _prefs.distanceOnLoad);
+        PlayerPrefs.SetInt("enableMaps" + slot, _prefs.enableMaps ? 1 : 0);
         PlayerPrefs.SetFloat("encResolution" + slot, _prefs.encResolution);
         PlayerPrefs.SetFloat("fitSizeOnLoad" + slot, _prefs.fitSizeOnLoad);
         PlayerPrefs.SetString("lastLoadDirectory" + slot, _prefs.lastLoadDirectory);

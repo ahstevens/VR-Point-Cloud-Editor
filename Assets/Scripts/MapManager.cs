@@ -195,7 +195,6 @@ public class MapManager : MonoBehaviour
             {
                 OnlineMaps.instance.Redraw();
                 satMapInitialRefresh = true;
-                OnEnable();
             }
         }
         else
@@ -293,6 +292,8 @@ public class MapManager : MonoBehaviour
         }
 
         validEPSG = true;
+
+        OnEnable();
 
         CreateSatelliteMap(geoRef, pc);
         StartCoroutine(CreateENC(geoRef, pc));

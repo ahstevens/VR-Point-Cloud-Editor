@@ -24,8 +24,23 @@ public class pointCloud : MonoBehaviour
 
     public float groundLevel;
 
+    public float easingTime = 1;
+
+    private System.Collections.IEnumerator currentEaseCoroutine = null;
+
+    EasingFunction.Function easeFunc;
+
+    private Vector3 easeStartPos;
+    private Vector3 easeStartScale;
+    private Quaternion easeStartRot;
+
+    private Vector3 easeTargetPos;
+    private Vector3 easeTargetScale;
+    private Quaternion easeTargetRot;
+
     void Awake()
     {
+        easeFunc = EasingFunction.GetEasingFunction(EasingFunction.Ease.EaseInOutCubic);
     }
 
     void Update()
@@ -37,10 +52,20 @@ public class pointCloud : MonoBehaviour
                 UserSettings.instance.preferences.fitSizeOnLoad,
                 UserSettings.instance.preferences.distanceOnLoad
             );
+
+        if (currentEaseCoroutine != null)
+        {
+            StartCoroutine(currentEaseCoroutine);
+            currentEaseCoroutine = null;
+        }
     }
 
     public void ResetMiniature(float size = 1f, float distance = 0.75f)
     {
+        easeStartPos = this.transform.root.transform.position;
+        easeStartRot = this.transform.root.transform.rotation;
+        easeStartScale = this.transform.root.transform.localScale;
+        
         // scale the point cloud down to 1 world unit on its largest dimension
         float scaleFactor = size / Mathf.Max(bounds.size.x, bounds.size.y, bounds.size.z);
 
@@ -48,9 +73,62 @@ public class pointCloud : MonoBehaviour
         var targetRot = new Quaternion(0.0f, Camera.main.transform.rotation.y, 0.0f, Camera.main.transform.rotation.w);
 
         // move center of point cloud in front of camera
-        transform.root.rotation = targetRot;
+        easeTargetPos = targetPos - targetRot * (bounds.center * scaleFactor);
+        easeTargetRot = targetRot;
+        easeTargetScale = Vector3.one * scaleFactor;
+
+        currentEaseCoroutine = EasingCoroutine(0.5f, size, distance);
+    }
+
+    public void ResetOrigin(float size = 1f)
+    {
+        // scale the point cloud down to 1 world unit on its largest dimension
+        float scaleFactor = size / Mathf.Max(bounds.size.x, bounds.size.y, bounds.size.z);
+
+        // move center of point cloud in front of camera
+        transform.root.position = Vector3.zero;
+        transform.root.rotation = Quaternion.identity;
         transform.root.localScale = Vector3.one * scaleFactor;
-        transform.root.position = targetPos - targetRot * (bounds.center * scaleFactor);
+    }
+
+    System.Collections.IEnumerator EasingCoroutine(float easeTime, float size = 1f, float distance = 0.75f)
+    {
+        float waitTime = 0;
+        while (waitTime <= 1)
+        {
+            float easeAmt = easeFunc(0, 1, waitTime);
+
+            // calc rotation
+            var rotAmt = Quaternion.Slerp(
+                easeStartRot,
+                //new Quaternion(0.0f, Camera.main.transform.rotation.y, 0.0f, Camera.main.transform.rotation.w),
+                easeTargetRot,
+                easeAmt);
+
+            transform.root.rotation = rotAmt;
+
+            // calc scale
+            var easingScale = Vector3.Lerp(
+                easeStartScale,
+                //Vector3.one * size / Mathf.Max(bounds.size.x, bounds.size.y, bounds.size.z),
+                easeTargetScale,
+                easeAmt);
+
+            transform.root.localScale = easingScale;
+
+            // calc position
+            var easingDist = Vector3.Lerp(
+                easeStartPos,
+                //Camera.main.transform.position + Camera.main.transform.forward * distance,
+                easeTargetPos,
+                easeAmt);
+
+            transform.root.position = easingDist;
+
+            yield return null;
+            waitTime += Time.deltaTime / easeTime;
+        }
+
     }
 
     void DrawBounds(Bounds b, float delay = 0)

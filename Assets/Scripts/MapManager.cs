@@ -64,6 +64,8 @@ public class MapManager : MonoBehaviour
 
     MAPTYPE currentMap;
 
+    private bool validEPSG;
+
     private bool mapStuck;
 
     bool satMapInitialRefresh;
@@ -106,6 +108,7 @@ public class MapManager : MonoBehaviour
 
         currentMap = MAPTYPE.NONE;
 
+        validEPSG = false;
         mapStuck = false;
         satMapInitialRefresh = false;
 
@@ -127,7 +130,7 @@ public class MapManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (!UserSettings.instance.preferences.enableMaps)
+        if (!UserSettings.instance.preferences.enableMaps || !validEPSG)
             return;
 
         if (_loaded && pointCloudManager.GetPointCloudsInScene().Length > 0)
@@ -192,6 +195,7 @@ public class MapManager : MonoBehaviour
             {
                 OnlineMaps.instance.Redraw();
                 satMapInitialRefresh = true;
+                OnEnable();
             }
         }
         else
@@ -205,6 +209,9 @@ public class MapManager : MonoBehaviour
 
     void OnEnable()
     {
+        if (!validEPSG)
+            return;
+
         adjustMapHeightAction.action.Enable();
         changeMapAction.action.Enable();
         stickMapAction.action.Enable();
@@ -271,6 +278,22 @@ public class MapManager : MonoBehaviour
 
     public void CreateMaps(GEOReference geoRef, pointCloud pc)
     {
+        if (pc.EPSG == 0)
+            pc.EPSG = 4326;
+
+        try
+        {
+            ProjectionInfo.FromEpsgCode(pc.EPSG);
+        }
+        catch (System.ArgumentOutOfRangeException e)
+        {
+            Debug.Log($"EPSG Code {pc.EPSG} is not valid: {e}");
+            validEPSG = false;
+            return;
+        }
+
+        validEPSG = true;
+
         CreateSatelliteMap(geoRef, pc);
         StartCoroutine(CreateENC(geoRef, pc));
     }
@@ -423,7 +446,7 @@ public class MapManager : MonoBehaviour
         int epsg = pc.EPSG;
 
         // NAD83 (2011) / UTM15N || null || 
-        if (epsg == 6344 || epsg == 0 || epsg == 32767)
+        if (epsg == 6344 || epsg == 32767)
             epsg = 26915; // NAD83 / UTM15N
 
 
@@ -435,6 +458,7 @@ public class MapManager : MonoBehaviour
         Vector2 bbRange = new((float)(maxBBx - minBBx), (float)(maxBBz - minBBz));
 
         ProjectionInfo src = ProjectionInfo.FromEpsgCode(epsg);
+
         ProjectionInfo dest = ProjectionInfo.FromEpsgCode(4326);
 
         double[] points = new double[6];

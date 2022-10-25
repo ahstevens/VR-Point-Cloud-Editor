@@ -35,7 +35,6 @@ public class DeletePoints : MonoBehaviour
     public HapticPattern undoHaptic;
 
     private GameObject deletionSphere;
-    private GameObject connectingRod;
     private GameObject pcRoot;
 
     private bool movingOrResizing;
@@ -44,8 +43,6 @@ public class DeletePoints : MonoBehaviour
 
     private bool thumbstick;
     private bool touchpad;
-    private bool horizontalSwipe;
-    private bool verticalSwipe;
     private Vector2 initialTouchpadTouchPoint;
     private Vector2 initialTouchpadMeasurementPoint;
     private float initialSphereRadius;
@@ -56,6 +53,8 @@ public class DeletePoints : MonoBehaviour
 
     private List<int> deletionOps;
     private int currentDeletionOpCount;
+
+    private double beginDeleteTimestamp;
 
     // Start is called before the first frame update
     void Start()
@@ -163,7 +162,83 @@ public class DeletePoints : MonoBehaviour
 
         MaintainSphereOffsetFromController();
 
-        UpdateSpherePositionInPlugin();
+        //UpdateSpherePositionInPlugin();
+
+        if (Keyboard.current.jKey.wasPressedThisFrame)
+            StartCoroutine(TestDeletion());
+    }
+
+    private IEnumerator TestDeletion()
+    {
+        int[] deletedPointCount =
+        {
+            263012,
+            13585,
+            130916,
+            153210,
+            92382,
+            131323,
+            37955,
+            67696,
+            194492,
+            42134,
+            1292
+        };
+
+        double[] times = {
+            0,
+            0.0448127000000227,
+            0.0897679999999923,
+            0.147307436150811,
+            0.201390500000002,
+            0.246885599999985,
+            0.292302699999993,
+            0.337679299999991,
+            0.405794200000003,
+            0.447307429445289,
+            0.496555900000033,
+            0.496555900000033
+        };
+
+        Vector3[] centers =
+        {
+            new Vector3(0.0764281f, -0.5221392f, 0.09180087f),
+            new Vector3(0.08775251f, -0.5302286f, 0.07303953f),
+            new Vector3(0.1198498f, -0.525166f, 0.1029456f),
+            new Vector3(0.1625102f, -0.5231225f, 0.1266485f),
+            new Vector3(0.2002803f, -0.5286195f, 0.1217237f),
+            new Vector3(0.2412187f, -0.5219654f, 0.1481559f),
+            new Vector3(0.259298f, -0.5154028f, 0.1613957f),
+            new Vector3(0.2898942f, -0.5156108f, 0.1616098f),
+            new Vector3(0.3288844f, -0.508836f, 0.1736135f),
+            new Vector3(0.3471495f, -0.5040783f, 0.1845295f),
+            new Vector3(0.3806944f, -0.4974589f, 0.1972415f)
+        };
+
+        Vector3 size = Vector3.one * 0.5f;
+
+        for (int i = 0; i < times.Length - 1; i++)
+        {
+            float[] center = { centers[i].x, centers[i].y, centers[i].z };
+
+            GCHandle toDelete = GCHandle.Alloc(center.ToArray(), GCHandleType.Pinned);
+            UpdateDeletionSpherePositionFromUnity(toDelete.AddrOfPinnedObject(), 79.00522f);
+
+            int pointsDeleted = deleteInSphere(centers[i], 0.05f);
+
+            if (pointsDeleted != deletedPointCount[i])
+            {
+                Debug.Log("WARNING: Deleted point counts on operation " + i + " did not agree!");
+                Debug.Log("EXPECTED: " + deletedPointCount[i]);
+                Debug.Log("ACTUAL: " + pointsDeleted);
+            }
+
+            yield return new WaitForSeconds((float)(times[i+1] - times[i]));
+        }
+
+        yield return new WaitForSeconds(1f);
+
+        UndoDeletion();
     }
 
     void OnEnable()
@@ -192,7 +267,8 @@ public class DeletePoints : MonoBehaviour
         }
 
         currentDeletionOpCount = 0;
-        
+
+        beginDeleteTimestamp = Time.timeAsDouble;
         InvokeRepeating("deleteInSphere", 0, deleteRate);
         //Debug.Log("Editing Started");
     }
@@ -205,9 +281,10 @@ public class DeletePoints : MonoBehaviour
         }
 
         CancelInvoke("deleteInSphere");
-        //Debug.Log("Editing Finished");
 
         deletionOps.Add(currentDeletionOpCount);
+
+        Debug.Log("Added " + currentDeletionOpCount + " operations to the undo list (" + deletionOps.Count + " undo actions remaining in queue)");
     }
 
     void deleteInSphere()
@@ -227,11 +304,38 @@ public class DeletePoints : MonoBehaviour
         {
             currentDeletionOpCount++;
 
-            Debug.Log(pointsDeleted + " points were deleted");
+            Debug.Log(pointsDeleted + " points were deleted; total operations = " + currentDeletionOpCount);
+
+            //Debug.Log(Time.timeAsDouble - beginDeleteTimestamp);
+            //Debug.Log($"{deletionSphere.transform.position.x}f, {deletionSphere.transform.position.y}f, {deletionSphere.transform.position.z}f");
+            //Debug.Log(deletionSphere.transform.localScale);
 
             // Send haptic feedback to right controller
             UnityEngine.XR.OpenXR.Input.OpenXRInput.SendHapticImpulse(hapticAction.action, deleteHaptic.amplitude, deleteHaptic.frequency, deleteHaptic.duration, UnityEngine.InputSystem.XR.XRController.rightHand);
         }
+    }
+
+    int deleteInSphere(Vector3 position, float radius)
+    {
+        if (pcRoot == null)
+            return 0;
+
+        float[] center = new float[3];
+        center[0] = position.x;
+        center[1] = position.y;
+        center[2] = position.z;
+
+        GCHandle toDelete = GCHandle.Alloc(center.ToArray(), GCHandleType.Pinned);
+        int pointsDeleted = RequestToDeleteFromUnity(toDelete.AddrOfPinnedObject(), radius);
+
+        if (pointsDeleted > 0)
+        {
+            currentDeletionOpCount++;
+
+            Debug.Log(pointsDeleted + " points were deleted; total operations = " + currentDeletionOpCount);
+        }
+
+        return pointsDeleted;
     }
 
     private void UndoDeletion()
@@ -242,6 +346,7 @@ public class DeletePoints : MonoBehaviour
             var frequency = undoHaptic.frequency * Mathf.Pow(2, numHalfSteps / 12f);
             UnityEngine.XR.OpenXR.Input.OpenXRInput.SendHapticImpulse(hapticAction.action, undoHaptic.amplitude, frequency, undoHaptic.duration);//, UnityEngine.InputSystem.XR.XRController.rightHand);
 
+            Debug.Log("Requesting undo for the last " + deletionOps.Last() + " deletion operations (" + (deletionOps.Count - 1) + " undo actions remaining in queue)");
             undo(deletionOps.Last());
 
             deletionOps.RemoveAt(deletionOps.Count - 1);

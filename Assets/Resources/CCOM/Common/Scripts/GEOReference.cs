@@ -21,17 +21,4 @@ public class GEOReference : MonoBehaviour
     {
         realWorldZ = newValue;
     }
-
-    void Start()
-    {
-    }
-
-    void Update()
-    {
-    }
-
-    void OnValidate()
-    {
-        
-    }
 }

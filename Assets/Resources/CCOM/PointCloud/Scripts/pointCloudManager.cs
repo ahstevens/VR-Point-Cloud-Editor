@@ -194,7 +194,7 @@ public class pointCloudManager : MonoBehaviour
 
     void Start()
     {
-        demoFile = Application.dataPath + "/sample";
+        demoFile = Application.dataPath + "/../sample";
 
         deletedPointsBox = new Material(Shader.Find("Unlit/Color"));
         deletedPointsBox.color = Camera.main.backgroundColor;
@@ -236,23 +236,7 @@ public class pointCloudManager : MonoBehaviour
 
         if (Keyboard.current.dKey.wasPressedThisFrame)
         {
-            bool demoLas = File.Exists(demoFile + ".las");
-            bool demoLaz = File.Exists(demoFile + ".laz");
-
-            if (demoLas || demoLaz)
-            {
-                var pcs = GetPointCloudsInScene();
-
-                if (pcs != null)
-                    for (int i = 0; i < pcs.Length; ++i)
-                        UnLoad(pcs[i].ID);
-
-                pointCloudManager.LoadLAZFile(demoFile + ".la" + (demoLas ? "s" : "z"));
-            }
-            else
-            {
-                Debug.Log("Demo file " + demoFile + " not found!");
-            }
+            LoadDemoFile();
         }
     }
 
@@ -743,5 +727,27 @@ public class pointCloudManager : MonoBehaviour
 
         var br = box.GetComponent<Renderer>();
         br.material = deletedPointsBox;
+    }
+
+    public static bool LoadDemoFile()
+    {
+        bool demoLas = File.Exists(demoFile + ".las");
+        bool demoLaz = File.Exists(demoFile + ".laz");
+
+        if (demoLas || demoLaz)
+        {
+            var pcs = GetPointCloudsInScene();
+
+            if (pcs != null)
+                for (int i = 0; i < pcs.Length; ++i)
+                    UnLoad(pcs[i].ID);
+
+            return pointCloudManager.LoadLAZFile(demoFile + ".la" + (demoLas ? "s" : "z"));
+        }
+        else
+        {
+            Debug.Log("Demo file " + demoFile + " not found!");
+            return false;
+        }
     }
 }

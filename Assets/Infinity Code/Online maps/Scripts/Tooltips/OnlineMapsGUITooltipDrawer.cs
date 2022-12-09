@@ -101,6 +101,13 @@ public class OnlineMapsGUITooltipDrawer: OnlineMapsTooltipDrawerBase
             map.GetCorners(out tlx, out tly, out brx, out bry);
             if (brx < tlx) brx += 360;
 
+            Camera cam = control3D.currentCamera;
+            Vector3 position = map.transform.position;
+            Quaternion rotation = map.transform.rotation;
+            Vector3 localScale = map.transform.localScale;
+            Vector3 lossyScale = map.transform.lossyScale;
+            Vector3 boundsSize = control3D.cl.bounds.size;
+
             foreach (OnlineMapsMarker3D marker in control3D.marker3DManager)
             {
                 if (string.IsNullOrEmpty(marker.label)) continue;
@@ -119,19 +126,19 @@ public class OnlineMapsGUITooltipDrawer: OnlineMapsTooltipDrawerBase
                     double mx1, my1;
                     control3D.GetPosition(mx, my, out mx1, out my1);
 
-                    double px = (-mx1 / map.width + 0.5) * control3D.cl.bounds.size.x;
-                    double pz = (my1 / map.height - 0.5) * control3D.cl.bounds.size.z;
+                    double px = (-mx1 / map.width + 0.5) * boundsSize.x;
+                    double pz = (my1 / map.height - 0.5) * boundsSize.z;
 
-                    Vector3 offset = map.transform.rotation * new Vector3((float) px, 0, (float) pz);
-                    offset.Scale(map.transform.lossyScale);
+                    Vector3 offset = rotation * new Vector3((float) px, 0, (float) pz);
+                    offset.Scale(lossyScale);
 
-                    Vector3 p1 = map.transform.position + offset;
-                    Vector3 p2 = p1 + new Vector3(0, 0, control3D.cl.bounds.size.z / map.height * marker.scale);
+                    Vector3 p1 = position + offset;
+                    Vector3 p2 = p1 + new Vector3(0, 0, boundsSize.z / map.height * marker.scale);
 
-                    Vector2 screenPoint1 = control3D.activeCamera.WorldToScreenPoint(p1);
-                    Vector2 screenPoint2 = control3D.activeCamera.WorldToScreenPoint(p2);
+                    Vector2 screenPoint1 = cam.WorldToScreenPoint(p1);
+                    Vector2 screenPoint2 = cam.WorldToScreenPoint(p2);
 
-                    float yOffset = (screenPoint1.y - screenPoint2.y) * map.transform.localScale.x - 10;
+                    float yOffset = (screenPoint1.y - screenPoint2.y) * localScale.x - 10;
 
                     OnGUITooltip(style, marker.label, screenPoint1 + new Vector2(0, yOffset));
                 }
@@ -147,8 +154,13 @@ public class OnlineMapsGUITooltipDrawer: OnlineMapsTooltipDrawerBase
         map.GetCorners(out tlx, out tly, out brx, out bry);
         if (brx < tlx) brx += 360;
 
-        float widthScale = tsControl.sizeInScene.x / map.width / 2;
-        float heightScale = tsControl.sizeInScene.y / map.height / 2;
+        Vector2 sizeInScene = tsControl.sizeInScene;
+
+        float widthScale = sizeInScene.x / map.width / 2;
+        float heightScale = sizeInScene.y / map.height / 2;
+
+        Camera cam = tsControl.currentCamera;
+        Vector3 localScale = map.transform.localScale;
 
         foreach (OnlineMapsMarker marker in control.markerManager)
         {
@@ -202,10 +214,10 @@ public class OnlineMapsGUITooltipDrawer: OnlineMapsTooltipDrawerBase
 
                 if (useRotation) topPoint = Quaternion.Euler(0, marker.rotation * -360, 0) * (centerPoint - topPoint) + centerPoint;
 
-                Vector2 screenPoint1 = tsControl.activeCamera.WorldToScreenPoint(centerPoint);
-                Vector2 screenPoint2 = tsControl.activeCamera.WorldToScreenPoint(topPoint);
+                Vector2 screenPoint1 = cam.WorldToScreenPoint(centerPoint);
+                Vector2 screenPoint2 = cam.WorldToScreenPoint(topPoint);
 
-                float yOffset = (screenPoint1 - screenPoint2).magnitude * map.transform.localScale.x - 10;
+                float yOffset = (screenPoint1 - screenPoint2).magnitude * localScale.x - 10;
 
                 OnGUITooltip(style, marker.label, screenPoint1 + new Vector2(0, yOffset));
             }
@@ -227,12 +239,12 @@ public class OnlineMapsGUITooltipDrawer: OnlineMapsTooltipDrawerBase
             else
             {
                 Vector3 p1 = tsControl.GetWorldPositionWithElevation(mx, my, tlx, tly, brx, bry);
-                Vector3 p2 = p1 + new Vector3(0, 0, tsControl.sizeInScene.y / map.height * marker.scale);
+                Vector3 p2 = p1 + new Vector3(0, 0, sizeInScene.y / map.height * marker.scale);
 
-                Vector2 screenPoint1 = tsControl.activeCamera.WorldToScreenPoint(p1);
-                Vector2 screenPoint2 = tsControl.activeCamera.WorldToScreenPoint(p2);
+                Vector2 screenPoint1 = cam.WorldToScreenPoint(p1);
+                Vector2 screenPoint2 = cam.WorldToScreenPoint(p2);
 
-                float yOffset = (screenPoint1.y - screenPoint2.y) * map.transform.localScale.x - 10;
+                float yOffset = (screenPoint1.y - screenPoint2.y) * localScale.x - 10;
 
                 OnGUITooltip(style, marker.label, screenPoint1 + new Vector2(0, yOffset));
             }

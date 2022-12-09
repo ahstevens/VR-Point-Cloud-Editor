@@ -40,9 +40,24 @@ public class OnlineMapsFingersTouchGesturesConnector : MonoBehaviour
         }
     }
 
+    private bool IsCursorOnUIElement()
+    {
+        Vector2 inputPosition = control.GetInputPosition();
+
+        if (Input.touchSupported && Input.touchCount > 1)
+        {
+            Vector2 p1 = Input.GetTouch(0).position;
+            Vector2 p2 = Input.GetTouch(1).position;
+
+            inputPosition = Vector2.Lerp(p1, p2, 0.5f);
+        }
+
+        return control.IsCursorOnUIElement(inputPosition);
+    }
+
     private void ScaleGestureCallback(GestureRecognizer gesture)
     {
-        if (gesture.State == GestureRecognizerState.Executing)
+        if (gesture.State == GestureRecognizerState.Executing && !IsCursorOnUIElement())
         {
             OnlineMaps.instance.floatZoom *= (scaleGesture.ScaleMultiplier - 1) * scaleSpeed + 1;
         }
@@ -50,8 +65,9 @@ public class OnlineMapsFingersTouchGesturesConnector : MonoBehaviour
 
     private void RotateGestureCallback(GestureRecognizer gesture)
     {
-        if (gesture.State == GestureRecognizerState.Executing)
+        if (gesture.State == GestureRecognizerState.Executing && !IsCursorOnUIElement())
         {
+            
             control.isMapDrag = false;
             if (!cameraOrbit.lockPan) cameraOrbit.rotation.y += rotateGesture.RotationDegreesDelta * speed.y;
         }

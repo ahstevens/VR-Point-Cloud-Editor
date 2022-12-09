@@ -15,6 +15,9 @@ public abstract class OnlineMapsControlBase3D: OnlineMapsControlBase
 {
     #region Variables
 
+    /// <summary>
+    /// Called when drawing 3d markers.
+    /// </summary>
     public Action OnUpdate3DMarkers;
 
     /// <summary>
@@ -37,6 +40,9 @@ public abstract class OnlineMapsControlBase3D: OnlineMapsControlBase
     /// </summary>
     public float marker2DSize = 100;
 
+    /// <summary>
+    /// Reference to marker 3D manager
+    /// </summary>
     public OnlineMapsMarker3DManager marker3DManager;
 
     public Vector3 originalPosition;
@@ -50,6 +56,14 @@ public abstract class OnlineMapsControlBase3D: OnlineMapsControlBase
     #endregion
 
     #region Properties
+
+    /// <summary>
+    /// Reference to current camera
+    /// </summary>
+    public Camera currentCamera
+    {
+        get { return activeCamera != null ? activeCamera : Camera.main; }
+    }
 
     /// <summary>
     /// Singleton instance of OnlineMapsControlBase3D control.
@@ -71,6 +85,9 @@ public abstract class OnlineMapsControlBase3D: OnlineMapsControlBase
         }
     }
 
+    /// <summary>
+    /// MeshFilter of the map
+    /// </summary>
     public MeshFilter meshFilter
     {
         get
@@ -80,6 +97,9 @@ public abstract class OnlineMapsControlBase3D: OnlineMapsControlBase
         }
     }
 
+    /// <summary>
+    /// Get/set marker 3D drawer
+    /// </summary>
     public OnlineMapsMarker3DDrawer marker3DDrawer
     {
         get { return _marker3DDrawer; }
@@ -132,7 +152,7 @@ public abstract class OnlineMapsControlBase3D: OnlineMapsControlBase
     {
         //TODO: Find a way to refactory this method
         RaycastHit hit;
-        if (Physics.Raycast(activeCamera.ScreenPointToRay(screenPosition), out hit, OnlineMapsUtils.maxRaycastDistance))
+        if (Physics.Raycast(currentCamera.ScreenPointToRay(screenPosition), out hit, OnlineMapsUtils.maxRaycastDistance))
         {
             return hit.collider.gameObject.GetComponent<OnlineMapsMarkerInstanceBase>();
         }
@@ -145,7 +165,7 @@ public abstract class OnlineMapsControlBase3D: OnlineMapsControlBase
 
         //TODO: Find a way to refactory this method
         RaycastHit hit;
-        if (Physics.Raycast(activeCamera.ScreenPointToRay(screenPosition), out hit, OnlineMapsUtils.maxRaycastDistance))
+        if (Physics.Raycast(currentCamera.ScreenPointToRay(screenPosition), out hit, OnlineMapsUtils.maxRaycastDistance))
         {
             OnlineMapsMarkerInstanceBase markerInstance = hit.collider.gameObject.GetComponent<OnlineMapsMarkerInstanceBase>();
             if (markerInstance != null) return markerInstance.marker;
@@ -172,8 +192,7 @@ public abstract class OnlineMapsControlBase3D: OnlineMapsControlBase
             (float)(bounds.min.z + bounds.size.z * py)
         );
 
-        Camera cam = activeCamera != null? activeCamera: Camera.main;
-        return cam.WorldToScreenPoint(worldPos);
+        return currentCamera.WorldToScreenPoint(worldPos);
     }
 
     protected override void OnDestroyLate()

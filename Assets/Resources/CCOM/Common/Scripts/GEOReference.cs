@@ -4,21 +4,38 @@ using UnityEngine;
 
 public class GEOReference : MonoBehaviour
 {
-    public double realWorldX = 0.0;
-    public double realWorldZ = 0.0;
-
-    public int UTMZone = 0;
+    public double refX = 0.0;
+    public double refY = 0.0;
 
     public float scale = 1.0f;
-    public float maxDepth = 0.0f;
 
-    public void setRealWorldX(double newValue)
+    public void setReferenceX(double x)
     {
-        realWorldX = newValue;
+        refX = x;
     }
 
-    public void setRealWorldZ(double newValue)
+    public void setReferenceY(double y)
     {
-        realWorldZ = newValue;
+        refY = y;
+    }
+
+    public void setReferenceLongitude(double longitude)
+    {
+        refX = longitude;
+    }
+
+    public void setReferenceLatitude(double latitude)
+    {
+        refY = latitude;
+    }
+
+    public void setReferenceEasting(double easting)
+    {
+        refX = easting;
+    }
+
+    public void setReferenceNorthing(double northing)
+    {
+        refY = northing;
     }
 }

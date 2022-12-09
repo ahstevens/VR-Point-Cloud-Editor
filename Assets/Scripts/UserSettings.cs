@@ -70,6 +70,9 @@ public class UserSettings : MonoBehaviour
     {
         if (UnityEngine.InputSystem.Keyboard.current.escapeKey.wasPressedThisFrame)
             Application.Quit();
+
+        if (UnityEngine.InputSystem.Keyboard.current.fKey.wasPressedThisFrame)
+            Camera.main.gameObject.GetComponent<UnityEngine.InputSystem.XR.TrackedPoseDriver>().enabled = !Camera.main.gameObject.GetComponent<UnityEngine.InputSystem.XR.TrackedPoseDriver>().enabled;
     }
 
     public Preferences LoadFromFile()

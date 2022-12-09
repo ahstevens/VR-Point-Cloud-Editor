@@ -58,7 +58,12 @@ public class PointCloudUI : MonoBehaviour
 
     private bool colorPickerActive;
 
-    private bool menuOpen;
+    private bool _menuOpen; 
+    
+    public bool MenuOpen
+    {
+        get { return _menuOpen; }
+    }
 
     private bool fileBrowsing;
 
@@ -81,7 +86,7 @@ public class PointCloudUI : MonoBehaviour
         openMenu.action.started += ctx => OpenMenuAction();
         openMenu.action.canceled += ctx => CloseMenuAction();
 
-        menuOpen = false;
+        _menuOpen = false;
 
         thisCanvas = GetComponent<Canvas>();
 
@@ -89,7 +94,7 @@ public class PointCloudUI : MonoBehaviour
 
         //dd = fileDropdown.GetComponent<Dropdown>();
 
-        pointer.enabled = false;
+        pointer.enabled = UserSettings.instance.preferences.openMenuOnStart;
 
         colorPickerActive = false;
         colorPicker.gameObject.SetActive(false);
@@ -187,7 +192,7 @@ public class PointCloudUI : MonoBehaviour
         else
         {
             // idle state
-            if (!menuOpen)
+            if (!_menuOpen)
                 thisCanvas.enabled = false;
         }
 
@@ -259,12 +264,11 @@ public class PointCloudUI : MonoBehaviour
     private void OpenMenu()
     {
         thisCanvas.enabled = true;
-        menuOpen = true;
+        _menuOpen = true;
 
         if (!xrf.enabled)
         {
-            editingCursor.SetActive(false);
-            connector.SetActive(false);
+            FindObjectOfType<ModifyPoints>().SetBrushVisibility(false);
 
             if (pointer)
                 pointer.enabled = true;
@@ -273,7 +277,7 @@ public class PointCloudUI : MonoBehaviour
 
     private void CloseMenu()
     {
-        menuOpen = false;
+        _menuOpen = false;
 
         if (fileBrowsing)
         {
@@ -283,8 +287,7 @@ public class PointCloudUI : MonoBehaviour
 
         if (!xrf.enabled)
         {
-            editingCursor.SetActive(true);
-            connector.SetActive(true);
+            FindObjectOfType<ModifyPoints>().SetBrushVisibility(true);
 
             if (pointer)
                 pointer.enabled = false;

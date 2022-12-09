@@ -117,4 +117,9 @@ public struct OnlineMapsVector2d
         OnlineMapsVector2d vector2 = (OnlineMapsVector2d)other;
         return x.Equals(vector2.x) && y.Equals(vector2.y);
     }
+
+    public override string ToString()
+    {
+        return "[" + x + ", " + y + "]";
+    }
 }

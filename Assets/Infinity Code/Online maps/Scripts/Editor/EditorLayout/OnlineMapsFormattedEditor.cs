@@ -230,6 +230,13 @@ public abstract class OnlineMapsFormattedEditor : Editor
             if (needDrawGroup) EditorGUILayout.EndVertical();
         }
 
+        public LayoutItem Insert(int index, LayoutItem item)
+        {
+            if (childs == null) childs = new List<LayoutItem>();
+            childs.Insert(index, item);
+            return item;
+        }
+
         public void Remove(string id)
         {
             if (childs == null) return;

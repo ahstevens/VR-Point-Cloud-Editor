@@ -7,11 +7,11 @@ using UnityEngine;
 
 /// <summary>
 /// The what3words API gives you programmatic access to convert a 3 word address to coordinates (forward geocoding), to convert coordinates to a 3 word address (reverse geocoding), to obtain suggestions based on a full or partial 3 word address (AutoSuggest and StandardBlend), to obtain a geographically bounded section of the 3m x 3m what3words grid and to determine the languages that the API currently supports. 
-/// https://docs.what3words.com/api/v2/
+/// https://docs.what3words.com/api/v3/
 /// </summary>
 public class OnlineMapsWhat3Words:OnlineMapsTextWebService
 {
-    private const string endpoint = "https://api.what3words.com/v2/";
+    private const string endpoint = "https://api.what3words.com/v3/";
 
     private OnlineMapsWhat3Words(StringBuilder url)
     {
@@ -37,10 +37,10 @@ public class OnlineMapsWhat3Words:OnlineMapsTextWebService
         if (string.IsNullOrEmpty(key)) key = OnlineMapsKeyManager.What3Words();
 
         StringBuilder url = new StringBuilder(endpoint).Append("autosuggest");
-        if (multilingual) url.Append("-ml");
+        //if (multilingual) url.Append("-ml");
         url.Append("?format=json&key=").Append(key);
-        url.Append("&addr=").Append(addr);
-        if (!string.IsNullOrEmpty(lang)) url.Append("&lang=").Append(lang);
+        url.Append("&input=").Append(addr);
+        if (!string.IsNullOrEmpty(lang)) url.Append("&language=").Append(lang);
         if (focus.HasValue)
         {
             url.Append("&focus=").Append(focus.Value.y.ToString(OnlineMapsUtils.numberFormat)).Append(",")
@@ -68,9 +68,9 @@ public class OnlineMapsWhat3Words:OnlineMapsTextWebService
     {
         if (string.IsNullOrEmpty(key)) key = OnlineMapsKeyManager.What3Words();
 
-        StringBuilder url = new StringBuilder(endpoint).Append("forward");
+        StringBuilder url = new StringBuilder(endpoint).Append("convert-to-coordinates");
         url.Append("?format=json&key=").Append(key);
-        url.Append("&addr=").Append(addr);
+        url.Append("&words=").Append(addr);
         if (!string.IsNullOrEmpty(lang)) url.Append("&lang=").Append(lang);
         if (display != Display.full) url.Append("&display=").Append(display);
         return new OnlineMapsWhat3Words(url);
@@ -86,7 +86,7 @@ public class OnlineMapsWhat3Words:OnlineMapsTextWebService
         if (string.IsNullOrEmpty(key)) key = OnlineMapsKeyManager.What3Words();
 
         StringBuilder url = new StringBuilder(endpoint);
-        url.Append("languages?format=json&key=").Append(key);
+        url.Append("available-languages?format=json&key=").Append(key);
         return new OnlineMapsWhat3Words(url);
     }
 
@@ -141,8 +141,8 @@ public class OnlineMapsWhat3Words:OnlineMapsTextWebService
         if (string.IsNullOrEmpty(key)) key = OnlineMapsKeyManager.What3Words();
 
         StringBuilder url = new StringBuilder(endpoint);
-        url.Append("grid?format=json&key=").Append(key);
-        url.Append("&bbox=")
+        url.Append("grid-section?format=json&key=").Append(key);
+        url.Append("&bounding-box=")
             .Append(bbox.top.ToString(OnlineMapsUtils.numberFormat)).Append(",")
             .Append(bbox.right.ToString(OnlineMapsUtils.numberFormat)).Append(",")
             .Append(bbox.bottom.ToString(OnlineMapsUtils.numberFormat)).Append(",")
@@ -162,12 +162,12 @@ public class OnlineMapsWhat3Words:OnlineMapsTextWebService
     {
         if (string.IsNullOrEmpty(key)) key = OnlineMapsKeyManager.What3Words();
 
-        StringBuilder url = new StringBuilder(endpoint).Append("reverse");
+        StringBuilder url = new StringBuilder(endpoint).Append("convert-to-3wa");
         url.Append("?format=json&key=").Append(key);
-        url.Append("&coords=")
+        url.Append("&coordinates=")
             .Append(coords.y.ToString(OnlineMapsUtils.numberFormat)).Append(",")
             .Append(coords.x.ToString(OnlineMapsUtils.numberFormat));
-        if (!string.IsNullOrEmpty(lang)) url.Append("&lang=").Append(lang);
+        if (!string.IsNullOrEmpty(lang)) url.Append("&language=").Append(lang);
         if (display != Display.full) url.Append("&display=").Append(display);
         return new OnlineMapsWhat3Words(url);
     }
@@ -257,25 +257,24 @@ public class OnlineMapsWhat3Words:OnlineMapsTextWebService
 
         public void AppendURL(StringBuilder url)
         {
-            url.Append("&clip=");
             if (type == 0)
             {
-                url.Append("radius(")
+                url.Append("&clip-to-circle=")
                     .Append(v2.ToString(OnlineMapsUtils.numberFormat)).Append(",")
                     .Append(v1.ToString(OnlineMapsUtils.numberFormat)).Append(",")
-                    .Append(v3.ToString(OnlineMapsUtils.numberFormat)).Append(")");
+                    .Append(v3.ToString(OnlineMapsUtils.numberFormat));
             }
-            else if (type == 1)
+            /*else if (type == 1)
             {
                 url.Append("focus(").Append(v1.ToString(OnlineMapsUtils.numberFormat)).Append(")");
-            }
+            }*/
             else if (type == 2)
             {
-                url.Append("bbox(")
+                url.Append("&clip-to-bounding-box=")
                     .Append(v2.ToString(OnlineMapsUtils.numberFormat)).Append(",")
                     .Append(v3.ToString(OnlineMapsUtils.numberFormat)).Append(",")
                     .Append(v4.ToString(OnlineMapsUtils.numberFormat)).Append(",")
-                    .Append(v1.ToString(OnlineMapsUtils.numberFormat)).Append(")");
+                    .Append(v1.ToString(OnlineMapsUtils.numberFormat));
             }
         }
     }

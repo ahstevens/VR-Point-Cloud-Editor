@@ -26,6 +26,11 @@ public class OnlineMapsTileSetControl : OnlineMapsControlBaseDynamicMesh
     /// </summary>
     public Action<OnlineMapsTile, Material> OnDrawTile;
 
+    /// <summary>
+    /// The event that occurs after draw the tile. The difference with OnDrawTile is that it is always called for the original tile, whether or not it was loaded.
+    /// </summary>
+    public Action<OnlineMapsTile, Material> OnUpdateMapSubMeshLate;
+
     #endregion
 
     #region Public Fields
@@ -61,6 +66,11 @@ public class OnlineMapsTileSetControl : OnlineMapsControlBaseDynamicMesh
     public Shader drawingShader;
 
     /// <summary>
+    /// Whether the overlay from the parent tiles should be shown.
+    /// </summary>
+    public bool overlayFromParentTiles = true;
+
+    /// <summary>
     /// Material that will be used for tile.
     /// </summary>
     public Material tileMaterial;
@@ -69,6 +79,7 @@ public class OnlineMapsTileSetControl : OnlineMapsControlBaseDynamicMesh
     /// Shader of map.
     /// </summary>
     public Shader tilesetShader;
+
 
     #endregion
 
@@ -228,7 +239,7 @@ public class OnlineMapsTileSetControl : OnlineMapsControlBaseDynamicMesh
         lat = lng = 0;
 
         float distance;
-        Ray ray = activeCamera.ScreenPointToRay(position);
+        Ray ray = currentCamera.ScreenPointToRay(position);
         if (!dragPlane.Value.Raycast(ray, out distance)) return false;
 
         return GetCoordsByWorldPosition(out lng, out lat, ray.GetPoint(distance));
@@ -323,8 +334,7 @@ public class OnlineMapsTileSetControl : OnlineMapsControlBaseDynamicMesh
         if (hasElevation) elevation = elevationManager.GetElevationValue(cpx, cpy, elevationScale, tlx, tly, brx, bry);
         Vector3 worldPos = transform.position + transform.rotation * new Vector3((float)(cpx * transform.lossyScale.x), elevation * transform.lossyScale.y, (float)(cpy * transform.lossyScale.z));
 
-        Camera cam = activeCamera != null? activeCamera: Camera.main;
-        return cam.WorldToScreenPoint(worldPos);
+        return currentCamera.WorldToScreenPoint(worldPos);
     }
 
     private OnlineMapsTile GetTargetTile(OnlineMapsTile tile)
@@ -391,7 +401,7 @@ public class OnlineMapsTileSetControl : OnlineMapsControlBaseDynamicMesh
         tx = ty = 0;
 
         float distance;
-        Ray ray = activeCamera.ScreenPointToRay(position);
+        Ray ray = currentCamera.ScreenPointToRay(position);
         if (!dragPlane.Value.Raycast(ray, out distance)) return false;
 
         return GetTileByWorldPosition(ray.GetPoint(distance), out tx, out ty);
@@ -402,9 +412,9 @@ public class OnlineMapsTileSetControl : OnlineMapsControlBaseDynamicMesh
 #if NGUI
         if (UICamera.Raycast(position)) return false;
 #endif
-        Rect rect = activeCamera.rect;
+        Rect rect = currentCamera.rect;
         if (rect.width == 0 || rect.height == 0) return false;
-        return cl.Raycast(activeCamera.ScreenPointToRay(position), out lastRaycastHit, OnlineMapsUtils.maxRaycastDistance);
+        return cl.Raycast(currentCamera.ScreenPointToRay(position), out lastRaycastHit, OnlineMapsUtils.maxRaycastDistance);
     }
 
     private void InitDrawingsMesh()
@@ -677,7 +687,7 @@ public class OnlineMapsTileSetControl : OnlineMapsControlBaseDynamicMesh
             //if (hasElevation && elevationManager.zoomRange.InRange(map.zoom) && dragPlane == null)
             {
                 RaycastHit hit;
-                if (cl.Raycast(activeCamera.ScreenPointToRay(GetInputPosition()), out hit, OnlineMapsUtils.maxRaycastDistance))
+                if (cl.Raycast(currentCamera.ScreenPointToRay(GetInputPosition()), out hit, OnlineMapsUtils.maxRaycastDistance))
                 {
                     dragPlane = new Plane(Vector3.up, new Vector3(0, hit.point.y, 0));
                 }
@@ -846,7 +856,7 @@ public class OnlineMapsTileSetControl : OnlineMapsControlBaseDynamicMesh
         int tx = tile.x;
         int ty = tile.y;
 
-        if (overlayTexture == null)
+        if (overlayTexture == null && overlayFromParentTiles)
         {
             OnlineMapsRasterTile t = tile.parent as OnlineMapsRasterTile;
 
@@ -934,7 +944,7 @@ public class OnlineMapsTileSetControl : OnlineMapsControlBaseDynamicMesh
         int tx = tile.x;
         int ty = tile.y;
         
-        if (overlayTexture == null)
+        if (overlayTexture == null && overlayFromParentTiles)
         {
             OnlineMapsRasterTile t = tile.parent as OnlineMapsRasterTile;
 
@@ -990,7 +1000,7 @@ public class OnlineMapsTileSetControl : OnlineMapsControlBaseDynamicMesh
         SetBackOverlayTexture(tile, material);
         SetFrontOverlayTexture(tile, material);
 
-        if (OnDrawTile != null) OnDrawTile(targetTile, material);
+        if (OnDrawTile != null) OnDrawTile(tile, material);
     }
 
     private void SetTrafficTexture(OnlineMapsTile tile, Material material)
@@ -1011,7 +1021,7 @@ public class OnlineMapsTileSetControl : OnlineMapsControlBaseDynamicMesh
         int tx = tile.x;
         int ty = tile.y;
 
-        if (trafficTexture == null)
+        if (trafficTexture == null && overlayFromParentTiles)
         {
             OnlineMapsRasterTile t = tile.parent as OnlineMapsRasterTile;
 
@@ -1237,6 +1247,7 @@ public class OnlineMapsTileSetControl : OnlineMapsControlBaseDynamicMesh
         material.hideFlags = HideFlags.HideInInspector;
 
         SetTileMaterials(tile, targetTile, tileTexture, sendEvent, material, offset, scale);
+        if (OnUpdateMapSubMeshLate != null) OnUpdateMapSubMeshLate(tile, material);
     }
 
     private void UpdateSimpleMeshCollider(float yScale, double tlx, double tly, double brx, double bry)

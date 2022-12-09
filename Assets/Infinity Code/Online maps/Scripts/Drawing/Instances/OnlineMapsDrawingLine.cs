@@ -16,13 +16,20 @@ public class OnlineMapsDrawingLine : OnlineMapsDrawingElement
     private static List<int> triangles;
     private static List<Vector2> uv;
 
+    /// <summary>
+    /// Forces the line to follow the relief.
+    /// </summary>
+    public bool followRelief = false;
+
+    /// <summary>
+    /// Sets the line width used for HitTest.
+    /// </summary>
+    public float? hitTestWidth;
+
     private Color _color = Color.black;
     private Texture2D _texture;
     private float _width = 1;
     private IEnumerable _points;
-
-    public float? hitTestWidth;
-    public bool followRelief = false;
 
     /// <summary>
     /// Color of the line.

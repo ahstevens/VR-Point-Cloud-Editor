@@ -120,17 +120,17 @@ public class OnlineMapsCameraOrbit : MonoBehaviour, IOnlineMapsSavableComponent
         obj.DeserializeObject(this);
     }
 
-    private OnlineMapsJSONItem SaveSettings()
-    {
-        return OnlineMapsJSON.Serialize(this);
-    }
-
     private void OnEnable()
     {
         _instance = this;
         map = GetComponent<OnlineMaps>();
         if (map == null) map = FindObjectOfType<OnlineMaps>();
         control = map.control as OnlineMapsControlBaseDynamicMesh;
+    }
+
+    private OnlineMapsJSONItem SaveSettings()
+    {
+        return OnlineMapsJSON.Serialize(this);
     }
 
     private void Start()
@@ -182,6 +182,8 @@ public class OnlineMapsCameraOrbit : MonoBehaviour, IOnlineMapsSavableComponent
     {
         if (rotation.x > maxRotationX) rotation.x = maxRotationX;
         else if (rotation.x < 0) rotation.x = 0;
+
+        if (activeCamera == null) return;
 
         float rx = 90 - rotation.x;
         if (rx > 89.9) rx = 89.9f;

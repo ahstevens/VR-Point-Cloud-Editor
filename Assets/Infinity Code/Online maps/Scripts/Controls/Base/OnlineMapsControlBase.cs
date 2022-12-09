@@ -274,10 +274,12 @@ public abstract class OnlineMapsControlBase : MonoBehaviour, IOnlineMapsSavableC
         set
         {
             _dragMarker = value;
-            //if (_dragMarker != null) UpdateLastPosition();
         }
     }
 
+    /// <summary>
+    /// Gets/sets the marker drawer.
+    /// </summary>
     public OnlineMapsMarker2DDrawer markerDrawer
     {
         get { return _markerDrawer; }
@@ -317,16 +319,25 @@ public abstract class OnlineMapsControlBase : MonoBehaviour, IOnlineMapsSavableC
         get { return _screenRect; }
     }
 
+    /// <summary>
+    /// Whether the current control draws to a texture.
+    /// </summary>
     public bool resultIsTexture
     {
         get { return resultType == OnlineMapsTarget.texture; }
     }
 
+    /// <summary>
+    /// The result type of the current control.
+    /// </summary>
     public virtual OnlineMapsTarget resultType
     {
         get { return OnlineMapsTarget.texture; }
     }
 
+    /// <summary>
+    /// Whether the current control uses raster tiles.
+    /// </summary>
     public virtual bool useRasterTiles
     {
         get { return true; }
@@ -362,6 +373,14 @@ public abstract class OnlineMapsControlBase : MonoBehaviour, IOnlineMapsSavableC
         
     }
 
+    /// <summary>
+    /// Creates a new tile.
+    /// </summary>
+    /// <param name="x">Tile X</param>
+    /// <param name="y">Tile Y</param>
+    /// <param name="zoom">Tile Zoom</param>
+    /// <param name="isMapTile">Should this tile be displayed on the map?</param>
+    /// <returns>Tile</returns>
     public virtual OnlineMapsTile CreateTile(int x, int y, int zoom, bool isMapTile = true)
     {
         return new OnlineMapsRasterTile(x, y, zoom, map, isMapTile);
@@ -425,6 +444,13 @@ public abstract class OnlineMapsControlBase : MonoBehaviour, IOnlineMapsSavableC
         return GetCoords(GetInputPosition(), out lng, out lat);
     }
 
+    /// <summary>
+    /// Returns the geographical coordinates of the location where the position is.
+    /// </summary>
+    /// <param name="position">Screen position</param>
+    /// <param name="lng">Longitude</param>
+    /// <param name="lat">Latitude</param>
+    /// <returns>True - success, False - otherwise.</returns>
     public abstract bool GetCoords(Vector2 position, out double lng, out double lat);
 
     protected virtual bool GetCoordsInternal(out double lng, out double lat)
@@ -443,6 +469,11 @@ public abstract class OnlineMapsControlBase : MonoBehaviour, IOnlineMapsSavableC
         return Input.mousePosition;
     }
 
+    /// <summary>
+    /// Get the interactive element located at the screen position.
+    /// </summary>
+    /// <param name="screenPosition">Screen position</param>
+    /// <returns>Interactive element</returns>
     public virtual IOnlineMapsInteractiveElement GetInteractiveElement(Vector2 screenPosition)
     {
         if (IsCursorOnUIElement(screenPosition)) return null;
@@ -543,6 +574,13 @@ public abstract class OnlineMapsControlBase : MonoBehaviour, IOnlineMapsSavableC
         return new Vector2((float)mx, (float)my);
     }
 
+    /// <summary>
+    /// Gets a tile by screen position.
+    /// </summary>
+    /// <param name="position">Screen position</param>
+    /// <param name="tx">Tile X</param>
+    /// <param name="ty">Tile Y</param>
+    /// <returns>Tile</returns>
     public abstract bool GetTile(Vector2 position, out double tx, out double ty);
 
     protected virtual bool GetTileInternal(Vector2 position, out double tx, out double ty)
@@ -599,6 +637,11 @@ public abstract class OnlineMapsControlBase : MonoBehaviour, IOnlineMapsSavableC
         OnMapBaseRelease();
     }
 
+    /// <summary>
+    /// Whether the screen position is on UI element
+    /// </summary>
+    /// <param name="position">Screen position</param>
+    /// <returns>True - on UI element, False - otherwise</returns>
     public bool IsCursorOnUIElement(Vector2 position)
     {
         if (!map.notInteractUnderGUI) return false;

@@ -1,22 +1,38 @@
-using System.Collections.Specialized;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-
+using System.Runtime.InteropServices;
 using UnityEngine.Windows.Speech;
+using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 public class SpeechManager : MonoBehaviour
 {
+    [DllImport("PointCloudPlugin")]
+    private static extern void AddClassificationEntry(int id, float redNormalized, float greenNormalized, float blueNormalized);
+
+    [DllImport("PointCloudPlugin")]
+    private static extern bool UpdateClassificationEntry(int id, float redNormalized, float greenNormalized, float blueNormalized);
+
+    [DllImport("PointCloudPlugin")]
+    private static extern void ClearClassificationTable();
+
     private KeywordRecognizer _keywordRecognizer;
     Dictionary<string, System.Action> _keywords = new Dictionary<string, System.Action>();
 
     [SerializeField]
     private UnityEngine.UI.Text commandDisplay;
 
+    [SerializeField]
+    private GameObject classifierScrollViewContent;
+
     // Start is called before the first frame update
     void Start()
     {
         PrepareBuiltinCommands();
+
+        ClearClassificationTable();
 
         LoadAndPrepareClassifiers();
 
@@ -35,7 +51,8 @@ public class SpeechManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
+        if (Keyboard.current.xKey.wasPressedThisFrame)
+            AddClassificationEntry(155, 1f, 1f, 0f);
     }
 
     private void PrepareBuiltinCommands()
@@ -139,9 +156,19 @@ public class SpeechManager : MonoBehaviour
             if (pointCloudManager.GetPointCloudsInScene().Length == 0)
                 pointCloudManager.LoadDemoFile();
         });
+
+        _keywords.Add("show RGB", () =>
+        {
+            FindObjectOfType<ModifyPoints>().ActivateClassificationMode(false);
+        });
+
+        _keywords.Add("show classifiers", () =>
+        {
+            FindObjectOfType<ModifyPoints>().ActivateClassificationMode(true);
+        });
     }
 
-    private void LoadAndPrepareClassifiers()
+    private void LoadAndPrepareOldClassifiers()
     {
         var reader = new System.IO.StreamReader(Application.dataPath + "/../classification_keywords.conf");
         int lineNum = 1;
@@ -178,6 +205,121 @@ public class SpeechManager : MonoBehaviour
                     else
                     {
                         Debug.Log($"Line {lineNum}: Keyword {key} already exists! Skipping...");
+                    }
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.Log("ERROR Loading line " + lineNum + ":");
+                Debug.Log(line);
+                Debug.LogException(e);
+            }
+        }
+
+        reader.Close();
+    }
+
+    private void LoadAndPrepareClassifiers()
+    {
+        var reader = new System.IO.StreamReader(Application.dataPath + "/../classifiers.conf");
+
+        var header = reader.ReadLine();
+
+        if (header.Length == 0 || !header.Equals("id,label,r,g,b,commands"))
+        {
+            Debug.Log("Classifier configuration file is malformed. Aborting...");
+            return;
+        }
+
+        int lineNum = 1;
+
+        while (!reader.EndOfStream)
+        {
+            var line = reader.ReadLine();
+            lineNum++;
+
+            try
+            {
+                var classifierID = Convert.ToInt32(line.Split(',')[0]);
+
+                var splitByQuote = line.Split('"');
+
+                var label = splitByQuote[1].ToLower();
+
+                var rgb = splitByQuote[2];
+                ushort red = Convert.ToUInt16(rgb.Split(",", System.StringSplitOptions.RemoveEmptyEntries)[0]);
+                ushort green = Convert.ToUInt16(rgb.Split(",", System.StringSplitOptions.RemoveEmptyEntries)[1]);
+                ushort blue = Convert.ToUInt16(rgb.Split(",", System.StringSplitOptions.RemoveEmptyEntries)[2]);
+
+                var classColor = new Color(red / 255f, green / 255f, blue / 255f);
+
+                var modifyPointsScript = FindObjectOfType<ModifyPoints>();
+
+                AddClassificationEntry(classifierID, red / 255f, green / 255f, blue / 255f);
+
+                var button = DefaultControls.CreateButton(new DefaultControls.Resources());
+                button.layer = LayerMask.NameToLayer("UI");
+                button.name = label;
+                button.GetComponentInChildren<Text>().text = label;
+                var oldColors = button.GetComponent<Button>().colors;
+                oldColors.normalColor = classColor;
+                button.GetComponent<Button>().colors = oldColors;
+                button.transform.SetParent(classifierScrollViewContent.transform, false);
+                var newSize = classifierScrollViewContent.GetComponent<RectTransform>().sizeDelta;
+                newSize.y += 30;
+                classifierScrollViewContent.GetComponent<RectTransform>().sizeDelta = newSize;
+
+                button.GetComponent<Button>().onClick.AddListener(() =>
+                {
+                    modifyPointsScript.SetModificationClassifier(classifierID, classColor);
+                    Debug.Log("Classifier " + classifierID + " selected");
+                });
+
+                var pretexts = new string[] {
+                    "set classifier",
+                    "set classification",
+                    "change classifier",
+                    "change classification"
+                };
+
+                var keys = new List<string>();
+                keys.Add(label);
+
+                for (int i = 3; i < splitByQuote.Length - 1; i++)
+                {
+                    if (splitByQuote[i] != ",")
+                        keys.Add(splitByQuote[i].ToLower());
+                }
+
+                foreach (var p in pretexts)
+                {
+                    foreach (var key in keys)
+                    {
+                        var keyword = p + " " + key;
+
+                        Debug.Log("COMMAND: " + p);
+                        Debug.Log("KEY: " + key);
+                        Debug.Log("KEYWORD: " + keyword);
+                        Debug.Log("VALUE: " + classifierID);
+                        Debug.Log("COLOR: " + red + ", " + green + ", " + blue);
+
+                        if (!_keywords.ContainsKey(keyword))
+                        {                      
+                            _keywords.Add(keyword, () =>
+                            {
+                                // This lambda is where you add the keyword actions
+                                Debug.Log("COMMAND: " + p);
+                                Debug.Log("KEY: " + key);
+                                Debug.Log("VALUE: " + classifierID);
+                                Debug.Log("COLOR: " + red + ", " + green + ", " + blue);
+
+                                FindObjectOfType<ModifyPoints>().SetModificationClassifier(classifierID, classColor);
+                            });
+                        }
+                        else
+                        {
+                            Debug.Log($"Line {lineNum}: Keyword {key} already exists! Skipping...");
+                        }
                     }
                 }
             }

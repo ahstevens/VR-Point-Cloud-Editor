@@ -17,7 +17,14 @@ public abstract class OnlineMapsControlBaseDynamicMesh : OnlineMapsControlBase3D
     /// </summary>
     public Action OnMeshUpdated;
 
+    /// <summary>
+    /// The event is called after updating the map mesh.
+    /// </summary>
     public Action OnUpdateMeshAfter;
+
+    /// <summary>
+    /// The event is called before updating the map mesh
+    /// </summary>
     public Action OnUpdateMeshBefore;
 
     /// <summary>

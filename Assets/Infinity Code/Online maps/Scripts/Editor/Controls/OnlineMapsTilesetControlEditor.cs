@@ -17,6 +17,7 @@ public class OnlineMapsTilesetControlEditor : OnlineMapsControlBaseDynamicMeshEd
     private SerializedProperty markerShader;
     private SerializedProperty mipmapForTiles;
     private bool showShaders;
+    private SerializedProperty overlayFromParentTiles;
     private SerializedProperty sizeInScene;
     private SerializedProperty tileMaterial;
     private SerializedProperty tilesetShader;
@@ -40,6 +41,7 @@ public class OnlineMapsTilesetControlEditor : OnlineMapsControlBaseDynamicMeshEd
         sizeInScene = serializedObject.FindProperty("sizeInScene");
         compressTextures = serializedObject.FindProperty("compressTextures");
         elevationResolution = serializedObject.FindProperty("elevationResolution");
+        overlayFromParentTiles = serializedObject.FindProperty("overlayFromParentTiles");
     }
 
     private void CheckCameraDistance()
@@ -156,6 +158,7 @@ public class OnlineMapsTilesetControlEditor : OnlineMapsControlBaseDynamicMeshEd
         rootLayoutItem.Create(colliderType).disabledInPlaymode = true;
         rootLayoutItem.Create("colliderWarning", CheckColliderType);
         rootLayoutItem.Create("SRPWarning", CheckSRP).priority = -2;
+        rootLayoutItem.Create(overlayFromParentTiles);
         rootLayoutItem.Create("elevationResolution", DrawElevationResolution);
 
         GenerateMaterialsLayout();

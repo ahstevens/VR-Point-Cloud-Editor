@@ -1270,6 +1270,13 @@ public static class OnlineMapsUtils
         return Math.Sqrt((p2x - p1x) * (p2x - p1x) + (p2y - p1y) * (p2y - p1y));
     }
 
+    /// <summary>
+    /// Returns the nearest point on the segment.
+    /// </summary>
+    /// <param name="point">Point</param>
+    /// <param name="lineStart">Start of the segment</param>
+    /// <param name="lineEnd">End of segment</param>
+    /// <returns>Nearest point</returns>
     public static Vector2 NearestPointStrict(Vector2 point, Vector2 lineStart, Vector2 lineEnd)
     {
         Vector2 fullDirection = lineEnd - lineStart;
@@ -1278,6 +1285,17 @@ public static class OnlineMapsUtils
         return lineStart + Mathf.Clamp(closestPoint, 0, fullDirection.magnitude) * lineDirection;
     }
 
+    /// <summary>
+    /// Returns the nearest point on the segment.
+    /// </summary>
+    /// <param name="pointX">Point X</param>
+    /// <param name="pointY">Point Y</param>
+    /// <param name="lineStartX">Start X of the segment</param>
+    /// <param name="lineStartY">Start Y of the segment</param>
+    /// <param name="lineEndX">End X of the segment</param>
+    /// <param name="lineEndY">End Y of the segment</param>
+    /// <param name="nearestPointX">Nearest point X</param>
+    /// <param name="nearestPointY">Nearest point Y</param>
     public static void NearestPointStrict(double pointX, double pointY, double lineStartX, double lineStartY, double lineEndX, double lineEndY, out double nearestPointX, out double nearestPointY)
     {
         double fdX = lineEndX - lineStartX;
@@ -1296,6 +1314,13 @@ public static class OnlineMapsUtils
         nearestPointY = lineStartY + closestPoint * ldY;
     }
 
+    /// <summary>
+    /// Loops the value n, so that it is never larger than maxValue and never smaller than minValue.
+    /// </summary>
+    /// <param name="n">Value</param>
+    /// <param name="minValue">Minimum value</param>
+    /// <param name="maxValue">Maximum value</param>
+    /// <returns>Looped value from minValue to maxValue.</returns>
     public static double Repeat(double n, double minValue, double maxValue)
     {
         if (double.IsInfinity(n) || double.IsInfinity(minValue) || double.IsInfinity(maxValue) || double.IsNaN(n) || double.IsNaN(minValue) || double.IsNaN(maxValue)) return n;
@@ -1309,11 +1334,26 @@ public static class OnlineMapsUtils
         return n;
     }
 
+    /// <summary>
+    /// Returns the square of the magnitude of the segment
+    /// </summary>
+    /// <param name="p1x">Point 1 X</param>
+    /// <param name="p1y">Point 1 Y</param>
+    /// <param name="p2x">Point 2 X</param>
+    /// <param name="p2y">Point 2 Y</param>
+    /// <returns>Square of the magnitude</returns>
     public static double SqrMagnitude(double p1x, double p1y, double p2x, double p2y)
     {
         return (p2x - p1x) * (p2x - p1x) + (p2y - p1y) * (p2y - p1y);
     }
 
+    /// <summary>
+    /// Replaces multiple values in a string
+    /// </summary>
+    /// <param name="str">Input string</param>
+    /// <param name="origin">Values to be replaced</param>
+    /// <param name="replace">Values to replace</param>
+    /// <returns>String with replaced values</returns>
     public static string StrReplace(string str, string[] origin, string[] replace)
     {
         if (origin == null || replace == null) return str;
@@ -1322,6 +1362,10 @@ public static class OnlineMapsUtils
         return str;
     }
 
+    /// <summary>
+    /// The current thread sleeps for the specified number of milliseconds
+    /// </summary>
+    /// <param name="millisecondsTimeout">number of milliseconds</param>
     public static void ThreadSleep(int millisecondsTimeout)
     {
 #if !NETFX_CORE
@@ -1359,6 +1403,16 @@ public static class OnlineMapsUtils
         return quadKey.ToString();
     }
 
+    /// <summary>
+    /// Converts tile index to quadkey.
+    /// What is the tiles and quadkey, and how it works, you can read here:
+    /// http://msdn.microsoft.com/en-us/library/bb259689.aspx
+    /// </summary>
+    /// <param name="x">Tile X</param>
+    /// <param name="y">Tile Y</param>
+    /// <param name="zoom">Tile Zoom</param>
+    /// <param name="quadKey">StringBuilder where to write quadKey</param>
+    /// <returns>quadKey StringBuilder</returns>
     public static StringBuilder TileToQuadKey(int x, int y, int zoom, StringBuilder quadKey)
     {
         for (int i = zoom; i > 0; i--)
@@ -1376,6 +1430,11 @@ public static class OnlineMapsUtils
         return quadKey;
     }
 
+    /// <summary>
+    /// Triangulates list of points
+    /// </summary>
+    /// <param name="points">List of points</param>
+    /// <returns>List of vertex numbers</returns>
     public static List<int> Triangulate(List<Vector2> points)
     {
         List<int> indices = new List<int>(18);
@@ -1423,6 +1482,13 @@ public static class OnlineMapsUtils
         return indices;
     }
 
+    /// <summary>
+    /// Triangulates points
+    /// </summary>
+    /// <param name="points">An array of points containing the values [x, y, x, y...]</param>
+    /// <param name="countVertices"><Number of vertices to be triangulated/param>
+    /// <param name="indices">List where vertex indices will be written</param>
+    /// <returns>Indices</returns>
     public static IEnumerable<int> Triangulate(float[] points, int countVertices, List<int> indices)
     {
         indices.Clear();

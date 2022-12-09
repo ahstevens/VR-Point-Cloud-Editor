@@ -18,6 +18,11 @@ public class OnlineMapsKeyManager: MonoBehaviour
     public string amap;
 
     /// <summary>
+    /// ArcGIS key
+    /// </summary>
+    public string arcgisKey;
+
+    /// <summary>
     /// Bing Maps key
     /// </summary>
     public string bingMaps;
@@ -68,6 +73,14 @@ public class OnlineMapsKeyManager: MonoBehaviour
     public static bool hasAMap
     {
         get { return !string.IsNullOrEmpty(AMap()); }
+    }
+
+     /// <summary>
+    /// Is there a key for ArcGIS
+    /// </summary>
+    public static bool hasArcGISKey
+    {
+        get { return !string.IsNullOrEmpty(ArcGIS()); }
     }
 
     /// <summary>
@@ -146,6 +159,16 @@ public class OnlineMapsKeyManager: MonoBehaviour
     public static string AMap()
     {
         if (instance != null) return instance.amap;
+        return null;
+    }
+
+    /// <summary>
+    /// Returns the key for ArcGIS if present
+    /// </summary>
+    /// <returns>Key for ArcGIS or null</returns>
+    public static string ArcGIS()
+    {
+        if (instance != null) return instance.arcgisKey;
         return null;
     }
 

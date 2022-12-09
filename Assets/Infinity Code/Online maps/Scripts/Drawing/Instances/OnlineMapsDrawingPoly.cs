@@ -98,11 +98,53 @@ public class OnlineMapsDrawingPoly : OnlineMapsDrawingElement
         get
         {
             OnlineMapsVector2d centerPoint = OnlineMapsVector2d.zero;
-            int count = 0;
-            foreach (OnlineMapsVector2d point in points)
+            int i = 0, count = 0;
+            int valueType = -1; // 0 - Vector2, 1 - float, 2 - double, 3 - OnlineMapsVector2d
+            object prev = null;
+
+            foreach (object p in points)
             {
-                centerPoint += point;
-                count++;
+                if (valueType == -1)
+                {
+                    if (p is Vector2) valueType = 0;
+                    else if (p is float) valueType = 1;
+                    else if (p is double) valueType = 2;
+                    else if (p is OnlineMapsVector2d) valueType = 3;
+                }
+
+                i++;
+
+                if (valueType == 0)
+                {
+                    centerPoint += (OnlineMapsVector2d)(Vector2)p;
+                    count++;
+                    continue;
+                }
+
+                if (valueType == 3)
+                {
+                    centerPoint += (OnlineMapsVector2d) p;
+                    count++;
+                    continue;
+                }
+
+                if (i % 2 == 0)
+                {
+                    if (valueType == 1)
+                    {
+                        centerPoint.x += (float) prev;
+                        centerPoint.y += (float) p;
+                    }
+                    else
+                    {
+                        centerPoint.x += (double) prev;
+                        centerPoint.y += (double) p;
+                    }
+
+                    count++;
+                }
+
+                prev = p;
             }
             if (count == 0) return OnlineMapsVector2d.zero;
             return centerPoint / count;

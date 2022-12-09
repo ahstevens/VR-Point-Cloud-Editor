@@ -55,7 +55,7 @@ public class NMEAEmulator : MonoBehaviour
             if (georef != null && sendObjectPosition)
             {
                 double lat, lon;
-                ToLatLon(georef.realWorldX + (double)this.transform.position.x, georef.realWorldZ + (double)this.transform.position.z, "15N", out lat, out lon);
+                ToLatLon(georef.refX + (double)this.transform.position.x, georef.refY + (double)this.transform.position.z, "15N", out lat, out lon);
                 lon = Math.Abs(lon);
                 
                 SendPosition(lat, lon);

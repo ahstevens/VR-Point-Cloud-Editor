@@ -80,7 +80,7 @@ public class OnlineMapsMarkerFlatDrawer : OnlineMapsMarker2DMeshDrawer
         OnlineMapsMarker marker = null;
 
         RaycastHit hit;
-        if (control.cl.Raycast(control.activeCamera.ScreenPointToRay(screenPosition), out hit, OnlineMapsUtils.maxRaycastDistance))
+        if (control.cl.Raycast(control.currentCamera.ScreenPointToRay(screenPosition), out hit, OnlineMapsUtils.maxRaycastDistance))
         {
             double lng = double.MinValue, lat = double.MaxValue;
             foreach (FlatMarker flatMarker in usedMarkers)

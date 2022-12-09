@@ -17,19 +17,41 @@ public class OnlineMapsAdjustToScreen : MonoBehaviour
     [Header("To not see the edges when rotating the map")]
     public bool useMaxSide = false;
 
+    [Header("Optional")]
+    public OnlineMapsRawImageTouchForwarder forwarder;
+
+    public Camera mapCamera;
+
     private int screenWidth;
     private int screenHeight;
     private OnlineMaps map;
     private OnlineMapsControlBase control;
     private OnlineMapsCameraOrbit cameraOrbit;
 
-    private void ResizeMap()
+    private void GetScreenSize(out int width, out int height)
     {
-        screenWidth = Screen.width;
-        screenHeight = Screen.height;
+        if (forwarder == null)
+        {
+            width = Screen.width;
+            height = Screen.height;
+        }
+        else
+        {
+            Vector3[] fourCorners = new Vector3[4];
+            forwarder.image.rectTransform.GetWorldCorners(fourCorners);
+            Vector3 size = fourCorners[2] - fourCorners[0];
+            width = Mathf.RoundToInt(size.x);
+            height = Mathf.RoundToInt(size.y);
+        }
+    }
 
-        int width = screenWidth / 256 * 256;
-        int height = screenHeight / 256 * 256;
+    private void ResizeMap(int newWidth, int newHeight)
+    {
+        screenWidth = newWidth;
+        screenHeight = newHeight;
+
+        int width = newWidth / 256 * 256;
+        int height = newHeight / 256 * 256;
 
         int zoom = map.zoom;
         
@@ -39,8 +61,8 @@ public class OnlineMapsAdjustToScreen : MonoBehaviour
             height = height / 512 * 256;
         }
 
-        if (screenWidth % 256 != 0) width += 256;
-        if (screenHeight % 256 != 0) height += 256;
+        if (newWidth % 256 != 0) width += 256;
+        if (newHeight % 256 != 0) height += 256;
 
         if (useMaxSide) width = height = Mathf.Max(width, height);
 
@@ -102,8 +124,21 @@ public class OnlineMapsAdjustToScreen : MonoBehaviour
             OnlineMapsTileSetControl ts = control as OnlineMapsTileSetControl;
 
             ts.Resize(width, height, viewWidth, viewHeight);
-            if (ts.activeCamera.orthographic) ts.activeCamera.orthographicSize = screenHeight / 2f;
-            else if (cameraOrbit != null) cameraOrbit.distance = screenHeight * 0.8f;
+            if (ts.currentCamera.orthographic) ts.currentCamera.orthographicSize = newHeight / 2f;
+            else if (cameraOrbit != null) cameraOrbit.distance = newHeight * 0.8f;
+
+            if (forwarder != null)
+            {
+                RenderTexture targetTexture = forwarder.targetTexture;
+                if (targetTexture.width != newWidth || targetTexture.height != newHeight)
+                {
+                    targetTexture.Release();
+                    targetTexture = new RenderTexture(newWidth, newHeight, 32);
+                    forwarder.targetTexture = targetTexture;
+                    forwarder.image.texture = targetTexture;
+                    if (mapCamera != null) mapCamera.targetTexture = targetTexture;
+                }
+            }
         }
     }
 
@@ -113,11 +148,17 @@ public class OnlineMapsAdjustToScreen : MonoBehaviour
         control = map.control;
         cameraOrbit = GetComponent<OnlineMapsCameraOrbit>();
 
-        ResizeMap();
+        int width, height;
+        GetScreenSize(out width, out height);
+        ResizeMap(width, height);
     }
 
     private void Update()
     {
-        if (screenWidth != Screen.width || screenHeight != Screen.height) ResizeMap();
+        int width, height;
+        GetScreenSize(out width, out height);
+        if (screenWidth == width && screenHeight == height) return;
+
+        ResizeMap(width, height);
     }
 }

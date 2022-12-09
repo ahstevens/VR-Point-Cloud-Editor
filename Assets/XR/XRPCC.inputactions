@@ -243,6 +243,17 @@
                     "action": "Reset View",
                     "isComposite": false,
                     "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "bc7b72c8-9d5c-45d7-9d7f-f14c05d5832d",
+                    "path": "<ViveFocus3Controller>{RightHand}/secondaryButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Reset View",
+                    "isComposite": false,
+                    "isPartOfComposite": false
                 }
             ]
         },
@@ -348,6 +359,39 @@
                     "isPartOfComposite": true
                 },
                 {
+                    "name": "vive focus 3 bimanual grip",
+                    "id": "ef9a522e-a52d-4777-bf72-fd0ee6512618",
+                    "path": "ButtonWithOneModifier",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Scale",
+                    "isComposite": true,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "button",
+                    "id": "e22c756e-6cfd-4457-acc4-a1b07c5add50",
+                    "path": "<ViveFocus3Controller>{LeftHand}/gripPressed",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Scale",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "modifier",
+                    "id": "981082b9-a328-4faf-a062-cb1da3859d5f",
+                    "path": "<ViveFocus3Controller>{RightHand}/gripPressed",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Scale",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
                     "name": "",
                     "id": "e3ad7886-b67e-4297-858b-896b9b244fae",
                     "path": "<OculusTouchController>{RightHand}/primaryButton",
@@ -395,6 +439,17 @@
                     "name": "",
                     "id": "053ab5bd-b579-4036-bca8-b7deba2fb27f",
                     "path": "<OculusTouchController>{RightHand}/primaryTouched",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Show Scaling Marker",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "4901f21e-f483-4eaa-b286-242a6b0a7810",
+                    "path": "<ViveFocus3Controller>/gripPressed",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -540,6 +595,17 @@
                 },
                 {
                     "name": "",
+                    "id": "c7b6680b-fabf-49eb-a46b-be9775b9a9f5",
+                    "path": "<ViveFocus3Controller>{RightHand}/primaryButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Undo Delete",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "b7f2c9c2-8337-4422-9f86-8c7e4645bbbf",
                     "path": "<ValveIndexController>{RightHand}/thumbstick",
                     "interactions": "",
@@ -674,6 +740,17 @@
                 },
                 {
                     "name": "",
+                    "id": "c5dd08f7-cc20-487b-80a8-92b096dfa7ff",
+                    "path": "<ViveFocus3Controller>{RightHand}/secondaryButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Adjust Map Height",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "e0c2a910-0a7b-4eb6-a651-d2f9d1fb83e7",
                     "path": "<ViveController>{LeftHand}/trackpad",
                     "interactions": "",
@@ -718,6 +795,17 @@
                 },
                 {
                     "name": "",
+                    "id": "b5072941-1f90-421f-8de8-5e94a6e0b67f",
+                    "path": "<ViveFocus3Controller>{LeftHand}/joystick",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Change Map Type",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "7ae06cf5-2c37-44a1-87c1-a84e31ee4e3f",
                     "path": "<ViveController>{LeftHand}/trackpadClicked",
                     "interactions": "",
@@ -753,6 +841,17 @@
                     "name": "",
                     "id": "0dd99cbc-1516-4084-99f4-d54c86bbaf1f",
                     "path": "<WMRSpatialController>/touchpadClicked",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Toggle Persistent Map",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "da5158be-6313-49aa-9c4b-a6e930372241",
+                    "path": "<ViveFocus3Controller>{LeftHand}/joystickClicked",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -814,6 +913,17 @@
                     "name": "",
                     "id": "be27569c-0d9c-4fe9-ad0d-b8e5bd5afd3c",
                     "path": "<WMRSpatialController>{LeftHand}/menu",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Open UI",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "c98e8231-38b2-48fb-b6ac-065139bda58b",
+                    "path": "<ViveFocus3Controller>/primaryButton",
                     "interactions": "",
                     "processors": "",
                     "groups": "",

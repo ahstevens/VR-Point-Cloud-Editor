@@ -344,6 +344,12 @@ public class OnlineMapsTileManager
                 yield break;
             }
 
+            if (tile.map == null)
+            {
+                tile.MarkError();
+                yield break;
+            }
+
             tile.www = new OnlineMapsWWW(tile.url);
             tile.www["tile"] = tile;
             tile.www.OnComplete += OnTileWWWComplete;

@@ -30,9 +30,8 @@ public class pointCloudManager : MonoBehaviour
     static public extern bool updateWorldMatrix(IntPtr worldMatrix, IntPtr pointCloudID);
     [DllImport("PointCloudPlugin")]
     private static extern IntPtr GetRenderEventFunc();
-    [DllImport("PointCloudPlugin")]
-    
-    private static extern int RequestToDeleteFromUnity(IntPtr center, float size);
+    [DllImport("PointCloudPlugin")]    
+    private static extern int RequestToDeleteFromUnity(IntPtr center, float size);    
     [DllImport("PointCloudPlugin")]
     private static extern int RequestOctreeBoundsCountFromUnity();
     [DllImport("PointCloudPlugin")]
@@ -69,10 +68,10 @@ public class pointCloudManager : MonoBehaviour
     static public extern bool RequestIsAtleastOnePointInSphereFromUnity(IntPtr center, float size);
     [DllImport("PointCloudPlugin")]
     static public extern void RequestClosestPointInSphereFromUnity(IntPtr center, float size);
-    [DllImport("PointCloudPlugin")]
-    static public extern void setHighlightDeletedPointsActive(bool active);
-    [DllImport("PointCloudPlugin")]
-    static public extern void UpdateDeletionSpherePositionFromUnity(IntPtr center, float size);
+    //[DllImport("PointCloudPlugin")]
+    //static public extern void setHighlightDeletedPointsActive(bool active);
+    //[DllImport("PointCloudPlugin")]
+    //static public extern void UpdateDeletionSpherePositionFromUnity(IntPtr center, float size);
 
     [DllImport("PointCloudPlugin")]
     static public extern void undo(int actionsCount);
@@ -99,7 +98,14 @@ public class pointCloudManager : MonoBehaviour
     [DllImport("PointCloudPlugin")]
     private static extern void setScreenIndex(int newScreenIndex);
 
-    public GameObject pointCloudGameObject;
+    [DllImport("PointCloudPlugin")]
+    private static extern bool IsDebugLogFileOutActive();
+
+    [DllImport("PointCloudPlugin")]
+    private static extern void SetDebugLogFileOutput(bool NewValue);
+
+
+
     public static List<pointCloud> pointClouds;
     public static List<string> toLoadList;
     public static List<LODInformation> LODSettings;
@@ -133,12 +139,19 @@ public class pointCloudManager : MonoBehaviour
         get { return _commandLineOutputFile; }
     }
 
+    [SerializeField]
+    private int debugEPSG = 0;
+
+    private static int forcedEPSG = 0;
+
     private static bool firstFrame = true;
 
     static int screenIndex = 0;
 
     private void Awake()
     {
+        //SetDebugLogFileOutput(true);
+
         // find command line input file, if supplied
         string[] arguments = Environment.GetCommandLineArgs();
 
@@ -157,12 +170,32 @@ public class pointCloudManager : MonoBehaviour
             {
                 _commandLineOutputFile = arguments[i + 1];
             }
+
+            if (arguments[i] == "-debug")
+            {
+                SetDebugLogFileOutput(true);
+            }
+
+            if (arguments[i].ToLower() == "-epsg" && i != arguments.Length - 1)
+            {
+                try
+                {
+                    forcedEPSG = int.Parse(arguments[i + 1]);
+                }
+                catch (System.Exception e)
+                {
+                    Debug.LogException(e);
+                }
+            }
         }
+
+        if (debugEPSG > 0)
+            forcedEPSG = debugEPSG;
     }
 
     void OnValidate()
     {
-        Camera.onPostRender = pointCloudManager.OnPostRenderCallback;
+        Camera.onPostRender = OnPostRenderCallback;
 
 #if UNITY_EDITOR
         EditorSceneManager.sceneSaved -= OnSceneSaveCallback;
@@ -196,8 +229,10 @@ public class pointCloudManager : MonoBehaviour
     {
         demoFile = Application.dataPath + "/../sample";
 
-        deletedPointsBox = new Material(Shader.Find("Unlit/Color"));
-        deletedPointsBox.color = Camera.main.backgroundColor;
+        deletedPointsBox = new Material(Shader.Find("Unlit/Color"))
+        {
+            color = Camera.main.backgroundColor
+        };
 
         OnValidate();
 
@@ -249,7 +284,7 @@ public class pointCloudManager : MonoBehaviour
         return geoReference.GetComponent<GEOReference>();
     }
 
-    private static void CreateGEOReference(Vector3 GEOPosition, int UTMZone)
+    private static void CreateGEOReference(double xOrigin, double yOrigin)
     {
         GameObject geoReference = new GameObject("UnityZeroGeoReference");
         geoReference.transform.position = new Vector3(0.0f, 0.0f, 0.0f);
@@ -257,10 +292,8 @@ public class pointCloudManager : MonoBehaviour
         // Add script
         GEOReference scriptClass = geoReference.AddComponent<GEOReference>();
 
-        scriptClass.setRealWorldX(GEOPosition.x);
-        scriptClass.setRealWorldZ(GEOPosition.z);
-
-        scriptClass.UTMZone = UTMZone;
+        scriptClass.setReferenceX(xOrigin);
+        scriptClass.setReferenceY(yOrigin);
     }
 
     public static bool LoadLAZFile(string filePath, GameObject reinitialization = null)
@@ -448,38 +481,43 @@ public class pointCloudManager : MonoBehaviour
             double[] adjustmentResult = new double[13];
             Marshal.Copy(adjustmentArray, adjustmentResult, 0, 13);
 
+            for (int i = 0; i < adjustmentResult.Length; ++i)
+                Debug.Log(i + ": " + adjustmentResult[i]);
+
             pcComponent.adjustmentX = adjustmentResult[0];
             pcComponent.adjustmentY = adjustmentResult[1];
             pcComponent.adjustmentZ = adjustmentResult[2];
+
+            if (GetGeoReference() == null)
+            {
+                CreateGEOReference(adjustmentResult[3], adjustmentResult[4]);
+            }
+            else
+            {
+                pcComponent.initialXShift = -(GetGeoReference().refX - adjustmentResult[3]);
+                pcComponent.initialZShift = -(GetGeoReference().refY - adjustmentResult[4]);
+            }
 
             pcComponent.bounds = new Bounds();
 
             pcComponent.bounds.SetMinMax(
                 new Vector3(
-                    (float)adjustmentResult[5],
-                    (float)adjustmentResult[6], 
-                    (float)adjustmentResult[7]),
+                    (float)(adjustmentResult[5] - adjustmentResult[3]),
+                    (float)(adjustmentResult[6]), 
+                    (float)(adjustmentResult[7] - adjustmentResult[4])),
                 new Vector3(
-                    (float)adjustmentResult[8],
-                    (float)adjustmentResult[9],
-                    (float)adjustmentResult[10])
+                    (float)(adjustmentResult[8] - adjustmentResult[3]) ,
+                    (float)(adjustmentResult[9]) ,
+                    (float)(adjustmentResult[10] - adjustmentResult[4]))
                 );
 
             Debug.Log(pcComponent.bounds);
 
-            pcComponent.EPSG = (int)(adjustmentResult[11]);
+            Debug.Log((int)(adjustmentResult[11]));
+
+            pcComponent.EPSG = forcedEPSG > 0 ? forcedEPSG : (int)(adjustmentResult[11]);
 
             pcComponent.groundLevel = (float)adjustmentResult[12];
-
-            if (GetGeoReference() == null)
-            {
-                CreateGEOReference(new Vector3((float)adjustmentResult[3], 0.0f, (float)adjustmentResult[4]), pcComponent.UTMZone);
-            }
-            else
-            {
-                pcComponent.initialXShift = -(GetGeoReference().realWorldX - adjustmentResult[3]);
-                pcComponent.initialZShift = -(GetGeoReference().realWorldZ - adjustmentResult[4]);
-            }
 
             // Default value for y, it should be calculated but for now it is a magic number.
             //float y = 905.0f;
@@ -580,6 +618,9 @@ public class pointCloudManager : MonoBehaviour
             }
             GCHandle pointerProjection = GCHandle.Alloc(projectionArray, GCHandleType.Pinned);
 
+            if (!FindObjectOfType<PointCloudUI>().MenuOpen)
+                FindObjectOfType<ModifyPoints>().ModifyInSphere();
+            
             updateCamera(pointerTocameraToWorld.AddrOfPinnedObject(), pointerProjection.AddrOfPinnedObject(), screenIndex);
 
             pointerTocameraToWorld.Free();
@@ -654,22 +695,22 @@ public class pointCloudManager : MonoBehaviour
         Camera.onPostRender -= OnPostRenderCallback;
     }
 
-    public static void SetHighlightDeletedPoints(bool active)
-    {
-        setHighlightDeletedPointsActive(active);
-    }
+    //public static void SetHighlightDeletedPoints(bool active)
+    //{
+    //    setHighlightDeletedPointsActive(active);
+    //}
 
-    public static void UpdateDeletionSpherePositionFromUnity(Vector3 center, float size)
-    {
-        float[] deletionSpherePosition = new float[3];
-        
-        GCHandle deletionSpherePositionPointer = GCHandle.Alloc(deletionSpherePosition, GCHandleType.Pinned);
-        deletionSpherePosition[0] = center.x;
-        deletionSpherePosition[1] = center.y;
-        deletionSpherePosition[2] = center.z;
-
-        UpdateDeletionSpherePositionFromUnity(deletionSpherePositionPointer.AddrOfPinnedObject(), size);
-    }
+    //public static void UpdateDeletionSpherePositionFromUnity(Vector3 center, float size)
+    //{
+    //    float[] deletionSpherePosition = new float[3];
+    //    
+    //    GCHandle deletionSpherePositionPointer = GCHandle.Alloc(deletionSpherePosition, GCHandleType.Pinned);
+    //    deletionSpherePosition[0] = center.x;
+    //    deletionSpherePosition[1] = center.y;
+    //    deletionSpherePosition[2] = center.z;
+    //
+    //    UpdateDeletionSpherePositionFromUnity(deletionSpherePositionPointer.AddrOfPinnedObject(), size);
+    //}
 
     public static void SetTestLevel(float value)
     {

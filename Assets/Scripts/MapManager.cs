@@ -277,9 +277,6 @@ public class MapManager : MonoBehaviour
 
     public void CreateMaps(GEOReference geoRef, pointCloud pc)
     {
-        if (pc.EPSG == 0)
-            pc.EPSG = 4326;
-
         try
         {
             ProjectionInfo.FromEpsgCode(pc.EPSG);
@@ -319,8 +316,10 @@ public class MapManager : MonoBehaviour
 
         ENC.transform.parent = pc.transform;
         ENC.transform.localRotation = Quaternion.Euler(90f, 0, 0);
-        ENC.transform.localScale = new Vector3(pc.bounds.extents.x * 2f, pc.bounds.extents.z * 2f, 1f);
-        ENC.transform.localPosition = new Vector3(pc.bounds.center.x, pc.groundLevel, pc.bounds.center.z);
+        float squareScaleFactor = Mathf.Max(pc.bounds.extents.x, pc.bounds.extents.z);
+        ENC.transform.localScale = new Vector3(squareScaleFactor * 2f, squareScaleFactor * 2f, 1f);
+        float maxCenter = Mathf.Max(pc.bounds.center.x, pc.bounds.center.z);
+        ENC.transform.localPosition = new Vector3(maxCenter, pc.groundLevel, maxCenter);
 
         Renderer rend = ENC.GetComponent<Renderer>();
         rend.material = encMat;
@@ -357,18 +356,15 @@ public class MapManager : MonoBehaviour
         }
         else
         {
-            double minBBx = geoRef.realWorldX + pc.bounds.min.x;
-            double maxBBx = geoRef.realWorldX + pc.bounds.max.x;
-            double minBBz = geoRef.realWorldZ + pc.bounds.min.z;
-            double maxBBz = geoRef.realWorldZ + pc.bounds.max.z;
+            float squareBound = Mathf.Max(pc.bounds.max.x, pc.bounds.max.y);
+            double minBBx = geoRef.refX + Mathf.Min(pc.bounds.min.x, pc.bounds.min.z);
+            double maxBBx = geoRef.refX + Mathf.Max(pc.bounds.max.x, pc.bounds.max.z);
+            double minBBy = geoRef.refY + Mathf.Min(pc.bounds.min.x, pc.bounds.min.z);
+            double maxBBy = geoRef.refY + Mathf.Max(pc.bounds.max.x, pc.bounds.max.z);
 
             int epsg = pc.EPSG;
 
-            // NAD83 (2011) / UTM15N || null || 
-            if (epsg == 6344 || epsg == 0 || epsg == 32767)
-                epsg = 26915; // NAD83 / UTM15N
-
-            string url = $"https://gis.charttools.noaa.gov/arcgis/rest/services/MCS/ENCOnline/MapServer/exts/MaritimeChartService/WMSServer?LAYERS=0,1,2,3,4,5,6,7&FORMAT=image%2Fpng&CRS=EPSG:{epsg}&SERVICE=WMS&REQUEST=GetMap&WIDTH={encResolution}&HEIGHT={encResolution}&BBOX={minBBx},{minBBz},{maxBBx},{maxBBz}";
+            string url = $"https://gis.charttools.noaa.gov/arcgis/rest/services/MCS/ENCOnline/MapServer/exts/MaritimeChartService/WMSServer?LAYERS=0,1,2,3,4,5,6,7&FORMAT=image%2Fpng&CRS=EPSG:{epsg}&SERVICE=WMS&REQUEST=GetMap&WIDTH={encResolution}&HEIGHT={encResolution}&BBOX={minBBx},{minBBy},{maxBBx},{maxBBy}";
 
             Debug.Log(url);
             UnityWebRequest www = UnityWebRequestTexture.GetTexture(url);
@@ -446,17 +442,12 @@ public class MapManager : MonoBehaviour
 
         int epsg = pc.EPSG;
 
-        // NAD83 (2011) / UTM15N || null || 
-        if (epsg == 6344 || epsg == 32767)
-            epsg = 26915; // NAD83 / UTM15N
+        double minBBx = geoRef.refX + Mathf.Min(pc.bounds.min.x, pc.bounds.min.z);
+        double maxBBx = geoRef.refX + Mathf.Max(pc.bounds.max.x, pc.bounds.max.z);
+        double minBBy = geoRef.refY + Mathf.Min(pc.bounds.min.x, pc.bounds.min.z);
+        double maxBBy = geoRef.refY + Mathf.Max(pc.bounds.max.x, pc.bounds.max.z);
 
-
-        double minBBx = geoRef.realWorldX + pc.bounds.min.x;
-        double maxBBx = geoRef.realWorldX + pc.bounds.max.x;
-        double minBBz = geoRef.realWorldZ + pc.bounds.min.z;
-        double maxBBz = geoRef.realWorldZ + pc.bounds.max.z;
-
-        Vector2 bbRange = new((float)(maxBBx - minBBx), (float)(maxBBz - minBBz));
+        Vector2 bbRange = new((float)(maxBBx - minBBx), (float)(maxBBy - minBBy));
 
         ProjectionInfo src = ProjectionInfo.FromEpsgCode(epsg);
 
@@ -465,13 +456,13 @@ public class MapManager : MonoBehaviour
         double[] points = new double[6];
         // center coord
         points[0] = minBBx + (maxBBx - minBBx) / 2.0;
-        points[1] = minBBz + (maxBBz - minBBz) / 2.0;
+        points[1] = minBBy + (maxBBy - minBBy) / 2.0;
         // bb min coord
         points[2] = minBBx;
-        points[3] = minBBz;
+        points[3] = minBBy;
         // bb max coord
         points[4] = maxBBx;
-        points[5] = maxBBz;
+        points[5] = maxBBy;
 
         // heights don't matter
         double[] elevs = { 0, 0, 0 };
@@ -501,7 +492,7 @@ public class MapManager : MonoBehaviour
 
         // get the geographical distance of the more zoomed-out level's corners
         Vector2 distance1 = OnlineMapsUtils.DistanceBetweenPoints(OnlineMaps.instance.topLeftPosition,
-                OnlineMaps.instance.bottomRightPosition) * 1000;
+                OnlineMaps.instance.bottomRightPosition) * 1000f;
 
         // now increase zoom and redraw to get the more zoomed-in level's geographic distance
         OnlineMaps.instance.zoom = zoom + 1;
@@ -509,7 +500,7 @@ public class MapManager : MonoBehaviour
         OnlineMaps.instance.Redraw();
 
         Vector2 distance2 = OnlineMapsUtils.DistanceBetweenPoints(OnlineMaps.instance.topLeftPosition,
-                OnlineMaps.instance.bottomRightPosition) * 1000;
+                OnlineMaps.instance.bottomRightPosition) * 1000f;
 
         // find the difference in coverage between the two zoom levels
         float zoomRange = (distance1 - distance2).magnitude;
@@ -528,7 +519,8 @@ public class MapManager : MonoBehaviour
         OnlineMapsControlBaseDynamicMesh.instance.sizeInScene = bbRange;
 
         // OnlineMaps position is based off the corner of the map, not the center, need offset to align
-        Vector3 mapAdjustment = new(-(bbRange.x / 2), 0, (bbRange.y / 2));
+        float maxBBdim = Mathf.Min(bbRange.x, bbRange.y);
+        Vector3 mapAdjustment = new(-(maxBBdim / 2f), 0f, (maxBBdim / 2f));
 
         var newPos = new Vector3(pc.bounds.center.x, pc.groundLevel, pc.bounds.center.z) + mapAdjustment;
 

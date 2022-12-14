@@ -22,7 +22,10 @@ public class SpeechManager : MonoBehaviour
     Dictionary<string, System.Action> _keywords = new Dictionary<string, System.Action>();
 
     [SerializeField]
-    private UnityEngine.UI.Text commandDisplay;
+    TMPro.TextMeshPro currentClassifierText;
+
+    [SerializeField]
+    private Text commandDisplay;
 
     [SerializeField]
     private GameObject classifierScrollViewContent;
@@ -30,7 +33,7 @@ public class SpeechManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        PrepareBuiltinCommands();
+        //PrepareBuiltinCommands();
 
         ClearClassificationTable();
 
@@ -46,13 +49,15 @@ public class SpeechManager : MonoBehaviour
         _keywordRecognizer.OnPhraseRecognized += KeywordRecognizer_OnPhraseRecognized;
 
         _keywordRecognizer.Start();
+
+        currentClassifierText.text = "";
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (Keyboard.current.xKey.wasPressedThisFrame)
-            AddClassificationEntry(155, 1f, 1f, 0f);
+        //if (Keyboard.current.xKey.wasPressedThisFrame)
+        //    AddClassificationEntry(155, 1f, 1f, 0f);
     }
 
     private void PrepareBuiltinCommands()
@@ -272,6 +277,8 @@ public class SpeechManager : MonoBehaviour
                 button.GetComponent<Button>().onClick.AddListener(() =>
                 {
                     modifyPointsScript.SetModificationClassifier(classifierID, classColor);
+                    currentClassifierText.text = $"{classifierID}: {label}";
+                    currentClassifierText.color = classColor;
                     Debug.Log("Classifier " + classifierID + " selected");
                 });
 
@@ -297,23 +304,25 @@ public class SpeechManager : MonoBehaviour
                     {
                         var keyword = p + " " + key;
 
-                        Debug.Log("COMMAND: " + p);
-                        Debug.Log("KEY: " + key);
-                        Debug.Log("KEYWORD: " + keyword);
-                        Debug.Log("VALUE: " + classifierID);
-                        Debug.Log("COLOR: " + red + ", " + green + ", " + blue);
+                        //Debug.Log("COMMAND: " + p);
+                        //Debug.Log("KEY: " + key);
+                        //Debug.Log("KEYWORD: " + keyword);
+                        //Debug.Log("VALUE: " + classifierID);
+                        //Debug.Log("COLOR: " + red + ", " + green + ", " + blue);
 
                         if (!_keywords.ContainsKey(keyword))
                         {                      
                             _keywords.Add(keyword, () =>
                             {
                                 // This lambda is where you add the keyword actions
-                                Debug.Log("COMMAND: " + p);
-                                Debug.Log("KEY: " + key);
-                                Debug.Log("VALUE: " + classifierID);
-                                Debug.Log("COLOR: " + red + ", " + green + ", " + blue);
+                                //Debug.Log("COMMAND: " + p);
+                                //Debug.Log("KEY: " + key);
+                                //Debug.Log("VALUE: " + classifierID);
+                                //Debug.Log("COLOR: " + red + ", " + green + ", " + blue);
 
                                 FindObjectOfType<ModifyPoints>().SetModificationClassifier(classifierID, classColor);
+                                currentClassifierText.text = $"{classifierID}: {key}";
+                                currentClassifierText.color = classColor;
                             });
                         }
                         else

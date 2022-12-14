@@ -158,6 +158,9 @@ public class pointCloudManager : MonoBehaviour
         _commandLineInputFile = "";
         _commandLineOutputFile = "";
 
+        if (debugEPSG > 0)
+            forcedEPSG = debugEPSG;
+
         for (int i = 1; i < arguments.Length; ++i)
         {
             if (arguments[i] == "-i" && i != arguments.Length - 1)
@@ -188,9 +191,6 @@ public class pointCloudManager : MonoBehaviour
                 }
             }
         }
-
-        if (debugEPSG > 0)
-            forcedEPSG = debugEPSG;
     }
 
     void OnValidate()

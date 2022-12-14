@@ -284,10 +284,12 @@ public class MapManager : MonoBehaviour
         catch (System.ArgumentOutOfRangeException e)
         {
             Debug.Log($"EPSG Code {pc.EPSG} is not valid: {e}");
+            pc.validEPSG = false;
             validEPSG = false;
             return;
         }
 
+        pc.validEPSG = true;
         validEPSG = true;
 
         OnEnable();

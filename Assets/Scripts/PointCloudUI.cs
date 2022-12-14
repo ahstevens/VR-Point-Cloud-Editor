@@ -16,6 +16,9 @@ public class PointCloudUI : MonoBehaviour
     public GameObject saveButton;
     //public GameObject fileDropdown;
     public GameObject refreshENCButton;
+    public GameObject classifyPointsButton;
+    public GameObject classifierMenuButton;
+    public GameObject classifierPanel;
     public GameObject unloadButton;
     public GameObject outlierText;
     public GameObject outlierShowButton;
@@ -109,6 +112,8 @@ public class PointCloudUI : MonoBehaviour
         //fileDropdown.SetActive(false);
         saveButton.SetActive(false);
         resetPointCloudTransforms.gameObject.SetActive(false);
+        classifyPointsButton.SetActive(false);
+        classifierMenuButton.SetActive(false);
         unloadButton.SetActive(false);
 
         autoHideGroundPlane = autoHideGroundPlaneToggle.GetComponent<Toggle>().isOn = UserSettings.instance.preferences.autoHideGroundPlaneOnLoad; ;
@@ -148,6 +153,15 @@ public class PointCloudUI : MonoBehaviour
             loading = true;
         }
 
+        classifyPointsButton.GetComponent<Button>().onClick.AddListener(() => 
+        {
+            FindObjectOfType<ModifyPoints>().ActivateClassificationMode(!ModifyPoints.classifierMode);
+        });
+
+        classifierMenuButton.GetComponent<Button>().onClick.AddListener(() => 
+        { 
+            classifierPanel.SetActive(!classifierPanel.activeSelf); 
+        });
 
         if (UserSettings.instance.preferences.openMenuOnStart)
             OpenMenu();
@@ -454,13 +468,21 @@ public class PointCloudUI : MonoBehaviour
             saveButton.SetActive(pointCloudsLoaded);
             //fileDropdown.SetActive(pointCloudsLoaded);
             resetPointCloudTransforms.gameObject.SetActive(pointCloudsLoaded);
+            classifyPointsButton.SetActive(pointCloudsLoaded);
+            classifierMenuButton.SetActive(pointCloudsLoaded);
 
             refreshENCButton.SetActive(pointCloudsLoaded);
+
             if (pointCloudsLoaded)
             {
                 Button b = refreshENCButton.GetComponent<Button>();
 
-                if (FindObjectOfType<MapManager>().refreshing)
+                if (!pointCloudManager.GetPointCloudsInScene()[0].validEPSG)
+                {
+                    b.GetComponentInChildren<Text>().text = "No Valid ENC";
+                    refreshENCButton.GetComponent<Button>().interactable = false;
+                }
+                else if (FindObjectOfType<MapManager>().refreshing)
                 {
                     b.GetComponentInChildren<Text>().text = "Refreshing...";
                     refreshENCButton.GetComponent<Button>().interactable = false;
@@ -470,6 +492,23 @@ public class PointCloudUI : MonoBehaviour
                     b.GetComponentInChildren<Text>().text = "Refresh ENC";
                     refreshENCButton.GetComponent<Button>().interactable = true;
                 }
+
+
+                if (ModifyPoints.classifierMode)
+                {
+                    classifyPointsButton.GetComponentInChildren<Text>().text = "Remove Points";
+                    classifierMenuButton.GetComponent<Button>().interactable = true;
+                }
+                else
+                {
+                    classifyPointsButton.GetComponentInChildren<Text>().text = "Classify Points";
+                    classifierMenuButton.GetComponent<Button>().interactable = false;
+                    classifierPanel.SetActive(false);
+                }
+            }
+            else
+            {
+                classifierPanel.SetActive(false);
             }
 
             unloadButton.SetActive(pointCloudsLoaded);
@@ -486,6 +525,9 @@ public class PointCloudUI : MonoBehaviour
             //fileDropdown.SetActive(false);
             resetPointCloudTransforms.gameObject.SetActive(false);
             refreshENCButton.gameObject.SetActive(false);
+            classifyPointsButton.SetActive(false);
+            classifierMenuButton.SetActive(false);
+            classifierPanel.SetActive(false);
             unloadButton.SetActive(false);
             buildInfo.SetActive(false);
 

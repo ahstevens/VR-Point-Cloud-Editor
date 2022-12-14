@@ -650,6 +650,17 @@
                 },
                 {
                     "name": "",
+                    "id": "d4be029a-b99a-4d16-8905-918f0dfbe9ea",
+                    "path": "<XRController>{RightHand}/thumbstick",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Move and Resize Sphere Cursor",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "5eae83e4-7dd8-405e-be0b-d73e177c8b97",
                     "path": "<XRController>{RightHand}/haptic",
                     "interactions": "",
@@ -796,7 +807,7 @@
                 {
                     "name": "",
                     "id": "b5072941-1f90-421f-8de8-5e94a6e0b67f",
-                    "path": "<ViveFocus3Controller>{LeftHand}/joystick",
+                    "path": "<XRController>{LeftHand}/thumbstick",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -851,7 +862,7 @@
                 {
                     "name": "",
                     "id": "da5158be-6313-49aa-9c4b-a6e930372241",
-                    "path": "<ViveFocus3Controller>{LeftHand}/joystickClicked",
+                    "path": "<XRController>{LeftHand}/thumbstickClicked",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -923,7 +934,7 @@
                 {
                     "name": "",
                     "id": "c98e8231-38b2-48fb-b6ac-065139bda58b",
-                    "path": "<ViveFocus3Controller>/primaryButton",
+                    "path": "<ViveFocus3Controller>{LeftHand}/primaryButton",
                     "interactions": "",
                     "processors": "",
                     "groups": "",

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.XR;
 
 public class ModifyPoints : MonoBehaviour
 {
@@ -80,6 +81,9 @@ public class ModifyPoints : MonoBehaviour
 
     private List<int> modificationOps;
     private int currentModificationOpCount;
+
+    [SerializeField]
+    GameObject classifierText;
 
     private static bool _classifierMode = false;
     public static bool classifierMode
@@ -178,7 +182,7 @@ public class ModifyPoints : MonoBehaviour
             //Debug.Log(deletionSphere.transform.localScale);
             
             // Send haptic feedback to right controller
-            UnityEngine.XR.OpenXR.Input.OpenXRInput.SendHapticImpulse(hapticAction.action, modificationHaptic.amplitude, modificationHaptic.frequency, modificationHaptic.duration, UnityEngine.InputSystem.XR.XRController.rightHand);
+            UnityEngine.XR.OpenXR.Input.OpenXRInput.SendHapticImpulse(hapticAction.action, modificationHaptic.amplitude, modificationHaptic.frequency, modificationHaptic.duration, XRController.rightHand);
 
             //if (checkModificationResult)
             //{
@@ -293,7 +297,10 @@ public class ModifyPoints : MonoBehaviour
         RequestClassificationVisualizationFromUnity(_classifierMode);
         Debug.Log("Mode set to " + (_classifierMode ? "classifiers" : "RGB"));
 
-        connectorMaterial.color = _classifierMode ? classifierColor : Color.white;        
+        connectorMaterial.color = _classifierMode ? classifierColor : Color.white;
+
+        classifierText.SetActive(_classifierMode);
+            
     }
 
     void OnBeginModifyInSphere()

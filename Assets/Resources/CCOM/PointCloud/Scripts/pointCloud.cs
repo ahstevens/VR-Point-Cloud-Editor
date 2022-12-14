@@ -22,6 +22,8 @@ public class pointCloud : MonoBehaviour
 
     public int EPSG;
 
+    public bool validEPSG;
+
     public float groundLevel;
 
     public float easingTime = 1;
@@ -41,6 +43,8 @@ public class pointCloud : MonoBehaviour
     void Awake()
     {
         easeFunc = EasingFunction.GetEasingFunction(EasingFunction.Ease.EaseInOutCubic);
+        EPSG = -1;
+        validEPSG = false;
     }
 
     void Update()

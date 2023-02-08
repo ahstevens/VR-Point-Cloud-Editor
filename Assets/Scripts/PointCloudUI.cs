@@ -59,6 +59,8 @@ public class PointCloudUI : MonoBehaviour
 
     public GameObject connector;
 
+    public Material pointCloudBackingMaterial;
+
     private bool colorPickerActive;
 
     private bool _menuOpen; 
@@ -102,12 +104,7 @@ public class PointCloudUI : MonoBehaviour
         colorPickerActive = false;
         colorPicker.gameObject.SetActive(false);
 
-        colorPicker.CurrentColor = Camera.main.backgroundColor;
-
-        colorPicker.onValueChanged.AddListener(color =>
-        {
-            Camera.main.backgroundColor = color;
-        });
+        colorPicker.CurrentColor = pointCloudBackingMaterial.GetColor("_MainColor");
 
         //fileDropdown.SetActive(false);
         saveButton.SetActive(false);
@@ -289,7 +286,7 @@ public class PointCloudUI : MonoBehaviour
         }
     }
 
-    private void CloseMenu()
+    public void CloseMenu()
     {
         _menuOpen = false;
 
@@ -496,12 +493,12 @@ public class PointCloudUI : MonoBehaviour
 
                 if (ModifyPoints.classifierMode)
                 {
-                    classifyPointsButton.GetComponentInChildren<Text>().text = "Remove Points";
+                    classifyPointsButton.GetComponentInChildren<Text>().text = "Removal Mode";
                     classifierMenuButton.GetComponent<Button>().interactable = true;
                 }
                 else
                 {
-                    classifyPointsButton.GetComponentInChildren<Text>().text = "Classify Points";
+                    classifyPointsButton.GetComponentInChildren<Text>().text = "Classify Mode";
                     classifierMenuButton.GetComponent<Button>().interactable = false;
                     classifierPanel.SetActive(false);
                 }
@@ -572,10 +569,6 @@ public class PointCloudUI : MonoBehaviour
 
     public void resetPointCloudsTransforms()
     {
-        //resettableObject.transform.position = Vector3.zero;
-        //resettableObject.transform.rotation = Quaternion.identity;
-        //resettableObject.transform.localScale = Vector3.one;
-
         pointCloudManager.GetPointCloudsInScene()[0].ResetMiniature(
             UserSettings.instance.preferences.fitSizeOnLoad, 
             UserSettings.instance.preferences.distanceOnLoad
@@ -701,5 +694,15 @@ public class PointCloudUI : MonoBehaviour
     public void RefreshENC()
     {
         StartCoroutine(FindObjectOfType<MapManager>().CreateENC(FindObjectOfType<GEOReference>(), pointCloudManager.GetPointCloudsInScene()[0], true));
+    }
+
+    public void ChangeBackgroundColor(Color color)
+    {
+        Camera.main.backgroundColor = color;
+    }
+
+    public void ChangePointCloudBackingColor(Color color)
+    {
+        pointCloudBackingMaterial.SetColor("_MainColor", color);
     }
 }

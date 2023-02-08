@@ -214,12 +214,12 @@ public class ModifyPoints : MonoBehaviour
         }
         
 
-#if UNITY_EDITOR
+//#if UNITY_EDITOR
         if (Keyboard.current.cKey.wasPressedThisFrame)
         {
             ActivateClassificationMode(!_classifierMode);
         }
-#endif
+//#endif
         if (movingOrResizing && _brushVisible)
         {
             var sample = moveAndResizeSphereAction.action.ReadValue<Vector2>();

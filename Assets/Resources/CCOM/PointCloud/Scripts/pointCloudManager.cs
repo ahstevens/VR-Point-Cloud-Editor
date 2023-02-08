@@ -119,6 +119,9 @@ public class pointCloudManager : MonoBehaviour
 
     private static Material deletedPointsBox;
 
+    [SerializeField]
+    private Material backingMat;
+
     private static string demoFile;
 
     private static bool _commandLineMode = false;
@@ -150,7 +153,7 @@ public class pointCloudManager : MonoBehaviour
 
     private void Awake()
     {
-        //SetDebugLogFileOutput(true);
+        SetDebugLogFileOutput(false);
 
         // find command line input file, if supplied
         string[] arguments = Environment.GetCommandLineArgs();
@@ -448,7 +451,7 @@ public class pointCloudManager : MonoBehaviour
 
             // Create game object that will represent point cloud.
             string name = Path.GetFileNameWithoutExtension(filePathForAsyncLoad);
-            GameObject pointCloudGameObject = new GameObject(name);
+            GameObject pointCloudGameObject = new(name);
 
             // Add script to a point cloud game object.
             var pcComponent = pointCloudGameObject.AddComponent<pointCloud>();            
@@ -497,6 +500,11 @@ public class pointCloudManager : MonoBehaviour
                 pcComponent.initialXShift = -(GetGeoReference().refX - adjustmentResult[3]);
                 pcComponent.initialZShift = -(GetGeoReference().refY - adjustmentResult[4]);
             }
+
+            for (int i = 0; i != adjustmentResult.Length; ++i)
+            {
+                Debug.Log(i + ": " + adjustmentResult[i]);
+            }    
 
             pcComponent.bounds = new Bounds();
 
@@ -550,6 +558,7 @@ public class pointCloudManager : MonoBehaviour
             pointCloudGameObject.transform.localScale = Vector3.one;
 
             AddSecretBoxForDeletedPoints(pointCloudGameObject);
+            AddBacking(pointCloudGameObject);
 
             isWaitingToLoad = false;
 
@@ -756,8 +765,6 @@ public class pointCloudManager : MonoBehaviour
 
     public static void AddSecretBoxForDeletedPoints(GameObject pointCloud)
     {
-        var pcComponent = pointCloud.GetComponent<pointCloud>();
-
         var box = GameObject.CreatePrimitive(PrimitiveType.Cube);
 
         box.name = "Deleted Points Obscurer";
@@ -768,6 +775,29 @@ public class pointCloudManager : MonoBehaviour
 
         var br = box.GetComponent<Renderer>();
         br.material = deletedPointsBox;
+    }
+
+    public static void AddBacking(GameObject pointCloud)
+    {
+        GameObject pcRoot = GameObject.Find("Point Clouds Root");
+
+        var backing = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        backing.name = pointCloud.name + " Backing";
+
+        backing.AddComponent<InvertMesh>();
+
+        backing.transform.parent = pcRoot.transform;
+
+        backing.transform.rotation = Quaternion.identity;
+
+        backing.GetComponent<MeshRenderer>().material = FindObjectOfType<pointCloudManager>().backingMat;
+
+        var b = pointCloud.GetComponent<pointCloud>().bounds;
+
+        backing.transform.position = b.center;
+
+        float squareBoundSize = MathF.Max(b.size.x, b.size.z);
+        backing.transform.localScale = new Vector3(squareBoundSize, b.size.y, squareBoundSize);
     }
 
     public static bool LoadDemoFile()

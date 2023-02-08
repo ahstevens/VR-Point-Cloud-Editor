@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.InputSystem;
 using DotSpatial.Projections;
+using System.Collections.Specialized;
 
 public class MapManager : MonoBehaviour
 {
@@ -320,8 +321,10 @@ public class MapManager : MonoBehaviour
         ENC.transform.localRotation = Quaternion.Euler(90f, 0, 0);
         float squareScaleFactor = Mathf.Max(pc.bounds.extents.x, pc.bounds.extents.z);
         ENC.transform.localScale = new Vector3(squareScaleFactor * 2f, squareScaleFactor * 2f, 1f);
-        float maxCenter = Mathf.Max(pc.bounds.center.x, pc.bounds.center.z);
-        ENC.transform.localPosition = new Vector3(maxCenter, pc.groundLevel, maxCenter);
+        // CHANGED FOR NOAA DEMO -- FIX ME BACK!
+        //float maxCenter = Mathf.Max(pc.bounds.center.x, pc.bounds.center.z);
+        //ENC.transform.localPosition = new Vector3(maxCenter, pc.groundLevel, maxCenter);
+        ENC.transform.localPosition = new Vector3(pc.bounds.center.x, pc.groundLevel, pc.bounds.center.z);
 
         Renderer rend = ENC.GetComponent<Renderer>();
         rend.material = encMat;
@@ -358,18 +361,30 @@ public class MapManager : MonoBehaviour
         }
         else
         {
-            float squareBound = Mathf.Max(pc.bounds.max.x, pc.bounds.max.y);
-            double minBBx = geoRef.refX + Mathf.Min(pc.bounds.min.x, pc.bounds.min.z);
-            double maxBBx = geoRef.refX + Mathf.Max(pc.bounds.max.x, pc.bounds.max.z);
-            double minBBy = geoRef.refY + Mathf.Min(pc.bounds.min.x, pc.bounds.min.z);
-            double maxBBy = geoRef.refY + Mathf.Max(pc.bounds.max.x, pc.bounds.max.z);
+            // Calculate a square ENC bound centered on the dataset
+            float maxXZsize = Mathf.Max(pc.bounds.extents.x, pc.bounds.extents.z);
+            double minBBx = geoRef.refX + pc.bounds.center.x - maxXZsize;
+            double maxBBx = minBBx + maxXZsize * 2f;
+            double minBBy = geoRef.refY + pc.bounds.center.z - maxXZsize;
+            double maxBBy = minBBy + maxXZsize * 2f;
 
             int epsg = pc.EPSG;
 
-            string url = $"https://gis.charttools.noaa.gov/arcgis/rest/services/MCS/ENCOnline/MapServer/exts/MaritimeChartService/WMSServer?LAYERS=0,1,2,3,4,5,6,7&FORMAT=image%2Fpng&CRS=EPSG:{epsg}&SERVICE=WMS&REQUEST=GetMap&WIDTH={encResolution}&HEIGHT={encResolution}&BBOX={minBBx},{minBBy},{maxBBx},{maxBBy}";
+            string url = $"https://gis.charttools.noaa.gov/arcgis/rest/services/MCS/ENCOnline/MapServer/exts/MaritimeChartService/WMSServer?";
+            
+            NameValueCollection encQueryString = System.Web.HttpUtility.ParseQueryString(string.Empty);
 
-            Debug.Log(url);
-            UnityWebRequest www = UnityWebRequestTexture.GetTexture(url);
+            encQueryString.Add("SERVICE", "WMS");
+            encQueryString.Add("REQUEST", "GetMap");
+            encQueryString.Add("FORMAT", "image/png");
+            encQueryString.Add("LAYERS", "0,1,2,3,4,5,6,7");
+            encQueryString.Add("CRS", $"EPSG:{epsg}");
+            encQueryString.Add("WIDTH", encResolution.ToString());
+            encQueryString.Add("HEIGHT", encResolution.ToString());
+            encQueryString.Add("BBOX", $"{minBBx},{minBBy},{maxBBx},{maxBBy}");
+
+            Debug.Log(url + encQueryString.ToString());
+            UnityWebRequest www = UnityWebRequestTexture.GetTexture(url + encQueryString.ToString());
 
             Debug.Log("Downloading ENC image... ");
             float tick = Time.realtimeSinceStartup;
@@ -444,16 +459,12 @@ public class MapManager : MonoBehaviour
 
         int epsg = pc.EPSG;
 
-        double minBBx = geoRef.refX + Mathf.Min(pc.bounds.min.x, pc.bounds.min.z);
-        double maxBBx = geoRef.refX + Mathf.Max(pc.bounds.max.x, pc.bounds.max.z);
-        double minBBy = geoRef.refY + Mathf.Min(pc.bounds.min.x, pc.bounds.min.z);
-        double maxBBy = geoRef.refY + Mathf.Max(pc.bounds.max.x, pc.bounds.max.z);
-
-        Vector2 bbRange = new((float)(maxBBx - minBBx), (float)(maxBBy - minBBy));
-
-        ProjectionInfo src = ProjectionInfo.FromEpsgCode(epsg);
-
-        ProjectionInfo dest = ProjectionInfo.FromEpsgCode(4326);
+        // Calculate a square ENC bound centered on the dataset
+        float maxXZsize = Mathf.Max(pc.bounds.extents.x, pc.bounds.extents.z);
+        double minBBx = geoRef.refX + pc.bounds.center.x - maxXZsize;
+        double maxBBx = minBBx + maxXZsize * 2f;
+        double minBBy = geoRef.refY + pc.bounds.center.z - maxXZsize;
+        double maxBBy = minBBy + maxXZsize * 2f;
 
         double[] points = new double[6];
         // center coord
@@ -470,13 +481,17 @@ public class MapManager : MonoBehaviour
         double[] elevs = { 0, 0, 0 };
 
         // reproject the 3 coords to GPS coords (WGS84) for OnlineMaps
+        ProjectionInfo src = ProjectionInfo.FromEpsgCode(epsg);
+
+        ProjectionInfo dest = ProjectionInfo.FromEpsgCode(4326);
+
         Reproject.ReprojectPoints(points, elevs, src, dest, 0, 3);
 
         // set markers representing the bounding box edges
-        OnlineMapsMarker minMark = new OnlineMapsMarker();
+        OnlineMapsMarker minMark = new();
         minMark.SetPosition(points[2], points[3]);
 
-        OnlineMapsMarker maxMark = new OnlineMapsMarker();
+        OnlineMapsMarker maxMark = new();
         maxMark.SetPosition(points[4], points[5]);
 
         OnlineMapsMarkerBase[] bbox = { minMark, maxMark };
@@ -507,6 +522,8 @@ public class MapManager : MonoBehaviour
         // find the difference in coverage between the two zoom levels
         float zoomRange = (distance1 - distance2).magnitude;
 
+        Vector2 bbRange = new((float)(maxBBx - minBBx), (float)(maxBBy - minBBy));
+
         // now calc zoom fraction for bound box size
         float ratio = (bbRange.magnitude - distance2.magnitude) / zoomRange;
 
@@ -516,12 +533,12 @@ public class MapManager : MonoBehaviour
         //Debug.Log("Zoom Range: " + zoomRange);
         //Debug.Log("Ratio: " + ratio);
 
-        OnlineMaps.instance.floatZoom = (float)zoom + (1f - ratio);
+        OnlineMaps.instance.floatZoom = (zoom + 1f) - ratio;
 
         OnlineMapsControlBaseDynamicMesh.instance.sizeInScene = bbRange;
 
         // OnlineMaps position is based off the corner of the map, not the center, need offset to align
-        float maxBBdim = Mathf.Min(bbRange.x, bbRange.y);
+        float maxBBdim = Mathf.Max(bbRange.x, bbRange.y);
         Vector3 mapAdjustment = new(-(maxBBdim / 2f), 0f, (maxBBdim / 2f));
 
         var newPos = new Vector3(pc.bounds.center.x, pc.groundLevel, pc.bounds.center.z) + mapAdjustment;

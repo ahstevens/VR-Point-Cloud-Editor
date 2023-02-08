@@ -9,37 +9,33 @@ using UnityEngine.UI;
 
 public class SpeechManager : MonoBehaviour
 {
-    [DllImport("PointCloudPlugin")]
-    private static extern void AddClassificationEntry(int id, float redNormalized, float greenNormalized, float blueNormalized);
-
-    [DllImport("PointCloudPlugin")]
-    private static extern bool UpdateClassificationEntry(int id, float redNormalized, float greenNormalized, float blueNormalized);
-
-    [DllImport("PointCloudPlugin")]
-    private static extern void ClearClassificationTable();
-
     private KeywordRecognizer _keywordRecognizer;
     Dictionary<string, System.Action> _keywords = new Dictionary<string, System.Action>();
 
     [SerializeField]
-    TMPro.TextMeshPro currentClassifierText;
+    private Text voiceCommandDisplay;
 
-    [SerializeField]
-    private Text commandDisplay;
+    private bool _needsToBeInitialized = true;
 
-    [SerializeField]
-    private GameObject classifierScrollViewContent;
+    public bool needsToBeInitialized
+    {
+        get { return _needsToBeInitialized; }
+    }
 
     // Start is called before the first frame update
     void Start()
     {
         //PrepareBuiltinCommands();
+    }
 
-        ClearClassificationTable();
+    // Update is called once per frame
+    void Update()
+    {
 
-        LoadAndPrepareClassifiers();
+    }
 
-        //keywordRecognizer = new KeywordRecognizer(keywords.Keys.ToArray());
+    public void Initialize()
+    {
         _keywordRecognizer = new KeywordRecognizer(_keywords.Keys.ToArray());
 
         _keywordRecognizer.OnPhraseRecognized += KeywordRecognizer_DebugLogging;
@@ -50,14 +46,7 @@ public class SpeechManager : MonoBehaviour
 
         _keywordRecognizer.Start();
 
-        currentClassifierText.text = "";
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        //if (Keyboard.current.xKey.wasPressedThisFrame)
-        //    AddClassificationEntry(155, 1f, 1f, 0f);
+        _needsToBeInitialized = false;
     }
 
     private void PrepareBuiltinCommands()
@@ -173,174 +162,33 @@ public class SpeechManager : MonoBehaviour
         });
     }
 
-    private void LoadAndPrepareOldClassifiers()
+    public bool AddCommand(string keyword, Action action)
     {
-        var reader = new System.IO.StreamReader(Application.dataPath + "/../classification_keywords.conf");
-        int lineNum = 1;
-
-        while (!reader.EndOfStream)
+        if (!_keywords.ContainsKey(keyword))
         {
-            var line = reader.ReadLine();
-            lineNum++;
-
-            try
-            {
-                var value = line.Split(',')[0];
-                var key = line.Split('"')[1].ToLower();
-                var pretexts = new string[] { 
-                    "set classifier",
-                    "set classification",
-                    "change classifier",
-                    "change classification"
-                };
-
-                foreach (var p in pretexts )
-                {
-                    var keyword = p + " " + key;
-
-                    if (!_keywords.ContainsKey(keyword))
-                    {
-                        _keywords.Add(keyword, () =>
-                        {
-                            Debug.Log("COMMAND: " + p);
-                            Debug.Log("KEY: " + key);
-                            Debug.Log("VALUE: " + value);
-                        });
-                    }
-                    else
-                    {
-                        Debug.Log($"Line {lineNum}: Keyword {key} already exists! Skipping...");
-                    }
-                }
-            }
-            catch (System.Exception e)
-            {
-                Debug.Log("ERROR Loading line " + lineNum + ":");
-                Debug.Log(line);
-                Debug.LogException(e);
-            }
+            _keywords.Add(keyword, action);
+            _needsToBeInitialized = true;
+            return true;
         }
-
-        reader.Close();
+                
+        return false;        
     }
 
-    private void LoadAndPrepareClassifiers()
+    public bool AddCommand(string keyword, string[] pretexts, Action action)
     {
-        var reader = new System.IO.StreamReader(Application.dataPath + "/../classifiers.conf");
+        bool result = true;
 
-        var header = reader.ReadLine();
-
-        if (header.Length == 0 || !header.Equals("id,label,r,g,b,commands"))
+        foreach (var p in pretexts)
         {
-            Debug.Log("Classifier configuration file is malformed. Aborting...");
-            return;
-        }
+            var k = p + " " + keyword;
 
-        int lineNum = 1;
-
-        while (!reader.EndOfStream)
-        {
-            var line = reader.ReadLine();
-            lineNum++;
-
-            try
+            if (!AddCommand(k, action))
             {
-                var classifierID = Convert.ToInt32(line.Split(',')[0]);
-
-                var splitByQuote = line.Split('"');
-
-                var label = splitByQuote[1].ToLower();
-
-                var rgb = splitByQuote[2];
-                ushort red = Convert.ToUInt16(rgb.Split(",", System.StringSplitOptions.RemoveEmptyEntries)[0]);
-                ushort green = Convert.ToUInt16(rgb.Split(",", System.StringSplitOptions.RemoveEmptyEntries)[1]);
-                ushort blue = Convert.ToUInt16(rgb.Split(",", System.StringSplitOptions.RemoveEmptyEntries)[2]);
-
-                var classColor = new Color(red / 255f, green / 255f, blue / 255f);
-
-                var modifyPointsScript = FindObjectOfType<ModifyPoints>();
-
-                AddClassificationEntry(classifierID, red / 255f, green / 255f, blue / 255f);
-
-                var button = DefaultControls.CreateButton(new DefaultControls.Resources());
-                button.layer = LayerMask.NameToLayer("UI");
-                button.name = label;
-                button.GetComponentInChildren<Text>().text = label;
-                var oldColors = button.GetComponent<Button>().colors;
-                oldColors.normalColor = classColor;
-                button.GetComponent<Button>().colors = oldColors;
-                button.transform.SetParent(classifierScrollViewContent.transform, false);
-                var newSize = classifierScrollViewContent.GetComponent<RectTransform>().sizeDelta;
-                newSize.y += 30;
-                classifierScrollViewContent.GetComponent<RectTransform>().sizeDelta = newSize;
-
-                button.GetComponent<Button>().onClick.AddListener(() =>
-                {
-                    modifyPointsScript.SetModificationClassifier(classifierID, classColor);
-                    currentClassifierText.text = $"{classifierID}: {label}";
-                    currentClassifierText.color = classColor;
-                    Debug.Log("Classifier " + classifierID + " selected");
-                });
-
-                var pretexts = new string[] {
-                    "set classifier",
-                    "set classification",
-                    "change classifier",
-                    "change classification"
-                };
-
-                var keys = new List<string>();
-                keys.Add(label);
-
-                for (int i = 3; i < splitByQuote.Length - 1; i++)
-                {
-                    if (splitByQuote[i] != ",")
-                        keys.Add(splitByQuote[i].ToLower());
-                }
-
-                foreach (var p in pretexts)
-                {
-                    foreach (var key in keys)
-                    {
-                        var keyword = p + " " + key;
-
-                        //Debug.Log("COMMAND: " + p);
-                        //Debug.Log("KEY: " + key);
-                        //Debug.Log("KEYWORD: " + keyword);
-                        //Debug.Log("VALUE: " + classifierID);
-                        //Debug.Log("COLOR: " + red + ", " + green + ", " + blue);
-
-                        if (!_keywords.ContainsKey(keyword))
-                        {                      
-                            _keywords.Add(keyword, () =>
-                            {
-                                // This lambda is where you add the keyword actions
-                                //Debug.Log("COMMAND: " + p);
-                                //Debug.Log("KEY: " + key);
-                                //Debug.Log("VALUE: " + classifierID);
-                                //Debug.Log("COLOR: " + red + ", " + green + ", " + blue);
-
-                                FindObjectOfType<ModifyPoints>().SetModificationClassifier(classifierID, classColor);
-                                currentClassifierText.text = $"{classifierID}: {key}";
-                                currentClassifierText.color = classColor;
-                            });
-                        }
-                        else
-                        {
-                            Debug.Log($"Line {lineNum}: Keyword {key} already exists! Skipping...");
-                        }
-                    }
-                }
-            }
-            catch (System.Exception e)
-            {
-                Debug.Log("ERROR Loading line " + lineNum + ":");
-                Debug.Log(line);
-                Debug.LogException(e);
+                result = false;
             }
         }
 
-        reader.Close();
+        return result;
     }
 
     private void KeywordRecognizer_DebugLogging(PhraseRecognizedEventArgs args)
@@ -350,7 +198,7 @@ public class SpeechManager : MonoBehaviour
 
     private void KeywordRecognizer_UpdateCommandDisplay(PhraseRecognizedEventArgs args)
     {
-        commandDisplay.text = $"\"{args.text}\"";
+        voiceCommandDisplay.text = $"\"{args.text}\"";
     }
 
     private void KeywordRecognizer_OnPhraseRecognized(PhraseRecognizedEventArgs args)

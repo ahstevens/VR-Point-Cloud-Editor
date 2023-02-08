@@ -83,8 +83,8 @@ public class SpeechManager : MonoBehaviour
 
         _keywords.Add("reset view", () =>
         {
-            if (pointCloudManager.GetPointCloudsInScene().Length > 0)
-                pointCloudManager.GetPointCloudsInScene()[0].ResetMiniature(
+            if (PointCloudManager.GetPointCloudsInScene().Length > 0)
+                PointCloudManager.GetPointCloudsInScene()[0].ResetMiniature(
                     UserSettings.instance.preferences.fitSizeOnLoad,
                     UserSettings.instance.preferences.distanceOnLoad
                 );
@@ -92,14 +92,14 @@ public class SpeechManager : MonoBehaviour
 
         _keywords.Add("put cloud at origin", () =>
         {
-            if (pointCloudManager.GetPointCloudsInScene().Length > 0)
-                pointCloudManager.GetPointCloudsInScene()[0].ResetOrigin();
+            if (PointCloudManager.GetPointCloudsInScene().Length > 0)
+                PointCloudManager.GetPointCloudsInScene()[0].ResetOrigin();
         });
 
         _keywords.Add("computer, enhance", () =>
         {
-            if (pointCloudManager.GetPointCloudsInScene().Length > 0)
-                pointCloudManager.GetPointCloudsInScene()[0].ResetMiniature(
+            if (PointCloudManager.GetPointCloudsInScene().Length > 0)
+                PointCloudManager.GetPointCloudsInScene()[0].ResetMiniature(
                     UserSettings.instance.preferences.fitSizeOnLoad * 2f,
                     UserSettings.instance.preferences.distanceOnLoad
                 );            
@@ -147,8 +147,8 @@ public class SpeechManager : MonoBehaviour
 
         _keywords.Add("load demo file", () =>
         {
-            if (pointCloudManager.GetPointCloudsInScene().Length == 0)
-                pointCloudManager.LoadDemoFile();
+            if (PointCloudManager.GetPointCloudsInScene().Length == 0)
+                PointCloudManager.LoadDemoFile();
         });
 
         _keywords.Add("show RGB", () =>

@@ -27,7 +27,7 @@ public class pointCloudManagerWindow : EditorWindow
 
     void OnGUI()
     {
-        if (pointCloudManager.isWaitingToLoad)
+        if (PointCloudManager.isWaitingToLoad)
             GUI.enabled = false;
 
         if (GUILayout.Button("Import LAZ file"))
@@ -35,19 +35,10 @@ public class pointCloudManagerWindow : EditorWindow
 
         GUI.enabled = true;
 
-        pointCloud[] pointClouds = (pointCloud[])GameObject.FindObjectsOfType(typeof(pointCloud));
+        PointCloud[] pointClouds = (PointCloud[])GameObject.FindObjectsOfType(typeof(PointCloud));
         if (pointClouds.Length > 0)
         {
             string[] availableIndexes = new string[pointClouds.Length];
-
-            if (indexSelected >= 0 && indexSelected < pointClouds.Length && pointClouds[indexSelected].UTMZone == 0 && !pointClouds[indexSelected].North)
-            {
-                GUILayout.Label("UTMZone : Information about UTMZone was not found");
-            }
-            else
-            {
-                GUILayout.Label("UTMZone : " + pointClouds[indexSelected].UTMZone + (pointClouds[indexSelected].North ? "N" : "S"));
-            }
 
             for (int i = 0; i < pointClouds.Length; i++)
             {
@@ -66,7 +57,7 @@ public class pointCloudManagerWindow : EditorWindow
                     SaveLAZFileDialog(pointClouds[indexSelected].ID, availableIndexes[indexSelected]);
 
                 if (GUILayout.Button("Unload File"))
-                    if (pointCloudManager.UnLoad(pointClouds[indexSelected].ID))
+                    if (PointCloudManager.UnLoad(pointClouds[indexSelected].ID))
                         indexSelected = 0;
             }
         }
@@ -78,12 +69,12 @@ public class pointCloudManagerWindow : EditorWindow
 
             if (GUILayout.Button("Show outliers"))
             {
-                pointCloudManager.HighlightOutliers(tempNeigboarsDistance, tempMinNeigboars, pointClouds[indexSelected].ID);
+                PointCloudManager.HighlightOutliers(tempNeigboarsDistance, tempMinNeigboars, pointClouds[indexSelected].ID);
             }
 
             if (GUILayout.Button("Delete shown outliers"))
             {
-                pointCloudManager.DeleteOutliers(pointClouds[indexSelected].ID);
+                PointCloudManager.DeleteOutliers(pointClouds[indexSelected].ID);
 #if UNITY_EDITOR
                 if (!EditorApplication.isPlaying)
                     EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
@@ -109,16 +100,16 @@ public class pointCloudManagerWindow : EditorWindow
         if (firstFrame)
         {
             firstFrame = false;
-            pointCloudManager.OnSceneStart();
+            PointCloudManager.OnSceneStart();
 
-            Camera.onPostRender -= pointCloudManager.OnPostRenderCallback;
-            Camera.onPostRender += pointCloudManager.OnPostRenderCallback;
+            Camera.onPostRender -= PointCloudManager.OnPostRenderCallback;
+            Camera.onPostRender += PointCloudManager.OnPostRenderCallback;
 
-            EditorSceneManager.sceneSaved -= pointCloudManager.OnSceneSaveCallback;
-            EditorSceneManager.sceneSaved += pointCloudManager.OnSceneSaveCallback;
+            EditorSceneManager.sceneSaved -= PointCloudManager.OnSceneSaveCallback;
+            EditorSceneManager.sceneSaved += PointCloudManager.OnSceneSaveCallback;
         }
 
-        pointCloudManager.CheckIsAsyncLoadFinished();
+        PointCloudManager.CheckIsAsyncLoadFinished();
 
         if (GetPointCloudManagerGameObject() == null)
             CreatePointCloudManagerGameObject();
@@ -134,7 +125,7 @@ public class pointCloudManagerWindow : EditorWindow
         string currentFile = EditorUtility.OpenFilePanel("Choose file", "", "laz,las,cpc");
         if (currentFile == "")
             return currentFile;
-        pointCloudManager.LoadLAZFile(currentFile);
+        PointCloudManager.LoadLAZFile(currentFile);
 
         return currentFile;
     }
@@ -145,7 +136,7 @@ public class pointCloudManagerWindow : EditorWindow
         if (saveToFile == "")
             return;
 
-        pointCloudManager.SaveLAZFile(saveToFile, pointCloudID);
+        PointCloudManager.SaveLAZFile(saveToFile, pointCloudID);
     }
 
     private GameObject GetPointCloudManagerGameObject()

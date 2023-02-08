@@ -141,7 +141,7 @@ public class PointCloudUI : MonoBehaviour
         if (groundPlane == null)
             groundPlane = GameObject.Find("Ground Plane");
 
-        if (pointCloudManager.commandLineMode)
+        if (PointCloudManager.commandLineMode)
         {
             loadButton.GetComponentInChildren<Text>().text = "Revert";
             saveButton.GetComponentInChildren<Text>().text = "Save";
@@ -169,7 +169,7 @@ public class PointCloudUI : MonoBehaviour
     {        
         if (loading)
         {
-            if (pointCloudManager.isWaitingToLoad)
+            if (PointCloudManager.isWaitingToLoad)
             {
                 loadButton.GetComponent<Button>().interactable = false;
                 loadButton.GetComponentInChildren<Text>().fontSize = 36;
@@ -183,7 +183,7 @@ public class PointCloudUI : MonoBehaviour
             {
                 loadButton.GetComponent<Button>().interactable = true;
                 loadButton.GetComponentInChildren<Text>().fontSize = 60;
-                loadButton.GetComponentInChildren<Text>().text = pointCloudManager.commandLineMode ? "Revert" : "Load";
+                loadButton.GetComponentInChildren<Text>().text = PointCloudManager.commandLineMode ? "Revert" : "Load";
 
                 //unloadButton.GetComponent<Button>().interactable = true;
 
@@ -236,7 +236,7 @@ public class PointCloudUI : MonoBehaviour
             }
         }
 
-        if (pointCloudManager.commandLineMode && saving && pointCloudManager.IsLastAsyncSaveFinished())
+        if (PointCloudManager.commandLineMode && saving && PointCloudManager.IsLastAsyncSaveFinished())
             Application.Quit();
 
         BlockUnloadWhileSaving();
@@ -307,10 +307,10 @@ public class PointCloudUI : MonoBehaviour
 
     public void LoadFile()
     {
-        if (pointCloudManager.commandLineMode) // this resets the point cloud in command line mode
+        if (PointCloudManager.commandLineMode) // this resets the point cloud in command line mode
         {
             UnloadFile();
-            LoadFile(pointCloudManager.commandLineInputFile);
+            LoadFile(PointCloudManager.commandLineInputFile);
         }
         else
         {
@@ -353,7 +353,7 @@ public class PointCloudUI : MonoBehaviour
 
     public bool LoadFile(string filePath)
     {
-        if (pointCloudManager.LoadLAZFile(filePath))
+        if (PointCloudManager.LoadLAZFile(filePath))
         {
             loading = true;
             //ActivateLoadingUI(true);
@@ -366,12 +366,12 @@ public class PointCloudUI : MonoBehaviour
 
     public void SaveFile()
     {
-        if (pointCloudManager.commandLineMode)
+        if (PointCloudManager.commandLineMode)
         {
-            if (pointCloudManager.commandLineOutputFile != "")
-                pointCloudManager.SaveLAZFile(pointCloudManager.commandLineOutputFile, pointCloudManager.GetPointCloudsInScene()[0].ID);
+            if (PointCloudManager.commandLineOutputFile != "")
+                PointCloudManager.SaveLAZFile(PointCloudManager.commandLineOutputFile, PointCloudManager.GetPointCloudsInScene()[0].ID);
             else
-                pointCloudManager.SaveLAZFile(pointCloudManager.commandLineInputFile, pointCloudManager.GetPointCloudsInScene()[0].ID);
+                PointCloudManager.SaveLAZFile(PointCloudManager.commandLineInputFile, PointCloudManager.GetPointCloudsInScene()[0].ID);
 
             saving = true;
         }
@@ -393,7 +393,7 @@ public class PointCloudUI : MonoBehaviour
                 FileBrowser.AddQuickLink("Last Save", UserSettings.instance.preferences.lastSaveDirectory, null);
 
             //StartCoroutine(ShowSaveDialogCoroutine(dd.options[dd.value].text + "_edit.laz"));
-            var pc = pointCloudManager.GetPointCloudsInScene()[0];
+            var pc = PointCloudManager.GetPointCloudsInScene()[0];
             StartCoroutine(ShowSaveDialogCoroutine(pc.name + "_edit" + (pc.pathToRawData[^3..] == "npz" ? ".npz" : ".laz")));
         }
     }
@@ -406,11 +406,11 @@ public class PointCloudUI : MonoBehaviour
 
         if (FileBrowser.Success)
         {
-            var pcs = pointCloudManager.GetPointCloudsInScene();
+            var pcs = PointCloudManager.GetPointCloudsInScene();
             //Debug.Log("Saving point cloud " + pcs[dd.value].ID + " to " + FileBrowser.Result[0] + "/" + filename);
             Debug.Log("Saving point cloud " + pcs[0].ID + " to " + FileBrowser.Result[0] + "/" + filename);
             //pointCloudManager.SaveLAZFile(FileBrowser.Result[0] + "/" + filename, pcs[dd.value].ID);
-            pointCloudManager.SaveLAZFile(FileBrowser.Result[0] + "/" + filename, pcs[0].ID);
+            PointCloudManager.SaveLAZFile(FileBrowser.Result[0] + "/" + filename, pcs[0].ID);
             lastSaveDirectory = FileBrowser.Result[0];
             UserSettings.instance.preferences.lastSaveDirectory = lastSaveDirectory;
             UserSettings.instance.SaveToFile();
@@ -421,7 +421,7 @@ public class PointCloudUI : MonoBehaviour
 
     public void CloseButton()
     {
-        if (pointCloudManager.commandLineMode)
+        if (PointCloudManager.commandLineMode)
             Application.Quit();
         else
             UnloadFile();
@@ -429,10 +429,10 @@ public class PointCloudUI : MonoBehaviour
 
     public void UnloadFile()
     {
-        var pcs = pointCloudManager.GetPointCloudsInScene();
+        var pcs = PointCloudManager.GetPointCloudsInScene();
 
         //pointCloudManager.UnLoad(pcs[dd.value].ID);
-        pointCloudManager.UnLoad(pcs[0].ID);
+        PointCloudManager.UnLoad(pcs[0].ID);
 
         //UpdateDropdownFiles();
     }
@@ -453,10 +453,10 @@ public class PointCloudUI : MonoBehaviour
     {
         if (activate)
         {
-            bool pointCloudsLoaded = pointCloudManager.GetPointCloudsInScene().Length > 0;
+            bool pointCloudsLoaded = PointCloudManager.GetPointCloudsInScene().Length > 0;
 
             loadButton.SetActive(true);
-            loadButton.GetComponent<Button>().interactable = !pointCloudsLoaded || pointCloudManager.commandLineMode;
+            loadButton.GetComponent<Button>().interactable = !pointCloudsLoaded || PointCloudManager.commandLineMode;
 
             showGroundPlaneButton.SetActive(true);
             floorText.SetActive(true);
@@ -474,7 +474,7 @@ public class PointCloudUI : MonoBehaviour
             {
                 Button b = refreshENCButton.GetComponent<Button>();
 
-                if (!pointCloudManager.GetPointCloudsInScene()[0].validEPSG)
+                if (!PointCloudManager.GetPointCloudsInScene()[0].validEPSG)
                 {
                     b.GetComponentInChildren<Text>().text = "No Valid ENC";
                     refreshENCButton.GetComponent<Button>().interactable = false;
@@ -569,7 +569,7 @@ public class PointCloudUI : MonoBehaviour
 
     public void resetPointCloudsTransforms()
     {
-        pointCloudManager.GetPointCloudsInScene()[0].ResetMiniature(
+        PointCloudManager.GetPointCloudsInScene()[0].ResetMiniature(
             UserSettings.instance.preferences.fitSizeOnLoad, 
             UserSettings.instance.preferences.distanceOnLoad
         );
@@ -595,7 +595,7 @@ public class PointCloudUI : MonoBehaviour
 
     public void UpdateOutliers()
     {
-        var pcs = pointCloudManager.GetPointCloudsInScene();
+        var pcs = PointCloudManager.GetPointCloudsInScene();
 
         if (pcs.Length == 0)
             return;
@@ -604,16 +604,16 @@ public class PointCloudUI : MonoBehaviour
         var n = showingOutliers ? outlierNeighborCount : 0;
 
         //pointCloudManager.HighlightOutliers(d, n, pcs[dd.value].ID);
-        pointCloudManager.HighlightOutliers(d, n, pcs[0].ID);
+        PointCloudManager.HighlightOutliers(d, n, pcs[0].ID);
     }
 
     public void DeleteOutliers()
     {
-        var pcs = pointCloudManager.GetPointCloudsInScene();
+        var pcs = PointCloudManager.GetPointCloudsInScene();
         //pointCloudManager.HighlightOutliers(outliersDistance, outlierNeighborCount, pcs[dd.value].ID);
-        pointCloudManager.HighlightOutliers(outliersDistance, outlierNeighborCount, pcs[0].ID);
+        PointCloudManager.HighlightOutliers(outliersDistance, outlierNeighborCount, pcs[0].ID);
         //pointCloudManager.DeleteOutliers(pcs[dd.value].ID);
-        pointCloudManager.DeleteOutliers(pcs[0].ID);
+        PointCloudManager.DeleteOutliers(pcs[0].ID);
         showingOutliers = false;
         outlierShowButton.GetComponent<Button>().GetComponentInChildren<Text>().text = "Show";
     }
@@ -670,7 +670,7 @@ public class PointCloudUI : MonoBehaviour
         //unloadButton.GetComponent<Button>().enabled = pointCloudManager.IsLastAsyncSaveFinished();
         //unloadButton.SetActive(pointCloudManager.IsLastAsyncSaveFinished());
 
-        if (pointCloudManager.IsLastAsyncSaveFinished()) // not saving
+        if (PointCloudManager.IsLastAsyncSaveFinished()) // not saving
         {
             saveButton.GetComponent<Button>().interactable = true;
             saveButton.GetComponentInChildren<Text>().fontSize = 60;
@@ -693,7 +693,7 @@ public class PointCloudUI : MonoBehaviour
 
     public void RefreshENC()
     {
-        StartCoroutine(FindObjectOfType<MapManager>().CreateENC(FindObjectOfType<GEOReference>(), pointCloudManager.GetPointCloudsInScene()[0], true));
+        StartCoroutine(FindObjectOfType<MapManager>().CreateENC(FindObjectOfType<GEOReference>(), PointCloudManager.GetPointCloudsInScene()[0], true));
     }
 
     public void ChangeBackgroundColor(Color color)

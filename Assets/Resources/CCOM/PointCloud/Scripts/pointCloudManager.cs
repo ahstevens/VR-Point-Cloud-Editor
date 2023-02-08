@@ -22,7 +22,7 @@ public class LODInformation
     public int takeEach_Nth_Point;
 };
 
-public class pointCloudManager : MonoBehaviour
+public class PointCloudManager : MonoBehaviour
 {
     [DllImport("PointCloudPlugin")]
     private static extern void updateCamera(IntPtr worldMatrix, IntPtr projectionMatrix, int screenIndex);
@@ -106,7 +106,7 @@ public class pointCloudManager : MonoBehaviour
 
 
 
-    public static List<pointCloud> pointClouds;
+    public static List<PointCloud> pointClouds;
     public static List<string> toLoadList;
     public static List<LODInformation> LODSettings;
 
@@ -209,7 +209,7 @@ public class pointCloudManager : MonoBehaviour
 #endif
         OnSceneStartFromUnity(Marshal.StringToHGlobalAnsi(Application.dataPath));
 
-        pointCloud[] pointClouds = (pointCloud[])GameObject.FindObjectsOfType(typeof(pointCloud));
+        PointCloud[] pointClouds = (PointCloud[])GameObject.FindObjectsOfType(typeof(PointCloud));
         for (int i = 0; i < pointClouds.Length; i++)
         {
             IntPtr strPtr = Marshal.StringToHGlobalAnsi(pointClouds[i].pathToRawData);
@@ -241,7 +241,7 @@ public class pointCloudManager : MonoBehaviour
 
         if (_commandLineInputFile != "")
         {
-            if (pointCloudManager.LoadLAZFile(_commandLineInputFile))
+            if (LoadLAZFile(_commandLineInputFile))
             {                
                 Debug.Log("Successfully loaded " + _commandLineInputFile);
             }
@@ -324,7 +324,7 @@ public class pointCloudManager : MonoBehaviour
 #endif
 
         if (pointClouds == null)
-            pointClouds = new List<pointCloud>();
+            pointClouds = new();
 
         LODSettings = new List<LODInformation>();
         IntPtr maxDistance = Marshal.AllocHGlobal(8);
@@ -360,7 +360,7 @@ public class pointCloudManager : MonoBehaviour
 
         if (result)
         {
-            pointCloud[] pointClouds = (pointCloud[])GameObject.FindObjectsOfType(typeof(pointCloud));
+            PointCloud[] pointClouds = (PointCloud[])GameObject.FindObjectsOfType(typeof(PointCloud));
             for (int i = 0; i < pointClouds.Length; i++)
             {
                 if (pointClouds[i].ID == pointCloudID)
@@ -370,7 +370,7 @@ public class pointCloudManager : MonoBehaviour
                 }
             }
 
-            pointClouds = (pointCloud[])GameObject.FindObjectsOfType(typeof(pointCloud));
+            pointClouds = (PointCloud[])GameObject.FindObjectsOfType(typeof(PointCloud));
             if (pointClouds.Length == 0)
             {
                 // It is not intended to work fine along with bag loader.
@@ -406,9 +406,9 @@ public class pointCloudManager : MonoBehaviour
 		Marshal.FreeHGlobal(IDStrPtr);
     }
 
-    public static pointCloud[] GetPointCloudsInScene()
+    public static PointCloud[] GetPointCloudsInScene()
     {
-        pointCloud[] pointClouds = (pointCloud[])FindObjectsOfType(typeof(pointCloud));
+        PointCloud[] pointClouds = (PointCloud[])FindObjectsOfType(typeof(PointCloud));
         return pointClouds;
     }
 
@@ -416,8 +416,8 @@ public class pointCloudManager : MonoBehaviour
     {
         Camera.onPostRender += OnPostRenderCallback;
 
-        pointClouds = new List<pointCloud>();
-        LODSettings = new List<LODInformation>();
+        pointClouds = new();
+        LODSettings = new();
         IntPtr maxDistance = Marshal.AllocHGlobal(8);
         IntPtr targetPercentOFPoints = Marshal.AllocHGlobal(8);
 
@@ -454,7 +454,7 @@ public class pointCloudManager : MonoBehaviour
             GameObject pointCloudGameObject = new(name);
 
             // Add script to a point cloud game object.
-            var pcComponent = pointCloudGameObject.AddComponent<pointCloud>();            
+            var pcComponent = pointCloudGameObject.AddComponent<PointCloud>();            
             pcComponent.ID = ID;
 
             IntPtr adjustmentArray = Marshal.AllocHGlobal(8 * 12);
@@ -639,7 +639,7 @@ public class pointCloudManager : MonoBehaviour
             float[] worldArray = new float[16];
             GCHandle pointerWorld;
 
-            pointCloud[] pointClouds_ = GetPointCloudsInScene();
+            PointCloud[] pointClouds_ = GetPointCloudsInScene();
             for (int i = 0; i < pointClouds_.Length; i++)
             {
                 world = pointClouds_[i].gameObject.transform.localToWorldMatrix;
@@ -667,7 +667,7 @@ public class pointCloudManager : MonoBehaviour
 
     public static void OnSceneSaveCallback(Scene scene)
     {
-        pointCloud[] pointCloudsInScene = GetPointCloudsInScene();
+        PointCloud[] pointCloudsInScene = GetPointCloudsInScene();
         for (int i = 0; i < pointCloudsInScene.Length; i++)
         {
             string extension = Path.GetExtension(pointCloudsInScene[i].pathToRawData);
@@ -688,8 +688,8 @@ public class pointCloudManager : MonoBehaviour
         if (firstFrame)
         {
             firstFrame = false;
-            Camera.onPostRender -= pointCloudManager.OnPostRenderCallback;
-            Camera.onPostRender += pointCloudManager.OnPostRenderCallback;
+            Camera.onPostRender -= OnPostRenderCallback;
+            Camera.onPostRender += OnPostRenderCallback;
             OnSceneStart();
         }
         OnSceneStartFromUnity(Marshal.StringToHGlobalAnsi(Application.dataPath));
@@ -790,9 +790,9 @@ public class pointCloudManager : MonoBehaviour
 
         backing.transform.rotation = Quaternion.identity;
 
-        backing.GetComponent<MeshRenderer>().material = FindObjectOfType<pointCloudManager>().backingMat;
+        backing.GetComponent<MeshRenderer>().material = FindObjectOfType<PointCloudManager>().backingMat;
 
-        var b = pointCloud.GetComponent<pointCloud>().bounds;
+        var b = pointCloud.GetComponent<PointCloud>().bounds;
 
         backing.transform.position = b.center;
 
@@ -813,7 +813,7 @@ public class pointCloudManager : MonoBehaviour
                 for (int i = 0; i < pcs.Length; ++i)
                     UnLoad(pcs[i].ID);
 
-            return pointCloudManager.LoadLAZFile(demoFile + ".la" + (demoLas ? "s" : "z"));
+            return LoadLAZFile(demoFile + ".la" + (demoLas ? "s" : "z"));
         }
         else
         {

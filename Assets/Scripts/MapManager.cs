@@ -134,7 +134,7 @@ public class MapManager : MonoBehaviour
         if (!UserSettings.instance.preferences.enableMaps || !validEPSG)
             return;
 
-        if (_loaded && pointCloudManager.GetPointCloudsInScene().Length > 0)
+        if (_loaded && PointCloudManager.GetPointCloudsInScene().Length > 0)
         {
             if (_changingMap)
             {
@@ -276,7 +276,7 @@ public class MapManager : MonoBehaviour
         );
     }
 
-    public void CreateMaps(GEOReference geoRef, pointCloud pc)
+    public void CreateMaps(GEOReference geoRef, PointCloud pc)
     {
         try
         {
@@ -299,7 +299,7 @@ public class MapManager : MonoBehaviour
         StartCoroutine(CreateENC(geoRef, pc));
     }
 
-    public IEnumerator CreateENC(GEOReference geoRef, pointCloud pc, bool forceRefresh = false)
+    public IEnumerator CreateENC(GEOReference geoRef, PointCloud pc, bool forceRefresh = false)
     {
         _refreshing = true;
 
@@ -350,7 +350,7 @@ public class MapManager : MonoBehaviour
         }
     }
 
-    public IEnumerator GetENCTexture(GEOReference geoRef, pointCloud pc, Material encMat)
+    public IEnumerator GetENCTexture(GEOReference geoRef, PointCloud pc, Material encMat)
     {
         if (System.IO.File.Exists(encFileLocation))
         {
@@ -449,7 +449,7 @@ public class MapManager : MonoBehaviour
     }
 
 
-    public void CreateSatelliteMap(GEOReference geoRef, pointCloud pc)
+    public void CreateSatelliteMap(GEOReference geoRef, PointCloud pc)
     {
         satMapInitialRefresh = false;
 

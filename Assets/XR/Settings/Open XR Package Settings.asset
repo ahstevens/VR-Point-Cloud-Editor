@@ -215,8 +215,8 @@ MonoBehaviour:
   company: HTC
   priority: 0
   required: 0
-  m_XrInstance: 2806392959472
-  m_XrSession: 2810881826112
+  m_XrInstance: 1991894991792
+  m_XrSession: 1992634563840
   m_systemid: 1153287229662036443
 --- !u!114 &-3399406800633101090
 MonoBehaviour:

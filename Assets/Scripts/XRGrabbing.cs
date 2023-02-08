@@ -69,7 +69,7 @@ public class XRGrabbing : MonoBehaviour
 
     private void OnResetMiniature()
     {
-        var pcs = pointCloudManager.GetPointCloudsInScene();
+        var pcs = PointCloudManager.GetPointCloudsInScene();
 
         if (pcs.Length > 0)
             pcs[0].ResetMiniature(

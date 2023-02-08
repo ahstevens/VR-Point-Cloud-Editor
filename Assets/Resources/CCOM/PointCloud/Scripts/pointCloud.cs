@@ -2,7 +2,7 @@
 using UnityEngine;
 
 //[RequireComponent(typeof(LineRenderer))]
-public class pointCloud : MonoBehaviour
+public class PointCloud : MonoBehaviour
 {
     public String pathToRawData;
     public String ID;

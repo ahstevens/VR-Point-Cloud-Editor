@@ -53,55 +53,7 @@ public class ClassifierManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Keyboard.current.digit0Key.wasPressedThisFrame)
-        {
-            Debug.Log("0 Key Pressed!");
-            bool success = classifierActions.TryGetValue(0, out var action);
-            if (success)
-            {
-                action();
-            }
-        }
-        if (Keyboard.current.digit1Key.wasPressedThisFrame)
-        {
-            bool success = classifierActions.TryGetValue(1, out var action);
-            if (success)
-            {
-                action();
-            }
-        }
-        if (Keyboard.current.digit2Key.wasPressedThisFrame)
-        {
-            bool success = classifierActions.TryGetValue(2, out var action);
-            if (success)
-            {
-                action();
-            }
-        }
-        if (Keyboard.current.digit3Key.wasPressedThisFrame)
-        {
-            bool success = classifierActions.TryGetValue(3, out var action);
-            if (success)
-            {
-                action();
-            }
-        }
-        if (Keyboard.current.digit4Key.wasPressedThisFrame)
-        {
-            bool success = classifierActions.TryGetValue(4, out var action);
-            if (success)
-            {
-                action();
-            }
-        }
-        if (Keyboard.current.digit5Key.wasPressedThisFrame)
-        {
-            bool success = classifierActions.TryGetValue(5, out var action);
-            if (success)
-            {
-                action();
-            }
-        }
+
     }
 
     private void CheckAndGenerateDefaultConf()

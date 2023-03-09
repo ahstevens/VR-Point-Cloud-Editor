@@ -1,5 +1,6 @@
 using System.IO;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class UserSettings : MonoBehaviour
 {
@@ -8,6 +9,13 @@ public class UserSettings : MonoBehaviour
     {
         public bool autoHideGroundPlaneOnLoad = true;
         public Color backgroundColor = Color.black;
+        public Color backingBackgroundColor = Color.black;
+        public float backingLineGraduationScale = 1f;
+        public float backingLineScale = 1f;
+        public float backingLineThickness = 0.005f;
+        public Color backingMajorGridColor = Color.cyan;
+        public Color backingMinorGridColor = Color.white;
+        public ControllerModelManager.ControllerType controllerType = ControllerModelManager.ControllerType.Generic;
         public float cursorDeletionRate = 25f;
         public float cursorDistance = 0.20f;
         public float cursorDistanceMax = 1f;
@@ -26,6 +34,7 @@ public class UserSettings : MonoBehaviour
         public float outlierDistance = 5f;
         public int outlierNeighborCount = 5;
         public bool saveCursorOnExit = true;
+        public bool showBackingVolume = true;
         public bool showGroundPlane = true;
         public bool stickyMaps = false;
         public bool stickyUI = true;
@@ -58,11 +67,6 @@ public class UserSettings : MonoBehaviour
 
         if (!_prefs.showGroundPlane)
             FindObjectOfType<PointCloudUI>().ToggleGroundPlane();
-
-        FindObjectOfType<PointCloudUI>().ToggleAutoHideGroundPlane(_prefs.autoHideGroundPlaneOnLoad);
-
-        GameObject.Find("OutlierDistanceSlider").GetComponent<UnityEngine.UI.Slider>().value = _prefs.outlierDistance;
-        GameObject.Find("OutlierCountSlider").GetComponent<UnityEngine.UI.Slider>().value = _prefs.outlierNeighborCount;
     }
 
     // Update is called once per frame
@@ -108,6 +112,13 @@ public class UserSettings : MonoBehaviour
     {
         _prefs.autoHideGroundPlaneOnLoad = PlayerPrefs.GetInt("autoHideGroundPlaneOnLoad" + slot) == 1;
         ColorUtility.TryParseHtmlString("#" + PlayerPrefs.GetString("backgroundColor" + slot), out _prefs.backgroundColor);
+        ColorUtility.TryParseHtmlString("#" + PlayerPrefs.GetString("backingBackgroundColor" + slot), out _prefs.backingBackgroundColor);
+        _prefs.backingLineGraduationScale = PlayerPrefs.GetFloat("backingLineGraduationScale" + slot);
+        _prefs.backingLineScale = PlayerPrefs.GetFloat("backingLineScale" + slot);
+        _prefs.backingLineThickness = PlayerPrefs.GetFloat("backingLineThickness" + slot);
+        ColorUtility.TryParseHtmlString("#" + PlayerPrefs.GetString("backingMajorGridColor" + slot), out _prefs.backingMajorGridColor);
+        ColorUtility.TryParseHtmlString("#" + PlayerPrefs.GetString("backingMinorGridColor" + slot), out _prefs.backingMinorGridColor);
+        _prefs.controllerType = System.Enum.IsDefined(typeof(ControllerModelManager.ControllerType), PlayerPrefs.GetInt("controllerType" + slot)) ? (ControllerModelManager.ControllerType)PlayerPrefs.GetInt("controllerType" + slot) : ControllerModelManager.ControllerType.Generic;
         _prefs.cursorDeletionRate = PlayerPrefs.GetFloat("cursorDeletionRate" + slot);
         _prefs.cursorDistance = PlayerPrefs.GetFloat("cursorDistance" + slot);
         _prefs.cursorDistanceMax = PlayerPrefs.GetFloat("cursorDistanceMax" + slot);
@@ -126,6 +137,7 @@ public class UserSettings : MonoBehaviour
         _prefs.outlierDistance = PlayerPrefs.GetFloat("outlierDistance" + slot);
         _prefs.outlierNeighborCount = PlayerPrefs.GetInt("outlierNeighborCount" + slot);
         _prefs.saveCursorOnExit = PlayerPrefs.GetInt("saveCursorOnExit" + slot) == 1;
+        _prefs.showBackingVolume = PlayerPrefs.GetInt("showBackingVolume" + slot) == 1;
         _prefs.showGroundPlane = PlayerPrefs.GetInt("showGroundPlane" + slot) == 1;
         _prefs.stickyMaps = PlayerPrefs.GetInt("stickyMaps" + slot) == 1;
         _prefs.stickyUI = PlayerPrefs.GetInt("stickyUI" + slot) == 1;
@@ -135,6 +147,13 @@ public class UserSettings : MonoBehaviour
     {
         PlayerPrefs.SetInt("autoHideGroundPlaneOnLoad" + slot, _prefs.autoHideGroundPlaneOnLoad ? 1 : 0);
         PlayerPrefs.SetString("backgroundColor" + slot, ColorUtility.ToHtmlStringRGB(_prefs.backgroundColor));
+        PlayerPrefs.SetString("backingBackgroundColor" + slot, ColorUtility.ToHtmlStringRGB(_prefs.backingBackgroundColor));
+        PlayerPrefs.SetFloat("backingLineGraduationScale" + slot, _prefs.backingLineGraduationScale);
+        PlayerPrefs.SetFloat("backingLineScale" + slot, _prefs.backingLineScale);
+        PlayerPrefs.SetFloat("backingLineThickness" + slot, _prefs.backingLineThickness);
+        PlayerPrefs.SetString("backingMajorGridColor" + slot, ColorUtility.ToHtmlStringRGB(_prefs.backingMajorGridColor));
+        PlayerPrefs.SetString("backingMinorGridColor" + slot, ColorUtility.ToHtmlStringRGB(_prefs.backingMinorGridColor));
+        PlayerPrefs.SetInt("controllerType" + slot, (int)_prefs.controllerType);
         PlayerPrefs.SetFloat("cursorDeletionRate" + slot, _prefs.cursorDeletionRate);
         PlayerPrefs.SetFloat("cursorDistance" + slot, _prefs.cursorDistance);
         PlayerPrefs.SetFloat("cursorDistanceMax" + slot, _prefs.cursorDistanceMax);
@@ -153,6 +172,7 @@ public class UserSettings : MonoBehaviour
         PlayerPrefs.SetFloat("outlierDistance" + slot, _prefs.outlierDistance);
         PlayerPrefs.SetInt("outlierNeighborCount" + slot, _prefs.outlierNeighborCount);
         PlayerPrefs.SetInt("saveCursorOnExit" + slot, _prefs.saveCursorOnExit ? 1 : 0);
+        PlayerPrefs.SetInt("showBackingVolume" + slot, _prefs.showBackingVolume ? 1 : 0);
         PlayerPrefs.SetInt("showGroundPlane" + slot, _prefs.showGroundPlane ? 1 : 0);
         PlayerPrefs.SetInt("stickyMaps" + slot, _prefs.stickyMaps ? 1 : 0);
         PlayerPrefs.SetInt("stickyUI" + slot, _prefs.stickyUI ? 1 : 0);

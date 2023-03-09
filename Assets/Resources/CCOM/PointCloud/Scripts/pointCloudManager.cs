@@ -119,9 +119,6 @@ public class PointCloudManager : MonoBehaviour
 
     private static Material deletedPointsBox;
 
-    [SerializeField]
-    private Material backingMat;
-
     private static string demoFile;
 
     private static bool _commandLineMode = false;
@@ -142,6 +139,16 @@ public class PointCloudManager : MonoBehaviour
         get { return _commandLineOutputFile; }
     }
 
+    private static PointCloudManager _instance;
+
+    public static PointCloudManager instance
+    {
+        get { return _instance; }
+    }
+
+    [SerializeField]
+    private GameObject backingPrefab;
+
     [SerializeField]
     private int debugEPSG = 0;
 
@@ -153,6 +160,8 @@ public class PointCloudManager : MonoBehaviour
 
     private void Awake()
     {
+        _instance = this;
+
         SetDebugLogFileOutput(false);
 
         // find command line input file, if supplied
@@ -353,9 +362,8 @@ public class PointCloudManager : MonoBehaviour
 
     public static bool UnLoad(string pointCloudID)
     {
-        bool result = false;
         IntPtr IDStrPtr = Marshal.StringToHGlobalAnsi(pointCloudID);
-        result = unLoad(IDStrPtr);
+        bool result = unLoad(IDStrPtr);
         Marshal.FreeHGlobal(IDStrPtr);
 
         if (result)
@@ -373,6 +381,8 @@ public class PointCloudManager : MonoBehaviour
             pointClouds = (PointCloud[])GameObject.FindObjectsOfType(typeof(PointCloud));
             if (pointClouds.Length == 0)
             {
+                FindObjectOfType<ModifyPoints>().ActivateClassificationMode(false);
+
                 // It is not intended to work fine along with bag loader.
                 // Should fix that.
                 GameObject geoReference = GameObject.Find("UnityZeroGeoReference");
@@ -558,7 +568,10 @@ public class PointCloudManager : MonoBehaviour
             pointCloudGameObject.transform.localScale = Vector3.one;
 
             AddSecretBoxForDeletedPoints(pointCloudGameObject);
-            AddBacking(pointCloudGameObject);
+            CreateBacking(ref pointCloudGameObject);
+
+            if (!FindObjectOfType<PointCloudUI>().MenuOpen)
+                FindObjectOfType<ModifyPoints>().SetBrushVisibility(true);
 
             isWaitingToLoad = false;
 
@@ -777,24 +790,18 @@ public class PointCloudManager : MonoBehaviour
         br.material = deletedPointsBox;
     }
 
-    public static void AddBacking(GameObject pointCloud)
+    public static void CreateBacking(ref GameObject pointCloud)
     {
-        GameObject pcRoot = GameObject.Find("Point Clouds Root");
+        GameObject backing = Instantiate(_instance.backingPrefab, pointCloud.transform);
 
-        var backing = GameObject.CreatePrimitive(PrimitiveType.Cube);
         backing.name = pointCloud.name + " Backing";
-
-        backing.AddComponent<InvertMesh>();
-
-        backing.transform.parent = pcRoot.transform;
-
-        backing.transform.rotation = Quaternion.identity;
-
-        backing.GetComponent<MeshRenderer>().material = FindObjectOfType<PointCloudManager>().backingMat;
+        backing.transform.localRotation = Quaternion.identity;
+        backing.transform.localPosition = Vector3.zero;
+        backing.transform.localScale = Vector3.one;
 
         var b = pointCloud.GetComponent<PointCloud>().bounds;
 
-        backing.transform.position = b.center;
+        backing.transform.localPosition = b.center;
 
         float squareBoundSize = MathF.Max(b.size.x, b.size.z);
         backing.transform.localScale = new Vector3(squareBoundSize, b.size.y, squareBoundSize);

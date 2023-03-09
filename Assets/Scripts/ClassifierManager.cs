@@ -21,7 +21,13 @@ public class ClassifierManager : MonoBehaviour
     TMPro.TextMeshPro currentClassifierText;
 
     [SerializeField]
+    private GameObject classifierScrollRect;
+
+    [SerializeField]
     private GameObject classifierScrollViewContent;
+
+    [SerializeField]
+    private GameObject classifierPanel;
 
     private string defaultConfFile = "classifiers.default.conf";
     private string userConfFile = "classifiers.user.conf";
@@ -162,6 +168,8 @@ public class ClassifierManager : MonoBehaviour
             "change classification"
         };
 
+        int longestLabel = 0;
+
         while (!reader.EndOfStream)
         {
             var line = reader.ReadLine();
@@ -190,6 +198,10 @@ public class ClassifierManager : MonoBehaviour
                 AddClassificationEntry(classifierID, red / 255f, green / 255f, blue / 255f);
 
                 AddButtonToUI(classifierID, label, classColor);
+
+                int labelLen = (new String($"{classifierID}: {label}")).Length;
+
+                if (labelLen > longestLabel) longestLabel = labelLen;
 
                 Action a = () =>
                 {
@@ -228,6 +240,16 @@ public class ClassifierManager : MonoBehaviour
             }
         }
 
+        var labelwidth = longestLabel * 10;
+
+        var newSize = classifierScrollRect.GetComponent<RectTransform>().sizeDelta;
+        newSize.x = labelwidth;
+        classifierScrollRect.GetComponent<RectTransform>().sizeDelta = newSize;
+
+        newSize = classifierPanel.GetComponent<RectTransform>().sizeDelta;
+        newSize.x = labelwidth;
+        classifierPanel.GetComponent<RectTransform>().sizeDelta = newSize;
+
         reader.Close();
     }
 
@@ -236,7 +258,8 @@ public class ClassifierManager : MonoBehaviour
         var button = DefaultControls.CreateButton(new DefaultControls.Resources());
         button.layer = LayerMask.NameToLayer("UI");
         button.name = label;
-        button.GetComponentInChildren<Text>().text = label;
+        button.GetComponentInChildren<Text>().text = $"{id}: {label}";
+        button.GetComponentInChildren<Text>().color = new Color(1f - color.r, 1f - color.g, 1f - color.b, 1f);
         var oldColors = button.GetComponent<Button>().colors;
         oldColors.normalColor = color;
         button.GetComponent<Button>().colors = oldColors;

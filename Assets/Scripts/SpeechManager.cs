@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using UnityEngine.Windows.Speech;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using HSVPicker;
 
 public class SpeechManager : MonoBehaviour
 {
@@ -66,16 +67,6 @@ public class SpeechManager : MonoBehaviour
             Camera.main.backgroundColor = Color.white;
         });
 
-        _keywords.Add("background color", () =>
-        {
-            FindObjectOfType<PointCloudUI>().ToggleColorPicker();
-        });
-
-        _keywords.Add("background choose", () =>
-        {
-            FindObjectOfType<PointCloudUI>().ToggleColorPicker();
-        });
-
         _keywords.Add("toggle floor", () =>
         {
             FindObjectOfType<PointCloudUI>().ToggleGroundPlane();
@@ -94,15 +85,6 @@ public class SpeechManager : MonoBehaviour
         {
             if (PointCloudManager.GetPointCloudsInScene().Length > 0)
                 PointCloudManager.GetPointCloudsInScene()[0].ResetOrigin();
-        });
-
-        _keywords.Add("computer, enhance", () =>
-        {
-            if (PointCloudManager.GetPointCloudsInScene().Length > 0)
-                PointCloudManager.GetPointCloudsInScene()[0].ResetMiniature(
-                    UserSettings.instance.preferences.fitSizeOnLoad * 2f,
-                    UserSettings.instance.preferences.distanceOnLoad
-                );            
         });
 
         _keywords.Add("detect outliers", () =>

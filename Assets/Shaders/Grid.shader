@@ -2,15 +2,15 @@ Shader "Custom/Grid"
 {
     Properties
     {
-       _MainColor("Main Color", Color) = (0.5, 1.0, 1.0)
-       _SecondaryColor("Secondary Color", Color) = (0.0, 0.0, 0.0)
-       _BackgroundColor("Background Color", Color) = (0.0, 0.0, 0.0, 0.0)
-       _MaskTexture("Texture", 2D) = "white" {}
+       _Color("Background Color", Color) = (0.0, 0.0, 0.0, 0.0)
+       _MajorColor("Major Line Color", Color) = (0.5, 1.0, 1.0)
+       _MinorColor("Minor Line Color", Color) = (0.0, 0.0, 0.0)
+       _MaskTexture("Mask Texture", 2D) = "white" {}
 
        [Header(Grid)]
        _Scale("Scale", Float) = 1.0
        _GraduationScale("Graduation Scale", Float) = 1.0
-       _Thickness("Lines Thickness", Range(0.0001, 0.01)) = 0.005
+       _Thickness("Line Thickness", Range(0.0001, 0.01)) = 0.005
        _SecondaryFadeInSpeed("Secondary Fade In Speed", Range(0.1, 4)) = 0.5
     }
         SubShader
@@ -54,9 +54,9 @@ Shader "Custom/Grid"
              float _Thickness;
              float _SecondaryFadeInSpeed;
 
-             fixed4 _MainColor;
-             fixed4 _SecondaryColor;
-             fixed4 _BackgroundColor;
+             fixed4 _Color;
+             fixed4 _MajorColor;
+             fixed4 _MinorColor;
 
              v2f vert(appdata v)
              {
@@ -111,7 +111,7 @@ Shader "Custom/Grid"
                 pos.y = applyScale(i.uv.y, localScale);
 
                 if (pos.x == 1 || pos.y == 1) {
-                   col = _MainColor;
+                   col = _MajorColor;
                    col.a = max((1 - fade), fade);
                 }
      else {
@@ -119,11 +119,11 @@ Shader "Custom/Grid"
      pos.y = applyScale(i.uv.y, 10.0 * localScale);
 
      if (pos.x == 1 || pos.y == 1) {
-        col = _SecondaryColor;
+        col = _MinorColor;
         col.a = (1 - fade);
      }
 else {
-col = _BackgroundColor;
+col = _Color;
 }
 }
 

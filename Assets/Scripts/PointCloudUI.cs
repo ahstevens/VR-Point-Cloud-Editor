@@ -9,59 +9,61 @@ using HSVPicker;
 
 public class PointCloudUI : MonoBehaviour
 {
-    public InputActionReference openMenu;
+    [SerializeField] private InputActionReference openMenu;
 
-    public GameObject fileBrowserCanvas;
-    public GameObject loadButton;
-    public GameObject saveButton;
-    //public GameObject fileDropdown;
-    public GameObject refreshENCButton;
-    public GameObject classifyPointsButton;
-    public GameObject classifierMenuButton;
-    public GameObject classifierPanel;
-    public GameObject unloadButton;
-    public GameObject outlierText;
-    public GameObject outlierShowButton;
-    public GameObject outlierDeleteButton;
-    public GameObject outlierDistSlider;
-    public GameObject outlierNeighborSlider;
-    public GameObject outlierDistText;
-    public GameObject outlierNeighborText;
-    public GameObject outlierDistValText;
-    public GameObject outlierNeighborValText;
-    public GameObject floorText;
-    public GameObject showGroundPlaneButton;
-    public GameObject autoHideGroundPlaneToggle;
-    public GameObject groundPlane;
-    public GameObject buildInfo;
+    [SerializeField] private GameObject mainUIPanel;
 
-    private Canvas thisCanvas;
+    // UI Panels
+    [SerializeField] private GameObject loadMenuPanel;
+    [SerializeField] private GameObject saveMenuPanel;
+    [SerializeField] private GameObject backingMenuPanel;
+    [SerializeField] private GameObject outlierMenuPanel;
+    [SerializeField] private GameObject classifiersMenuPanel;
+    [SerializeField] private GameObject colorMenuPanel;
 
-    //private Dropdown dd;
+    [SerializeField] private GameObject fileBrowserPanel;
 
-    public ColorPicker colorPicker;
+    // Load Panel Objects
+    [SerializeField] private Button loadButton;
+    [SerializeField] private TMPro.TextMeshProUGUI loadButtonText;
+    [SerializeField] private TMPro.TextMeshProUGUI buildInfoText;
+    [SerializeField] private TMPro.TextMeshProUGUI showGroundPlaneButtonText;
+    [SerializeField] private Toggle autoHideGroundPlaneToggle;
 
-    public GameObject panel;
+    // Main Menu Panel Objects
+    [SerializeField] private Button saveButton;
+    [SerializeField] private TMPro.TextMeshProUGUI saveButtonText;
+    [SerializeField] private Button closeButton;
+    [SerializeField] private TMPro.TextMeshProUGUI closeButtonText;
+    [SerializeField] private TMPro.TextMeshProUGUI backingOptionsText;
+    [SerializeField] private Button resetPointCloudTransforms;
+    [SerializeField] private Button refreshENCButton;
+    [SerializeField] private TMPro.TextMeshProUGUI refreshENCButtonText;
+    [SerializeField] private Button classifyPointsButton;
+    [SerializeField] private TMPro.TextMeshProUGUI classifyPointsButtonText;
+    [SerializeField] private Button classifierMenuButton;
 
-    public Button colorPickerButton;
+    // Outlier Menu Panel Objects
+    [SerializeField] private Slider outlierDistanceSlider;
+    [SerializeField] private TMPro.TextMeshProUGUI outlierDistValText;
+    [SerializeField] private Slider outlierNeighborSlider;
+    [SerializeField] private TMPro.TextMeshProUGUI outlierNeighborValText;
+    [SerializeField] private TMPro.TextMeshProUGUI showOutliersButtonText;
 
-    public Button resetPointCloudTransforms;
+    // Backing Menu Panel Objects
+    //[SerializeField] private Slider backingScaleSlider;
+    //[SerializeField] private Slider backingGraduationSlider;
+    //[SerializeField] private Slider backingLineThicknessSlider;
 
-    public GameObject resettableObject;
 
-    public GameObject editingCursor;
-
-    public XRFlyingInterface xrf;
-
-    public Button flyButton;
+    [SerializeField] private ColorPicker colorPicker;
+    [SerializeField] private GameObject groundPlane;
+    [SerializeField] private GameObject editingCursor;
+    [SerializeField] private GameObject connector;
 
     public UnityEngine.XR.Interaction.Toolkit.XRInteractorLineVisual pointer;
 
-    public GameObject connector;
-
-    public Material pointCloudBackingMaterial;
-
-    private bool colorPickerActive;
+    [SerializeField] private Material pointCloudBackingMaterial;
 
     private bool _menuOpen; 
     
@@ -70,20 +72,13 @@ public class PointCloudUI : MonoBehaviour
         get { return _menuOpen; }
     }
 
-    private bool fileBrowsing;
-
-    private bool autoHideGroundPlane;
-
     private bool loading;
     private bool saving;
-
     private bool showingOutliers;
+    private bool refreshingENC;
 
     private string lastSaveDirectory;
     private string lastLoadDirectory;
-
-    private float outliersDistance = 5f;
-    private int outlierNeighborCount = 5;
 
     // Start is called before the first frame update
     void Start()
@@ -93,72 +88,28 @@ public class PointCloudUI : MonoBehaviour
 
         _menuOpen = false;
 
-        thisCanvas = GetComponent<Canvas>();
+        mainUIPanel.SetActive(false);
+        pointer.enabled = false;
 
-        thisCanvas.enabled = false;
+        buildInfoText.text = Application.version;
 
-        //dd = fileDropdown.GetComponent<Dropdown>();
-
-        pointer.enabled = UserSettings.instance.preferences.openMenuOnStart;
-
-        colorPickerActive = false;
-        colorPicker.gameObject.SetActive(false);
-
-        colorPicker.CurrentColor = pointCloudBackingMaterial.GetColor("_MainColor");
-
-        //fileDropdown.SetActive(false);
-        saveButton.SetActive(false);
-        resetPointCloudTransforms.gameObject.SetActive(false);
-        classifyPointsButton.SetActive(false);
-        classifierMenuButton.SetActive(false);
-        unloadButton.SetActive(false);
-
-        autoHideGroundPlane = autoHideGroundPlaneToggle.GetComponent<Toggle>().isOn = UserSettings.instance.preferences.autoHideGroundPlaneOnLoad; ;
-
-        buildInfo.GetComponent<Text>().text = Application.version;
-
-        ActivateOutliersUI(false);
-
-        fileBrowsing = false;
         loading = false;
         saving = false;
-
+        refreshingENC = false;
         showingOutliers = false;
 
         lastLoadDirectory = lastSaveDirectory = null;
 
-        if (UserSettings.instance.preferences.lastLoadDirectory != "" &&
-            Directory.Exists(UserSettings.instance.preferences.lastLoadDirectory))
-            lastLoadDirectory = UserSettings.instance.preferences.lastLoadDirectory;
-
-        if (UserSettings.instance.preferences.lastSaveDirectory != "" &&
-            Directory.Exists(UserSettings.instance.preferences.lastSaveDirectory))
-            lastSaveDirectory = UserSettings.instance.preferences.lastSaveDirectory;
-
-        AdjustOutlierDistance(outliersDistance);
-        AdjustOutlierNeighborCount(outlierNeighborCount);
-
-        if (groundPlane == null)
-            groundPlane = GameObject.Find("Ground Plane");
+        SetInitialValues();
 
         if (PointCloudManager.commandLineMode)
         {
-            loadButton.GetComponentInChildren<Text>().text = "Revert";
-            saveButton.GetComponentInChildren<Text>().text = "Save";
-            unloadButton.GetComponentInChildren<Text>().text = "Quit";
+            loadButtonText.text = "Revert";
+            saveButtonText.text = "Save";
+            closeButtonText.text = "Quit";
 
             loading = true;
         }
-
-        classifyPointsButton.GetComponent<Button>().onClick.AddListener(() => 
-        {
-            FindObjectOfType<ModifyPoints>().ActivateClassificationMode(!ModifyPoints.classifierMode);
-        });
-
-        classifierMenuButton.GetComponent<Button>().onClick.AddListener(() => 
-        { 
-            classifierPanel.SetActive(!classifierPanel.activeSelf); 
-        });
 
         if (UserSettings.instance.preferences.openMenuOnStart)
             OpenMenu();
@@ -171,68 +122,54 @@ public class PointCloudUI : MonoBehaviour
         {
             if (PointCloudManager.isWaitingToLoad)
             {
-                loadButton.GetComponent<Button>().interactable = false;
-                loadButton.GetComponentInChildren<Text>().fontSize = 36;
+                loadButton.interactable = false;
+                loadButtonText.fontSize = 36;
 
                 int numberOfElipsis = 0 + (int)(4f * (Time.timeSinceLevelLoad % 1f));
-                loadButton.GetComponentInChildren<Text>().text = "Loading" + new string('.', numberOfElipsis) + new string(' ', 3 - numberOfElipsis);
-
-                //unloadButton.GetComponent<Button>().interactable = false;
+                loadButtonText.text = "Loading" + new string('.', numberOfElipsis) + new string(' ', 3 - numberOfElipsis);
             }
             else // just finished loading a file
             {
-                loadButton.GetComponent<Button>().interactable = true;
-                loadButton.GetComponentInChildren<Text>().fontSize = 60;
-                loadButton.GetComponentInChildren<Text>().text = PointCloudManager.commandLineMode ? "Revert" : "Load";
+                bool pointCloudLoaded = PointCloudManager.GetPointCloudsInScene().Length > 0;
 
-                //unloadButton.GetComponent<Button>().interactable = true;
+                loadButton.interactable = !pointCloudLoaded;
+                loadButtonText.fontSize = 60;
+                loadButtonText.text = (PointCloudManager.commandLineMode && pointCloudLoaded) ? "Revert" : "Load";
 
                 loading = false;
 
-                //ActivateLoadingUI(false);
-                //UpdateDropdownFiles();
+                refreshingENC = pointCloudLoaded;
 
-                if (groundPlane.activeSelf && autoHideGroundPlane)
+                saveMenuPanel.SetActive(pointCloudLoaded);
+
+                if (pointCloudLoaded && groundPlane.activeSelf && autoHideGroundPlaneToggle.isOn)
                 {
                     ToggleGroundPlane();
                 }
-
-                //CloseMenu();
             }
         }
-        else
-        {
-            // idle state
-            if (!_menuOpen)
-                thisCanvas.enabled = false;
-        }
 
-        
-
-        if (!colorPickerActive)
+        if (refreshingENC)
         {
-            // reduced UI
-            if (fileBrowsing)
+            if (FindObjectOfType<MapManager>().refreshing)
             {
-                ActivateColorPickerUI(false);
-
-                ActivateLoadAndSaveUI(false);
-
-                //flyButton.gameObject.SetActive(false);
-                buildInfo.SetActive(false);
-
-                panel.SetActive(false);
+                refreshENCButtonText.text = "Refreshing...";
+                refreshENCButton.interactable = false;
             }
             else
             {
-                ActivateColorPickerUI(true);
+                if (!PointCloudManager.GetPointCloudsInScene()[0].validEPSG)
+                {
+                    refreshENCButtonText.text = "No Valid ENC";
+                    refreshENCButton.interactable = false;
+                }
+                else
+                {
+                    refreshENCButtonText.text = "Refresh ENC";
+                    refreshENCButton.interactable = true;
+                }
 
-                ActivateLoadAndSaveUI(true);
-
-                //flyButton.gameObject.SetActive(true);
-                buildInfo.SetActive(true);
-
-                panel.SetActive(true);                
+                refreshingENC = false;
             }
         }
 
@@ -254,7 +191,7 @@ public class PointCloudUI : MonoBehaviour
 
     private void OpenMenuAction()
     {
-        if (UserSettings.instance.preferences.stickyUI && thisCanvas.enabled == true)
+        if (UserSettings.instance.preferences.stickyUI && mainUIPanel.activeSelf)
         {
             CloseMenu();
         }
@@ -274,35 +211,36 @@ public class PointCloudUI : MonoBehaviour
 
     private void OpenMenu()
     {
-        thisCanvas.enabled = true;
         _menuOpen = true;
 
-        if (!xrf.enabled)
-        {
-            FindObjectOfType<ModifyPoints>().SetBrushVisibility(false);
+        mainUIPanel.SetActive(true);
+        loadMenuPanel.SetActive(true);
 
-            if (pointer)
-                pointer.enabled = true;
-        }
+        var pointCloudsLoaded = PointCloudManager.GetPointCloudsInScene().Length > 0;
+
+        if (pointCloudsLoaded)
+            saveMenuPanel.SetActive(true);
+
+        loadButton.interactable = !pointCloudsLoaded || PointCloudManager.commandLineMode;
+
+        FindObjectOfType<ModifyPoints>().SetBrushVisibility(false);
+
+        pointer.enabled = true;
     }
 
     public void CloseMenu()
     {
         _menuOpen = false;
 
-        if (fileBrowsing)
-        {
-            fileBrowsing = false;
-            fileBrowserCanvas.SetActive(false);
-        }
+        mainUIPanel.SetActive(false);
+        HideNonPersistentMenus();
 
-        if (!xrf.enabled)
-        {
+        fileBrowserPanel.SetActive(false);
+
+        if (PointCloudManager.GetPointCloudsInScene().Length > 0)
             FindObjectOfType<ModifyPoints>().SetBrushVisibility(true);
 
-            if (pointer)
-                pointer.enabled = false;
-        }
+        pointer.enabled = false;        
     }
 
     public void LoadFile()
@@ -314,9 +252,10 @@ public class PointCloudUI : MonoBehaviour
         }
         else
         {
-            fileBrowsing = true;
+            fileBrowserPanel.SetActive(true);
 
-            fileBrowserCanvas.SetActive(true);
+            loadMenuPanel.SetActive(false);
+            HideNonPersistentMenus();
 
             FileBrowser.SetFilters(true, new FileBrowser.Filter("Point Clouds", ".las", ".laz", ".npz"));
             FileBrowser.SetDefaultFilter(".las");
@@ -337,8 +276,6 @@ public class PointCloudUI : MonoBehaviour
     {
         yield return FileBrowser.WaitForLoadDialog(FileBrowser.PickMode.Files, false, lastLoadDirectory == null ? Application.dataPath : lastLoadDirectory, null, "Load Point Cloud", "Load");
 
-        //Debug.Log(FileBrowser.Success);
-
         if (FileBrowser.Success)
         {
             LoadFile(FileBrowser.Result[0]);
@@ -348,20 +285,14 @@ public class PointCloudUI : MonoBehaviour
             UserSettings.instance.SaveToFile();
         }
 
-        fileBrowsing = false;
+        loadMenuPanel.SetActive(true);
     }
 
     public bool LoadFile(string filePath)
     {
-        if (PointCloudManager.LoadLAZFile(filePath))
-        {
-            loading = true;
-            //ActivateLoadingUI(true);
-            fileBrowsing = false;
-            return true;
-        }
+        loading = PointCloudManager.LoadLAZFile(filePath);
 
-        return false;
+        return loading;
     }
 
     public void SaveFile()
@@ -377,9 +308,10 @@ public class PointCloudUI : MonoBehaviour
         }
         else
         {
-            fileBrowsing = true;
+            fileBrowserPanel.SetActive(true);
 
-            fileBrowserCanvas.SetActive(true);
+            loadMenuPanel.SetActive(false);
+            HideNonPersistentMenus();
 
             FileBrowser.SetFilters(true, new FileBrowser.Filter("Point Clouds", ".las", ".laz", ".npz"));
             FileBrowser.SetDefaultFilter(".las");
@@ -416,7 +348,7 @@ public class PointCloudUI : MonoBehaviour
             UserSettings.instance.SaveToFile();
         }
 
-        fileBrowsing = false;
+        loadMenuPanel.SetActive(true);
     }
 
     public void CloseButton()
@@ -431,143 +363,51 @@ public class PointCloudUI : MonoBehaviour
     {
         var pcs = PointCloudManager.GetPointCloudsInScene();
 
-        //pointCloudManager.UnLoad(pcs[dd.value].ID);
         PointCloudManager.UnLoad(pcs[0].ID);
 
-        //UpdateDropdownFiles();
+        loadButton.interactable = true;
+
+        HideNonPersistentMenus();
     }
 
-    //private void UpdateDropdownFiles()
-    //{
-    //    dd.options.Clear();
-    //
-    //    var pcs = pointCloudManager.getPointCloudsInScene();
-    //
-    //    foreach (var pc in pcs)
-    //        dd.options.Add(new Dropdown.OptionData(pc.name));
-    //
-    //    dd.RefreshShownValue();
-    //}
-
-    private void ActivateLoadAndSaveUI(bool activate)
+    private void HideNonPersistentMenus()
     {
-        if (activate)
-        {
-            bool pointCloudsLoaded = PointCloudManager.GetPointCloudsInScene().Length > 0;
-
-            loadButton.SetActive(true);
-            loadButton.GetComponent<Button>().interactable = !pointCloudsLoaded || PointCloudManager.commandLineMode;
-
-            showGroundPlaneButton.SetActive(true);
-            floorText.SetActive(true);
-            autoHideGroundPlaneToggle.SetActive(true);
-
-            saveButton.SetActive(pointCloudsLoaded);
-            //fileDropdown.SetActive(pointCloudsLoaded);
-            resetPointCloudTransforms.gameObject.SetActive(pointCloudsLoaded);
-            classifyPointsButton.SetActive(pointCloudsLoaded);
-            classifierMenuButton.SetActive(pointCloudsLoaded);
-
-            refreshENCButton.SetActive(pointCloudsLoaded);
-
-            if (pointCloudsLoaded)
-            {
-                Button b = refreshENCButton.GetComponent<Button>();
-
-                if (!PointCloudManager.GetPointCloudsInScene()[0].validEPSG)
-                {
-                    b.GetComponentInChildren<Text>().text = "No Valid ENC";
-                    refreshENCButton.GetComponent<Button>().interactable = false;
-                }
-                else if (FindObjectOfType<MapManager>().refreshing)
-                {
-                    b.GetComponentInChildren<Text>().text = "Refreshing...";
-                    refreshENCButton.GetComponent<Button>().interactable = false;
-                }
-                else
-                {
-                    b.GetComponentInChildren<Text>().text = "Refresh ENC";
-                    refreshENCButton.GetComponent<Button>().interactable = true;
-                }
-
-
-                if (ModifyPoints.classifierMode)
-                {
-                    classifyPointsButton.GetComponentInChildren<Text>().text = "Removal Mode";
-                    classifierMenuButton.GetComponent<Button>().interactable = true;
-                }
-                else
-                {
-                    classifyPointsButton.GetComponentInChildren<Text>().text = "Classify Mode";
-                    classifierMenuButton.GetComponent<Button>().interactable = false;
-                    classifierPanel.SetActive(false);
-                }
-            }
-            else
-            {
-                classifierPanel.SetActive(false);
-            }
-
-            unloadButton.SetActive(pointCloudsLoaded);
-
-            ActivateOutliersUI(pointCloudsLoaded);                     
-        }
-        else
-        {
-            showGroundPlaneButton.SetActive(false);
-            floorText.SetActive(false);
-            autoHideGroundPlaneToggle.SetActive(false);
-            loadButton.SetActive(false);
-            saveButton.SetActive(false);
-            //fileDropdown.SetActive(false);
-            resetPointCloudTransforms.gameObject.SetActive(false);
-            refreshENCButton.gameObject.SetActive(false);
-            classifyPointsButton.SetActive(false);
-            classifierMenuButton.SetActive(false);
-            classifierPanel.SetActive(false);
-            unloadButton.SetActive(false);
-            buildInfo.SetActive(false);
-
-            ActivateOutliersUI(false);
-        }
+        saveMenuPanel.SetActive(false);
+        backingMenuPanel.SetActive(false);
+        outlierMenuPanel.SetActive(false);
+        classifiersMenuPanel.SetActive(false);
+        colorMenuPanel.SetActive(false);
     }
 
-    public void ToggleColorPicker()
+    private void SetInitialValues()
     {
-        if (colorPickerActive)
-        {
-            colorPickerActive = false;
+        var prefs = UserSettings.instance.preferences;
 
-            ActivateLoadAndSaveUI(true);
+        outlierDistanceSlider.value = prefs.outlierDistance;
+        outlierNeighborSlider.value = prefs.outlierNeighborCount;
+        //backingScaleSlider.value = prefs.backingLineScale;
+        //backingGraduationSlider.value = prefs.backingLineGraduationScale;
+        //backingLineThicknessSlider.value = prefs.backingLineThickness;
 
-            colorPicker.gameObject.SetActive(false);
-            colorPickerButton.GetComponentInChildren<Text>().text = "Choose Environment Color";
-        }
-        else
-        {
-            colorPickerActive = true;
+        ChangePointCloudBackingColor(prefs.backingBackgroundColor);
+        ChangePointCloudBackingMajorGridColor(prefs.backingMajorGridColor);
+        ChangePointCloudBackingMinorGridColor(prefs.backingMinorGridColor);
+        ChangePointCloudBackingScale(prefs.backingLineScale);
+        ChangePointCloudBackingGraduationScale(prefs.backingLineGraduationScale);
+        ChangePointCloudBackingLineThickness(prefs.backingLineThickness);
 
-            ActivateLoadAndSaveUI(false);
+        autoHideGroundPlaneToggle.isOn = prefs.autoHideGroundPlaneOnLoad;
 
-            colorPicker.gameObject.SetActive(true);
-            colorPickerButton.GetComponentInChildren<Text>().text = "Close Color Picker";
-        }
+        if (prefs.lastLoadDirectory != "" &&
+            Directory.Exists(prefs.lastLoadDirectory))
+            lastLoadDirectory = prefs.lastLoadDirectory;
+
+        if (prefs.lastSaveDirectory != "" &&
+            Directory.Exists(prefs.lastSaveDirectory))
+            lastSaveDirectory = prefs.lastSaveDirectory;
     }
-
-    private void ActivateColorPickerUI(bool activate)
-    {
-        if (activate)
-        {
-            colorPickerButton.gameObject.SetActive(true);
-        }
-        else
-        {
-            colorPickerButton.gameObject.SetActive(false);
-            colorPicker.gameObject.SetActive(false);
-        }
-    }
-
-    public void resetPointCloudsTransforms()
+ 
+    public void ResetPointCloudsTransforms()
     {
         PointCloudManager.GetPointCloudsInScene()[0].ResetMiniature(
             UserSettings.instance.preferences.fitSizeOnLoad, 
@@ -581,13 +421,13 @@ public class PointCloudUI : MonoBehaviour
         {
             showingOutliers = false;
 
-            outlierShowButton.GetComponent<Button>().GetComponentInChildren<Text>().text = "Show";
+            showOutliersButtonText.text = "Show";
         }
         else
         {
             showingOutliers = true;
 
-            outlierShowButton.GetComponent<Button>().GetComponentInChildren<Text>().text = "Hide";
+            showOutliersButtonText.text = "Hide";
         }
 
         UpdateOutliers();
@@ -600,8 +440,8 @@ public class PointCloudUI : MonoBehaviour
         if (pcs.Length == 0)
             return;
 
-        var d = showingOutliers ? outliersDistance : 0f;
-        var n = showingOutliers ? outlierNeighborCount : 0;
+        var d = showingOutliers ? outlierDistanceSlider.value : 0f;
+        int n = showingOutliers ? (int)outlierNeighborSlider.value : 0;
 
         //pointCloudManager.HighlightOutliers(d, n, pcs[dd.value].ID);
         PointCloudManager.HighlightOutliers(d, n, pcs[0].ID);
@@ -611,89 +451,98 @@ public class PointCloudUI : MonoBehaviour
     {
         var pcs = PointCloudManager.GetPointCloudsInScene();
         //pointCloudManager.HighlightOutliers(outliersDistance, outlierNeighborCount, pcs[dd.value].ID);
-        PointCloudManager.HighlightOutliers(outliersDistance, outlierNeighborCount, pcs[0].ID);
+        PointCloudManager.HighlightOutliers(outlierDistanceSlider.value, (int)outlierNeighborSlider.value, pcs[0].ID);
         //pointCloudManager.DeleteOutliers(pcs[dd.value].ID);
         PointCloudManager.DeleteOutliers(pcs[0].ID);
         showingOutliers = false;
-        outlierShowButton.GetComponent<Button>().GetComponentInChildren<Text>().text = "Show";
+        showOutliersButtonText.text = "Show";
     }
 
-    public void AdjustOutlierDistance(System.Single dist)
+    public void AdjustOutlierDistance(float dist)
     {
-        outliersDistance = dist;
-        outlierDistValText.GetComponent<Text>().text = dist.ToString("F1");
+        outlierDistValText.text = dist.ToString("F1");
     }
 
-    public void AdjustOutlierNeighborCount(System.Single num)
+    public void AdjustOutlierNeighborCount(float num)
     {
-        outlierNeighborCount = (int)num;
-        outlierNeighborValText.GetComponent<Text>().text = num.ToString();
-    }
-
-    private void ActivateOutliersUI(bool activate)
-    {
-        outlierDeleteButton.SetActive(activate);
-        outlierShowButton.SetActive(activate);
-        outlierText.SetActive(activate);
-        outlierDistSlider.SetActive(activate);
-        outlierDistText.SetActive(activate);
-        outlierDistValText.SetActive(activate);
-        outlierNeighborSlider.SetActive(activate);
-        outlierNeighborText.SetActive(activate);
-        outlierNeighborValText.SetActive(activate);
+        outlierNeighborValText.text = ((int)num).ToString();
     }
 
     public void ToggleGroundPlane()
     {
         groundPlane.SetActive(!groundPlane.activeSelf);
 
-        showGroundPlaneButton.GetComponentInChildren<Text>().text = (groundPlane.activeSelf ? "Hide" : "Show");// + " Ground Plane";
+        showGroundPlaneButtonText.text = (groundPlane.activeSelf ? "Hide" : "Show");
     }
 
-    public void ToggleFlyingMode()
+    public void ToggleClassifyPointClouds()
     {
-        xrf.enabled = !xrf.enabled;
-        
-        if (xrf.enabled)
-            flyButton.GetComponentInChildren<Text>().text = "EDIT MODE";
+        FindObjectOfType<ModifyPoints>().ActivateClassificationMode(!ModifyPoints.classifierMode);
+
+        if (ModifyPoints.classifierMode)
+        {
+            classifyPointsButtonText.text = "Removal Mode";
+            classifierMenuButton.interactable = true;
+        }
         else
-            flyButton.GetComponentInChildren<Text>().text = "FLY MODE";
+        {
+            classifyPointsButtonText.text = "Classify Mode";
+            classifierMenuButton.interactable = false;
+            classifiersMenuPanel.SetActive(false);
+        }
     }
 
-    public void ToggleAutoHideGroundPlane(bool isOn)
+    public void ToggleBackingMenu()
     {
-        autoHideGroundPlane = isOn;
+        backingMenuPanel.SetActive(!backingMenuPanel.activeSelf);
+
+        string openClose = backingMenuPanel.activeSelf ? "Close" : "Open";
+        backingOptionsText.text = openClose + " Backing Volume Options";
+    }
+
+    public void ToggleOutliersMenu()
+    {
+        outlierMenuPanel.SetActive(!outlierMenuPanel.activeSelf);
+    }
+
+    public void ToggleClassifiersMenu()
+    {
+        classifiersMenuPanel.SetActive(!classifiersMenuPanel.activeSelf);
     }
 
     private void BlockUnloadWhileSaving()
     {
-        //unloadButton.GetComponent<Button>().enabled = pointCloudManager.IsLastAsyncSaveFinished();
-        //unloadButton.SetActive(pointCloudManager.IsLastAsyncSaveFinished());
-
         if (PointCloudManager.IsLastAsyncSaveFinished()) // not saving
         {
-            saveButton.GetComponent<Button>().interactable = true;
-            saveButton.GetComponentInChildren<Text>().fontSize = 60;
-            saveButton.GetComponentInChildren<Text>().text = "Save";
+            saveButton.interactable = true;
+            saveButtonText.fontSize = 60;
+            saveButtonText.text = "Save";
 
-            unloadButton.GetComponent<Button>().interactable = true;
+            closeButton.interactable = true;
         }
         else // saving
         {
-            saveButton.GetComponent<Button>().interactable = false;
-            saveButton.GetComponentInChildren<Text>().fontSize = 36;
-
+            saveButton.interactable = false;
+            saveButtonText.fontSize = 36;
 
             int numberOfElipsis = 0 + (int)(4f * (Time.timeSinceLevelLoad % 1f));
-            saveButton.GetComponentInChildren<Text>().text = "Saving" + new string('.', numberOfElipsis) + new string(' ', 3 - numberOfElipsis);
+            saveButtonText.text = "Saving" + new string('.', numberOfElipsis) + new string(' ', 3 - numberOfElipsis);
 
-            unloadButton.GetComponent<Button>().interactable = false;
+            closeButton.interactable = false;
         }
     }
 
     public void RefreshENC()
     {
+        refreshingENC = true;
         StartCoroutine(FindObjectOfType<MapManager>().CreateENC(FindObjectOfType<GEOReference>(), PointCloudManager.GetPointCloudsInScene()[0], true));
+    }
+
+    public void ColorPickerBackgroundColor()
+    {
+        colorPicker.onValueChanged.RemoveAllListeners();
+        colorPicker.CurrentColor = Camera.main.backgroundColor;
+        colorPicker.onValueChanged.AddListener(ChangeBackgroundColor);
     }
 
     public void ChangeBackgroundColor(Color color)
@@ -701,8 +550,54 @@ public class PointCloudUI : MonoBehaviour
         Camera.main.backgroundColor = color;
     }
 
+    public void ColorPickerBackingColor()
+    {
+        colorPicker.onValueChanged.RemoveAllListeners();
+        colorPicker.CurrentColor = pointCloudBackingMaterial.GetColor("_Color");
+        colorPicker.onValueChanged.AddListener(ChangePointCloudBackingColor);
+    }
+
     public void ChangePointCloudBackingColor(Color color)
     {
-        pointCloudBackingMaterial.SetColor("_MainColor", color);
+        pointCloudBackingMaterial.SetColor("_Color", color);
+    }
+
+    public void ColorPickerMajorGridColor()
+    {
+        colorPicker.onValueChanged.RemoveAllListeners();
+        colorPicker.CurrentColor = pointCloudBackingMaterial.GetColor("_MajorColor");
+        colorPicker.onValueChanged.AddListener(ChangePointCloudBackingMajorGridColor);
+    }
+
+    public void ChangePointCloudBackingMajorGridColor(Color color)
+    {
+        pointCloudBackingMaterial.SetColor("_MajorColor", color);
+    }
+
+    public void ColorPickerMinorGridColor()
+    {
+        colorPicker.onValueChanged.RemoveAllListeners();
+        colorPicker.CurrentColor = pointCloudBackingMaterial.GetColor("_MinorColor");
+        colorPicker.onValueChanged.AddListener(ChangePointCloudBackingMinorGridColor);
+    }
+
+    public void ChangePointCloudBackingMinorGridColor(Color color)
+    {
+        pointCloudBackingMaterial.SetColor("_MinorColor", color);
+    }
+
+    public void ChangePointCloudBackingScale(float scale)
+    {
+        pointCloudBackingMaterial.SetFloat("_Scale", scale);
+    }
+
+    public void ChangePointCloudBackingGraduationScale(float scale)
+    {
+        pointCloudBackingMaterial.SetFloat("_GraduationScale", scale);
+    }
+
+    public void ChangePointCloudBackingLineThickness(float thickness)
+    {
+        pointCloudBackingMaterial.SetFloat("_Thickness", thickness);
     }
 }

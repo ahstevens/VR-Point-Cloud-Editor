@@ -4,8 +4,8 @@ using UnityEngine;
 //[RequireComponent(typeof(LineRenderer))]
 public class PointCloud : MonoBehaviour
 {
-    public String pathToRawData;
-    public String ID;
+    public string pathToRawData;
+    public string ID;
 
     public double adjustmentX;
     public double adjustmentY;

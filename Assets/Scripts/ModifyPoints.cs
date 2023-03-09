@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.XR;
+using TMPro;
 
 public class ModifyPoints : MonoBehaviour
 {
@@ -50,7 +51,6 @@ public class ModifyPoints : MonoBehaviour
     private int currentModificationClassifier;
     private float modificationTimer = 0;
     private bool checkModificationResult;
-    private int lastFrameOfModificationRequest;
 
     public HapticPattern modificationHaptic;
     public HapticPattern undoHaptic;
@@ -91,7 +91,7 @@ public class ModifyPoints : MonoBehaviour
         get { return _classifierMode; }
     }
 
-    private static bool _brushVisible = true;
+    private static bool _brushVisible = false;
     public static bool IsBrushVisible
     {
         get { return _brushVisible; }
@@ -116,7 +116,6 @@ public class ModifyPoints : MonoBehaviour
         thumbstick = false;
 
         checkModificationResult = false;
-        lastFrameOfModificationRequest = -1;
 
         modificationOps = new List<int>();
         currentModificationOpCount = 0;
@@ -212,14 +211,7 @@ public class ModifyPoints : MonoBehaviour
 
             checkModificationResult = false;
         }
-        
 
-//#if UNITY_EDITOR
-        if (Keyboard.current.cKey.wasPressedThisFrame)
-        {
-            ActivateClassificationMode(!_classifierMode);
-        }
-//#endif
         if (movingOrResizing && _brushVisible)
         {
             var sample = moveAndResizeSphereAction.action.ReadValue<Vector2>();
@@ -300,7 +292,9 @@ public class ModifyPoints : MonoBehaviour
         connectorMaterial.color = _classifierMode ? classifierColor : Color.white;
 
         classifierText.SetActive(_classifierMode);
-            
+
+        var textMat = classifierText.GetComponent<Renderer>();
+        textMat.material.SetColor("_FaceColor", classifierColor);
     }
 
     void OnBeginModifyInSphere()
@@ -360,7 +354,6 @@ public class ModifyPoints : MonoBehaviour
                 UpdateModificationParameters(sphereCenterPtr.AddrOfPinnedObject(), editingRadius, modificationAction, (float)currentModificationClassifier);
 
                 //checkModificationResult = true;
-                lastFrameOfModificationRequest = Time.frameCount;
             }
         }
     }
@@ -376,6 +369,8 @@ public class ModifyPoints : MonoBehaviour
 
     private void UndoModification()
     {
+        if (!_brushVisible) { return; }
+
         if (modificationOps.Count > 0)
         {
             var numHalfSteps = modificationOps.Count;

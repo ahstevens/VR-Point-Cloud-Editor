@@ -5,42 +5,27 @@ using UnityEngine.XR.Interaction.Toolkit;
 
 public class ControllerModelManager : MonoBehaviour
 {
-    [SerializeField]
-    ActionBasedController m_LeftController;
+    [SerializeField] ActionBasedController m_LeftController;
+    [SerializeField] ActionBasedController m_RightController;
 
-    [SerializeField]
-    ActionBasedController m_RightController;
+    [SerializeField] Transform m_GenericModelPrefab;
 
-    [SerializeField]
-    Transform m_GenericModelPrefab;
+    [SerializeField] Transform m_ViveFocusLeftModelPrefab;
+    [SerializeField] Transform m_ViveFocusRightModelPrefab;
 
-    [SerializeField]
-    Transform m_ViveFocusLeftModelPrefab;
-    [SerializeField]
-    Transform m_ViveFocusRightModelPrefab;
+    [SerializeField] Transform m_ViveWandModelPrefab;
 
-    [SerializeField]
-    Transform m_ViveWandModelPrefab;
+    [SerializeField] Transform m_ValveIndexLeftModelPrefab;
+    [SerializeField] Transform m_ValveIndexRightModelPrefab;
 
-    [SerializeField]
-    Transform m_ValveIndexLeftModelPrefab;
-    [SerializeField]
-    Transform m_ValveIndexRightModelPrefab;
+    [SerializeField] Transform m_WMRLeftModelPrefab;
+    [SerializeField] Transform m_WMRRightModelPrefab;
 
-    [SerializeField]
-    Transform m_WMRLeftModelPrefab;
-    [SerializeField]
-    Transform m_WMRRightModelPrefab;
+    [SerializeField] Transform m_MetaQuestLeftModelPrefab;
+    [SerializeField] Transform m_MetaQuestRightModelPrefab;
 
-    [SerializeField]
-    Transform m_MetaQuestLeftModelPrefab;
-    [SerializeField]
-    Transform m_MetaQuestRightModelPrefab;
-
-    [SerializeField]
-    Transform m_HPReverbLeftModelPrefab;
-    [SerializeField]
-    Transform m_HPReverbRightModelPrefab;
+    [SerializeField] Transform m_HPReverbLeftModelPrefab;
+    [SerializeField] Transform m_HPReverbRightModelPrefab;
 
     Transform m_LeftParent;
     Transform m_RightParent;

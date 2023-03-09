@@ -65,20 +65,6 @@ public class ControllerModelManager : MonoBehaviour
         set => SetController(value);
     }
 
-    class ControlsComponentMap
-    {
-        public string showMaps;
-        public string mapHeight;
-        public string grab;
-        public string openUI;
-        public string scale;
-        public string edit;
-        public string cursorAdjust;
-        public string undo;
-    }
-
-    ControlsComponentMap m_ViveFocus3Controls = new ControlsComponentMap();
-
     // Start is called before the first frame update
     void Start()
     {
@@ -173,5 +159,7 @@ public class ControllerModelManager : MonoBehaviour
         modelParent.localRotation = Quaternion.identity;
 
         controller.model = Instantiate(prefab, modelParent).transform;
+
+        modelSet = true;
     }
 }

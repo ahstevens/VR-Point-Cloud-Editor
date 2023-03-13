@@ -383,6 +383,9 @@ public class PointCloudManager : MonoBehaviour
             {
                 FindObjectOfType<ModifyPoints>().ActivateClassificationMode(false);
 
+                FindObjectOfType<XRScaling>().enabled = false;
+                FindObjectOfType<XRGrabbing>().enabled = false;
+
                 // It is not intended to work fine along with bag loader.
                 // Should fix that.
                 GameObject geoReference = GameObject.Find("UnityZeroGeoReference");
@@ -569,6 +572,9 @@ public class PointCloudManager : MonoBehaviour
 
             AddSecretBoxForDeletedPoints(pointCloudGameObject);
             CreateBacking(ref pointCloudGameObject);
+
+            FindObjectOfType<XRScaling>().enabled = true;
+            FindObjectOfType<XRGrabbing>().enabled = true;
 
             if (!FindObjectOfType<PointCloudUI>().MenuOpen)
                 FindObjectOfType<ModifyPoints>().SetBrushVisibility(true);
@@ -804,7 +810,8 @@ public class PointCloudManager : MonoBehaviour
         backing.transform.localPosition = b.center;
 
         float squareBoundSize = MathF.Max(b.size.x, b.size.z);
-        backing.transform.localScale = new Vector3(squareBoundSize, b.size.y, squareBoundSize);
+        //backing.transform.localScale = new Vector3(squareBoundSize, b.size.y, squareBoundSize);
+        backing.transform.localScale = b.size;
     }
 
     public static bool LoadDemoFile()

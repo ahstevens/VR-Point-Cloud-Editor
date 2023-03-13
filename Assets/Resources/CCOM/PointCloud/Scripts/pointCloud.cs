@@ -1,9 +1,14 @@
 ﻿using System;
+using System.Linq;
+using System.Runtime.InteropServices;
 using UnityEngine;
 
 //[RequireComponent(typeof(LineRenderer))]
 public class PointCloud : MonoBehaviour
 {
+    [DllImport("PointCloudPlugin")]
+    static public extern void RequestClosestPointToPointFromUnity(IntPtr initialPointPosition);
+
     public string pathToRawData;
     public string ID;
 
@@ -181,5 +186,25 @@ public class PointCloud : MonoBehaviour
         //lr.SetPosition(7, p7);
         //lr.SetPosition(8, p8);
         //lr.SetPosition(9, p5);
+    }
+
+    public Vector3 FindClosestPoint(Vector3 positionWorldSpace)
+    {
+        var position = transform.InverseTransformPoint(positionWorldSpace);
+
+        float[] pos = new float[3];
+        pos[0] = position.x;
+        pos[1] = position.y;
+        pos[2] = position.z;
+
+        GCHandle posPtr = GCHandle.Alloc(pos.ToArray(), GCHandleType.Pinned);
+
+        RequestClosestPointToPointFromUnity(posPtr.AddrOfPinnedObject());
+
+        float[] result = (float[])posPtr.Target;
+
+        posPtr.Free();
+
+        return transform.TransformPoint(new Vector3(result[0], result[1], result[2]));
     }
 }

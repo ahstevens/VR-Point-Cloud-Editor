@@ -2703,7 +2703,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 598687394}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ec374068fd12dc14fbe77f4f3d7a3e19, type: 3}
   m_Name: 
@@ -2763,7 +2763,10 @@ MonoBehaviour:
     m_Reference: {fileID: 5922473366525983001, guid: bc5d5383aa166484ea2f603c8a1dc8e1,
       type: 3}
   scalingRoot: {fileID: 417516343}
+  scaleOnClosestPoint: 0
   scalePointPrefab: {fileID: 8357680073965108976, guid: 35cbc7471ea35b64fa3b7f0c0956d5c2,
+    type: 3}
+  connectorPrefab: {fileID: 9215100315556319361, guid: e741029f26c1ecb45b0b8c4c299d5b5e,
     type: 3}
 --- !u!1 &624273189
 GameObject:
@@ -7732,7 +7735,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1163329446}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5ada80e488ebc3042bd98d5eeb662610, type: 3}
   m_Name: 
@@ -12585,9 +12588,9 @@ MonoBehaviour:
   onValueChanged:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-        m_MethodName: SetActive
+      - m_Target: {fileID: 573030561}
+        m_TargetAssemblyTypeName: PointCloudUI, Assembly-CSharp
+        m_MethodName: ToggleBackingBox
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

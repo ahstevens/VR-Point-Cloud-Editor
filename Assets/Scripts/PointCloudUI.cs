@@ -510,6 +510,13 @@ public class PointCloudUI : MonoBehaviour
         classifiersMenuPanel.SetActive(!classifiersMenuPanel.activeSelf);
     }
 
+    public void ToggleBackingBox(bool onOff)
+    {
+        var pc = FindObjectOfType<PointCloud>();
+        var go = pc.transform.Find(pc.gameObject.name + " Backing");
+        go.gameObject.SetActive(onOff);
+    }
+
     private void BlockUnloadWhileSaving()
     {
         if (PointCloudManager.IsLastAsyncSaveFinished()) // not saving

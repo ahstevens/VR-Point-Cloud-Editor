@@ -52,6 +52,7 @@ public class SpeechManager : MonoBehaviour
 
     private void PrepareBuiltinCommands()
     {
+        /*
         _keywords.Add("background black", () =>
         {
             Camera.main.backgroundColor = Color.black;
@@ -142,6 +143,7 @@ public class SpeechManager : MonoBehaviour
         {
             FindObjectOfType<ModifyPoints>().ActivateClassificationMode(true);
         });
+        */
     }
 
     public bool AddCommand(string keyword, Action action)

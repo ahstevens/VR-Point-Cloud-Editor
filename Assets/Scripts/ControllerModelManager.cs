@@ -65,26 +65,26 @@ public class ControllerModelManager : MonoBehaviour
             modelSet = true;
         }
 
-        if (Input.GetKeyDown(KeyCode.Alpha1))
-            SetController(ControllerType.Generic);
-
-        if (Input.GetKeyDown(KeyCode.Alpha2))
-            SetController(ControllerType.ViveWand);
-
-        if (Input.GetKeyDown(KeyCode.Alpha3))
-            SetController(ControllerType.ViveFocus);
-
-        if (Input.GetKeyDown(KeyCode.Alpha4))
-            SetController(ControllerType.ValveIndex);
-
-        if (Input.GetKeyDown(KeyCode.Alpha5))
-            SetController(ControllerType.MetaQuest);
-
-        if (Input.GetKeyDown(KeyCode.Alpha6))
-            SetController(ControllerType.WMR);
-
-        if (Input.GetKeyDown(KeyCode.Alpha7))
-            SetController(ControllerType.HPReverb);
+        //if (Input.GetKeyDown(KeyCode.Alpha1))
+        //    SetController(ControllerType.Generic);
+        //
+        //if (Input.GetKeyDown(KeyCode.Alpha2))
+        //    SetController(ControllerType.ViveWand);
+        //
+        //if (Input.GetKeyDown(KeyCode.Alpha3))
+        //    SetController(ControllerType.ViveFocus);
+        //
+        //if (Input.GetKeyDown(KeyCode.Alpha4))
+        //    SetController(ControllerType.ValveIndex);
+        //
+        //if (Input.GetKeyDown(KeyCode.Alpha5))
+        //    SetController(ControllerType.MetaQuest);
+        //
+        //if (Input.GetKeyDown(KeyCode.Alpha6))
+        //    SetController(ControllerType.WMR);
+        //
+        //if (Input.GetKeyDown(KeyCode.Alpha7))
+        //    SetController(ControllerType.HPReverb);
     }
 
     public void SetController(ControllerType type)

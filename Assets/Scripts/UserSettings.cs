@@ -13,8 +13,8 @@ public class UserSettings : MonoBehaviour
         public float backingLineGraduationScale = 1f;
         public float backingLineScale = 1f;
         public float backingLineThickness = 0.005f;
-        public Color backingMajorGridColor = Color.cyan;
-        public Color backingMinorGridColor = Color.white;
+        public Color backingMajorGridColor = new(0.3f, 0.3f, 0.3f, 1f);
+        public Color backingMinorGridColor = new(0.2f, 0.2f, 0.2f, 1f);
         public ControllerModelManager.ControllerType controllerType = ControllerModelManager.ControllerType.Generic;
         public float cursorDeletionRate = 25f;
         public float cursorDistance = 0.20f;

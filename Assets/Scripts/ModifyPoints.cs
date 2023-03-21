@@ -145,16 +145,6 @@ public class ModifyPoints : MonoBehaviour
         RequestClassificationVisualizationFromUnity(_classifierMode);
     }
 
-    private void OnApplicationQuit()
-    {
-        if (UserSettings.instance.preferences.saveCursorOnExit)
-        {
-            UserSettings.instance.preferences.cursorRadius = editingSphere.transform.localScale.x;
-            UserSettings.instance.preferences.cursorDistance = editingSphere.transform.localPosition.z;
-            UserSettings.instance.SaveToFile();
-        }
-    }
-
     // Update is called once per frame
     void Update()
     {
@@ -471,6 +461,13 @@ public class ModifyPoints : MonoBehaviour
                 movingOrResizing = true;
             }
         }
+
+
+        if (UserSettings.instance.preferences.saveCursorOnExit)
+        {
+            UserSettings.instance.preferences.cursorRadius = editingSphere.transform.localScale.x;
+            UserSettings.instance.preferences.cursorDistance = editingSphere.transform.localPosition.z;
+        }
     }
 
     private void TouchpadMoveOrResize()
@@ -523,6 +520,12 @@ public class ModifyPoints : MonoBehaviour
             }
 
             editingSphere.transform.localScale = Vector3.one * size;
+        }
+
+        if (UserSettings.instance.preferences.saveCursorOnExit)
+        {
+            UserSettings.instance.preferences.cursorRadius = editingSphere.transform.localScale.x;
+            UserSettings.instance.preferences.cursorDistance = editingSphere.transform.localPosition.z;
         }
     }
     

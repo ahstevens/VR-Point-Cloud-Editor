@@ -10,6 +10,7 @@ using System;
 using System.IO;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -812,6 +813,19 @@ public class PointCloudManager : MonoBehaviour
         float squareBoundSize = MathF.Max(b.size.x, b.size.z);
         //backing.transform.localScale = new Vector3(squareBoundSize, b.size.y, squareBoundSize);
         backing.transform.localScale = b.size;
+
+        bool isEnabled = false;
+
+        foreach (Toggle t in Resources.FindObjectsOfTypeAll(typeof(Toggle)))
+        {
+            if (t.name == "Backing Volume Toggle")
+            {
+                isEnabled = t.isOn;
+                break;
+            }
+        }
+
+        FindObjectOfType<PointCloudUI>().ToggleBackingBox(isEnabled);
     }
 
     public static bool LoadDemoFile()

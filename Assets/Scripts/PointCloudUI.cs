@@ -142,6 +142,8 @@ public class PointCloudUI : MonoBehaviour
 
                 saveMenuPanel.SetActive(pointCloudLoaded);
 
+                CloseMenu();
+
                 if (pointCloudLoaded && groundPlane.activeSelf && autoHideGroundPlaneToggle.isOn)
                 {
                     ToggleGroundPlane();
@@ -187,6 +189,18 @@ public class PointCloudUI : MonoBehaviour
     private void OnDisable()
     {
         openMenu.action.Disable();
+    }
+
+    private void OnApplicationQuit()
+    {
+        var prefs = UserSettings.instance.preferences;
+
+        prefs.backgroundColor = Camera.main.backgroundColor;
+        prefs.backingBackgroundColor = pointCloudBackingMaterial.GetColor("_Color");
+        prefs.backingMajorGridColor = pointCloudBackingMaterial.GetColor("_MajorColor");
+        prefs.backingMinorGridColor = pointCloudBackingMaterial.GetColor("_MinorColor");
+
+        UserSettings.instance.SaveToFile();
     }
 
     private void OpenMenuAction()
@@ -349,14 +363,20 @@ public class PointCloudUI : MonoBehaviour
         }
 
         loadMenuPanel.SetActive(true);
+        saveMenuPanel.SetActive(true);
     }
 
     public void CloseButton()
     {
         if (PointCloudManager.commandLineMode)
+        {
+            UserSettings.instance.SaveToFile();
             Application.Quit();
+        }
         else
+        {
             UnloadFile();
+        }
     }
 
     public void UnloadFile()
@@ -567,6 +587,7 @@ public class PointCloudUI : MonoBehaviour
     public void ChangePointCloudBackingColor(Color color)
     {
         pointCloudBackingMaterial.SetColor("_Color", color);
+        UserSettings.instance.preferences.backingBackgroundColor = color;
     }
 
     public void ColorPickerMajorGridColor()
@@ -579,6 +600,7 @@ public class PointCloudUI : MonoBehaviour
     public void ChangePointCloudBackingMajorGridColor(Color color)
     {
         pointCloudBackingMaterial.SetColor("_MajorColor", color);
+        UserSettings.instance.preferences.backingMajorGridColor = color;
     }
 
     public void ColorPickerMinorGridColor()
@@ -591,6 +613,7 @@ public class PointCloudUI : MonoBehaviour
     public void ChangePointCloudBackingMinorGridColor(Color color)
     {
         pointCloudBackingMaterial.SetColor("_MinorColor", color);
+        UserSettings.instance.preferences.backingMinorGridColor = color;
     }
 
     public void ChangePointCloudBackingScale(float scale)

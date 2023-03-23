@@ -370,7 +370,6 @@ public class PointCloudUI : MonoBehaviour
     {
         if (PointCloudManager.commandLineMode)
         {
-            UserSettings.instance.SaveToFile();
             Application.Quit();
         }
         else

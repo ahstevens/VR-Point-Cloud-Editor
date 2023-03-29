@@ -93,8 +93,8 @@ Material:
     - _Color: {r: 0, g: 0, b: 0, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _MainColor: {r: 0.5574972, g: 0.33471948, b: 0.33471948, a: 0.9976721}
-    - _MajorColor: {r: 0.25, g: 0.25, b: 0.25, a: 1}
-    - _MinorColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
+    - _MajorColor: {r: 0.24999821, g: 0.24999821, b: 0.24999821, a: 1}
+    - _MinorColor: {r: 0.19999829, g: 0.19999829, b: 0.19999829, a: 1}
     - _RingColor: {r: 1, g: 1, b: 1, a: 1}
     - _SecondaryColor: {r: 0.24528295, g: 0.24528295, b: 0.24528295, a: 1}
     - _SpecColor: {r: 0.9716981, g: 0.558956, b: 0.23375754, a: 0.5}

@@ -56,9 +56,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_enabled: 1
   nameUi: HTC Vive Focus3 Controller Support
-  version: 0.0.1
+  version: 0.0.2
   featureIdInternal: com.htc.openxr.feature.input.htcvivefocus3
-  openxrExtensionStrings: XR_HTC_vive_focus3_controller_interaction
+  openxrExtensionStrings: XR_HTC_vive_focus3_controller_interaction XR_EXT_palm_pose
   company: HTC
   priority: 0
   required: 0
@@ -215,7 +215,7 @@ MonoBehaviour:
   company: HTC
   priority: 0
   required: 0
-  m_XrInstance: 1629062973376
+  m_XrInstance: 2753315630000
   m_XrSession: 2540052221408
   m_systemid: 1153131734666052072
 --- !u!114 &-3399406800633101090
@@ -390,9 +390,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_enabled: 1
   nameUi: HTC Vive Cosmos Controller Support
-  version: 0.0.1
+  version: 0.0.2
   featureIdInternal: com.htc.openxr.feature.input.htcvivecosmos
-  openxrExtensionStrings: XR_HTC_vive_cosmos_controller_interaction
+  openxrExtensionStrings: XR_HTC_vive_cosmos_controller_interaction XR_EXT_palm_pose
   company: HTC
   priority: 0
   required: 0

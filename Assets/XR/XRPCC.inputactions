@@ -280,15 +280,37 @@
                     "isPartOfComposite": true
                 },
                 {
-                    "name": "",
-                    "id": "e3ad7886-b67e-4297-858b-896b9b244fae",
-                    "path": "<OculusTouchController>{RightHand}/primaryButton",
+                    "name": "oculus touch bimanual grip",
+                    "id": "75e29458-169f-4757-9384-5230e12e9e07",
+                    "path": "ButtonWithOneModifier",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Scale",
+                    "isComposite": true,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "button",
+                    "id": "28eff873-7aa6-4bd4-858f-0957c4da5420",
+                    "path": "<OculusTouchController>{LeftHand}/gripPressed",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
                     "action": "Scale",
                     "isComposite": false,
-                    "isPartOfComposite": false
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "modifier",
+                    "id": "1403b37f-03f0-4f51-ae04-9cb6d6568593",
+                    "path": "<OculusTouchController>{RightHand}/gripPressed",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Scale",
+                    "isComposite": false,
+                    "isPartOfComposite": true
                 },
                 {
                     "name": "",
@@ -326,7 +348,7 @@
                 {
                     "name": "",
                     "id": "053ab5bd-b579-4036-bca8-b7deba2fb27f",
-                    "path": "<OculusTouchController>{RightHand}/primaryTouched",
+                    "path": "<OculusTouchController>/gripPressed",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -355,15 +377,6 @@
                     "name": "Grab",
                     "type": "Button",
                     "id": "e0795370-e530-4b12-9a53-602e858bd4c7",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "Reset Miniature",
-                    "type": "Button",
-                    "id": "b133f847-31e6-4e87-9a7f-931ab40836d5",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",

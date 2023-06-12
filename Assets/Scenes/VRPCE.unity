@@ -964,10 +964,20 @@ MonoBehaviour:
   m_RepeatDelay: 0.5
   m_RepeatRate: 0.1
   m_TrackedDeviceDragThresholdMultiplier: 2
+  m_ActiveInputMode: 0
   m_MaxTrackedDeviceRaycastDistance: 1000
   m_EnableXRInput: 1
   m_EnableMouseInput: 0
   m_EnableTouchInput: 0
+  m_PointAction: {fileID: 0}
+  m_LeftClickAction: {fileID: 0}
+  m_MiddleClickAction: {fileID: 0}
+  m_RightClickAction: {fileID: 0}
+  m_ScrollWheelAction: {fileID: 0}
+  m_NavigateAction: {fileID: 0}
+  m_SubmitAction: {fileID: 0}
+  m_CancelAction: {fileID: 0}
+  m_EnableBuiltinActionsAsFallback: 1
   m_EnableGamepadInput: 0
   m_EnableJoystickInput: 0
   m_HorizontalAxis: Horizontal
@@ -1986,6 +1996,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 417516344}
+  - component: {fileID: 417516346}
+  - component: {fileID: 417516345}
   m_Layer: 0
   m_Name: Scaling Root
   m_TagString: Untagged
@@ -2010,6 +2022,97 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 9
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &417516345
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 417516343}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8a1883a02f717b4dba7f637f2b9c751, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  LeftHandController: {fileID: 1163329446}
+  RightHandController: {fileID: 756557910}
+  scalePointPrefab: {fileID: 8357680073965108976, guid: 35cbc7471ea35b64fa3b7f0c0956d5c2,
+    type: 3}
+  connectorPrefab: {fileID: 9215100315556319361, guid: e741029f26c1ecb45b0b8c4c299d5b5e,
+    type: 3}
+  scalingScript: {fileID: 417516346}
+--- !u!114 &417516346
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 417516343}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec374068fd12dc14fbe77f4f3d7a3e19, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  scale:
+    m_UseReference: 1
+    m_Action:
+      m_Name: Scale
+      m_Type: 0
+      m_ExpectedControlType: 
+      m_Id: 2bd00d0d-5121-40b9-a3e7-114b7af4a3f7
+      m_Processors: 
+      m_Interactions: 
+      m_SingletonActionBindings: []
+      m_Flags: 0
+    m_Reference: {fileID: 2391091111321909104, guid: bc5d5383aa166484ea2f603c8a1dc8e1,
+      type: 3}
+  showScalingMarker:
+    m_UseReference: 1
+    m_Action:
+      m_Name: Show Scaling Marker
+      m_Type: 0
+      m_ExpectedControlType: 
+      m_Id: e1d08a7b-5b30-4ad9-a7c1-d5ad340b8424
+      m_Processors: 
+      m_Interactions: 
+      m_SingletonActionBindings: []
+      m_Flags: 0
+    m_Reference: {fileID: 6908745343199719694, guid: bc5d5383aa166484ea2f603c8a1dc8e1,
+      type: 3}
+  LeftHandController: {fileID: 1163329446}
+  RightHandController: {fileID: 756557910}
+  LeftControllerPosition:
+    m_UseReference: 1
+    m_Action:
+      m_Name: Left Controller Position
+      m_Type: 0
+      m_ExpectedControlType: 
+      m_Id: fd17b78d-dc51-487e-8d7e-c97bdbf55fd9
+      m_Processors: 
+      m_Interactions: 
+      m_SingletonActionBindings: []
+      m_Flags: 0
+    m_Reference: {fileID: -3344324261101231525, guid: bc5d5383aa166484ea2f603c8a1dc8e1,
+      type: 3}
+  RightControllerPosition:
+    m_UseReference: 1
+    m_Action:
+      m_Name: Right Controller Position
+      m_Type: 0
+      m_ExpectedControlType: 
+      m_Id: a04b269d-8559-4fb0-aa80-f7c969473210
+      m_Processors: 
+      m_Interactions: 
+      m_SingletonActionBindings: []
+      m_Flags: 0
+    m_Reference: {fileID: 5922473366525983001, guid: bc5d5383aa166484ea2f603c8a1dc8e1,
+      type: 3}
+  scalingRoot: {fileID: 417516343}
+  offsetFromController: {x: 0, y: 0, z: 0.01}
+  interactionPointInsideDataBounds: 0
+  scalingTypeInsideDataBounds: 1
+  interactionPointOutsideDataBounds: 0
+  scalingTypeOutsideDataBounds: 1
 --- !u!1 &426975941
 GameObject:
   m_ObjectHideFlags: 0
@@ -2655,7 +2758,6 @@ GameObject:
   m_Component:
   - component: {fileID: 598687396}
   - component: {fileID: 598687395}
-  - component: {fileID: 598687401}
   m_Layer: 0
   m_Name: XR Rig
   m_TagString: Untagged
@@ -2696,78 +2798,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &598687401
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 598687394}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ec374068fd12dc14fbe77f4f3d7a3e19, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  scale:
-    m_UseReference: 1
-    m_Action:
-      m_Name: Scale
-      m_Type: 0
-      m_ExpectedControlType: 
-      m_Id: 2bd00d0d-5121-40b9-a3e7-114b7af4a3f7
-      m_Processors: 
-      m_Interactions: 
-      m_SingletonActionBindings: []
-      m_Flags: 0
-    m_Reference: {fileID: 2391091111321909104, guid: bc5d5383aa166484ea2f603c8a1dc8e1,
-      type: 3}
-  showScalingMarker:
-    m_UseReference: 1
-    m_Action:
-      m_Name: Show Scaling Marker
-      m_Type: 0
-      m_ExpectedControlType: 
-      m_Id: e1d08a7b-5b30-4ad9-a7c1-d5ad340b8424
-      m_Processors: 
-      m_Interactions: 
-      m_SingletonActionBindings: []
-      m_Flags: 0
-    m_Reference: {fileID: 6908745343199719694, guid: bc5d5383aa166484ea2f603c8a1dc8e1,
-      type: 3}
-  LeftHandController: {fileID: 1163329446}
-  RightHandController: {fileID: 756557910}
-  LeftControllerPosition:
-    m_UseReference: 1
-    m_Action:
-      m_Name: Left Controller Position
-      m_Type: 0
-      m_ExpectedControlType: 
-      m_Id: fd17b78d-dc51-487e-8d7e-c97bdbf55fd9
-      m_Processors: 
-      m_Interactions: 
-      m_SingletonActionBindings: []
-      m_Flags: 0
-    m_Reference: {fileID: -3344324261101231525, guid: bc5d5383aa166484ea2f603c8a1dc8e1,
-      type: 3}
-  RightControllerPosition:
-    m_UseReference: 1
-    m_Action:
-      m_Name: Right Controller Position
-      m_Type: 0
-      m_ExpectedControlType: 
-      m_Id: a04b269d-8559-4fb0-aa80-f7c969473210
-      m_Processors: 
-      m_Interactions: 
-      m_SingletonActionBindings: []
-      m_Flags: 0
-    m_Reference: {fileID: 5922473366525983001, guid: bc5d5383aa166484ea2f603c8a1dc8e1,
-      type: 3}
-  scalingRoot: {fileID: 417516343}
-  scaleOnClosestPoint: 0
-  scalePointPrefab: {fileID: 8357680073965108976, guid: 35cbc7471ea35b64fa3b7f0c0956d5c2,
-    type: 3}
-  connectorPrefab: {fileID: 9215100315556319361, guid: e741029f26c1ecb45b0b8c4c299d5b5e,
-    type: 3}
 --- !u!1 &624273189
 GameObject:
   m_ObjectHideFlags: 0
@@ -5075,11 +5105,44 @@ MonoBehaviour:
     m_Mode: 1
     m_NumColorKeys: 2
     m_NumAlphaKeys: 2
+  m_BlockedColorGradient:
+    serializedVersion: 2
+    key0: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+    key1: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+    key2: {r: 0, g: 0, b: 0, a: 0}
+    key3: {r: 0, g: 0, b: 0, a: 0}
+    key4: {r: 0, g: 0, b: 0, a: 0}
+    key5: {r: 0, g: 0, b: 0, a: 0}
+    key6: {r: 0, g: 0, b: 0, a: 0}
+    key7: {r: 0, g: 0, b: 0, a: 0}
+    ctime0: 0
+    ctime1: 65535
+    ctime2: 0
+    ctime3: 0
+    ctime4: 0
+    ctime5: 0
+    ctime6: 0
+    ctime7: 0
+    atime0: 0
+    atime1: 65535
+    atime2: 0
+    atime3: 0
+    atime4: 0
+    atime5: 0
+    atime6: 0
+    atime7: 0
+    m_Mode: 0
+    m_NumColorKeys: 2
+    m_NumAlphaKeys: 2
+  m_TreatSelectionAsValidState: 0
   m_SmoothMovement: 0
   m_FollowTightness: 10
   m_SnapThresholdDistance: 10
   m_Reticle: {fileID: 0}
+  m_BlockedReticle: {fileID: 0}
   m_StopLineAtFirstRaycastHit: 1
+  m_StopLineAtSelection: 0
+  m_SnapEndpointIfAvailable: 1
 --- !u!120 &756557913
 LineRenderer:
   m_ObjectHideFlags: 0
@@ -5206,7 +5269,9 @@ MonoBehaviour:
     m_Bits: 4294967295
   m_AttachTransform: {fileID: 0}
   m_KeepSelectedTargetValid: 1
+  m_DisableVisualsWhenBlockedInGroup: 1
   m_StartingSelectedInteractable: {fileID: 0}
+  m_StartingTargetFilter: {fileID: 0}
   m_HoverEntered:
     m_PersistentCalls:
       m_Calls: []
@@ -5219,6 +5284,8 @@ MonoBehaviour:
   m_SelectExited:
     m_PersistentCalls:
       m_Calls: []
+  m_StartingHoverFilters: []
+  m_StartingSelectFilters: []
   m_OnHoverEntered:
     m_PersistentCalls:
       m_Calls: []
@@ -5234,6 +5301,7 @@ MonoBehaviour:
   m_SelectActionTrigger: 0
   m_HideControllerOnSelect: 0
   m_AllowHoveredActivate: 0
+  m_TargetPriorityMode: 0
   m_PlayAudioClipOnSelectEntered: 0
   m_AudioClipForOnSelectEntered: {fileID: 0}
   m_PlayAudioClipOnSelectExited: 0
@@ -5246,6 +5314,7 @@ MonoBehaviour:
   m_AudioClipForOnHoverExited: {fileID: 0}
   m_PlayAudioClipOnHoverCanceled: 0
   m_AudioClipForOnHoverCanceled: {fileID: 0}
+  m_AllowHoverAudioWhileSelecting: 1
   m_PlayHapticsOnSelectEntered: 0
   m_HapticSelectEnterIntensity: 0
   m_HapticSelectEnterDuration: 0
@@ -5264,6 +5333,7 @@ MonoBehaviour:
   m_PlayHapticsOnHoverCanceled: 0
   m_HapticHoverCancelIntensity: 0
   m_HapticHoverCancelDuration: 0
+  m_AllowHoverHapticsWhileSelecting: 1
   m_LineType: 0
   m_BlendVisualLinePoints: 1
   m_MaxRaycastDistance: 30
@@ -5284,15 +5354,19 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 32
   m_RaycastTriggerInteraction: 1
+  m_RaycastSnapVolumeInteraction: 1
   m_HitClosestOnly: 0
   m_HoverToSelect: 0
   m_HoverTimeToSelect: 0.5
+  m_AutoDeselect: 0
+  m_TimeToAutoDeselect: 3
   m_EnableUIInteraction: 1
   m_AllowAnchorControl: 1
   m_UseForceGrab: 1
   m_RotateSpeed: 180
   m_TranslateSpeed: 1
   m_AnchorRotateReferenceFrame: {fileID: 0}
+  m_AnchorRotationMode: 0
 --- !u!114 &756557915
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5469,6 +5543,18 @@ MonoBehaviour:
       m_Flags: 0
     m_Reference: {fileID: -5913262927076077117, guid: c348712bda248c246b8c49b3db54643f,
       type: 3}
+  m_DirectionalAnchorRotationAction:
+    m_UseReference: 0
+    m_Action:
+      m_Name: Directional Anchor Rotation
+      m_Type: 0
+      m_ExpectedControlType: 
+      m_Id: 1045e6c7-0495-4623-af42-2cdf621d42d2
+      m_Processors: 
+      m_Interactions: 
+      m_SingletonActionBindings: []
+      m_Flags: 0
+    m_Reference: {fileID: 0}
   m_TranslateAnchorAction:
     m_UseReference: 1
     m_Action:
@@ -7714,6 +7800,18 @@ MonoBehaviour:
       m_Flags: 0
     m_Reference: {fileID: -5913262927076077117, guid: c348712bda248c246b8c49b3db54643f,
       type: 3}
+  m_DirectionalAnchorRotationAction:
+    m_UseReference: 0
+    m_Action:
+      m_Name: Directional Anchor Rotation
+      m_Type: 0
+      m_ExpectedControlType: 
+      m_Id: d6d24735-3ea2-416b-b810-2bf02c0e7032
+      m_Processors: 
+      m_Interactions: 
+      m_SingletonActionBindings: []
+      m_Flags: 0
+    m_Reference: {fileID: 0}
   m_TranslateAnchorAction:
     m_UseReference: 1
     m_Action:
@@ -7752,19 +7850,6 @@ MonoBehaviour:
       m_SingletonActionBindings: []
       m_Flags: 0
     m_Reference: {fileID: -3669243343821583564, guid: bc5d5383aa166484ea2f603c8a1dc8e1,
-      type: 3}
-  resetMiniature:
-    m_UseReference: 1
-    m_Action:
-      m_Name: Reset Miniature
-      m_Type: 0
-      m_ExpectedControlType: 
-      m_Id: 124dc08c-4cb4-44ef-ba9a-3ec573e955a8
-      m_Processors: 
-      m_Interactions: 
-      m_SingletonActionBindings: []
-      m_Flags: 0
-    m_Reference: {fileID: 4197092095678953996, guid: bc5d5383aa166484ea2f603c8a1dc8e1,
       type: 3}
   grabbableObject: {fileID: 417516343}
 --- !u!1001 &1170089060
@@ -13735,6 +13820,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 83e4e6cca11330d4088d729ab4fc9d9f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_StartingHoverFilters: []
+  m_StartingSelectFilters: []
 --- !u!4 &1988233364
 Transform:
   m_ObjectHideFlags: 0

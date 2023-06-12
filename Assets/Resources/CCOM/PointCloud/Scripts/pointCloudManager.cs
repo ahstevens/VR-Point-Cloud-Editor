@@ -227,8 +227,7 @@ public class PointCloudManager : MonoBehaviour
 
             if (ValidatePointCloudGMFromUnity(strPtr, IDStrPtr))
             {
-                if (toLoadList == null)
-                    toLoadList = new List<string>();
+                toLoadList ??= new List<string>();
 
                 toLoadList.Add(pointClouds[i].ID);
             }
@@ -323,8 +322,7 @@ public class PointCloudManager : MonoBehaviour
             return false;
         }
 
-        if (toLoadList == null)
-            toLoadList = new List<string>();
+        toLoadList ??= new List<string>();
         toLoadList.Add(newID);
 
         isWaitingToLoad = true;
@@ -333,8 +331,7 @@ public class PointCloudManager : MonoBehaviour
         EditorUtility.DisplayProgressBar("Point Cloud Plugin", "Loading Point Cloud...", 0f);
 #endif
 
-        if (pointClouds == null)
-            pointClouds = new();
+        pointClouds ??= new();
 
         LODSettings = new List<LODInformation>();
         IntPtr maxDistance = Marshal.AllocHGlobal(8);

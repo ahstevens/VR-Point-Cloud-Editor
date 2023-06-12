@@ -184,7 +184,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2fbc139556062114b840c0209eebde8d, type: 3}
   m_Name: HandTracking_OpenXR_API Standalone
   m_EditorClassIdentifier: 
-  m_enabled: 1
+  m_enabled: 0
   nameUi: Hand Tracking
   version: 0.0.1
   featureIdInternal: com.company.openxr.handtracking.feature
@@ -207,7 +207,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bb0f8bc7ffa73114397349c4888bab44, type: 3}
   m_Name: SceneUnderstanding_OpenXR_API Standalone
   m_EditorClassIdentifier: 
-  m_enabled: 1
+  m_enabled: 0
   nameUi: Scene Understanding
   version: 0.0.1
   featureIdInternal: com.htc.openxr.sceneunderstanding.feature
@@ -215,7 +215,7 @@ MonoBehaviour:
   company: HTC
   priority: 0
   required: 0
-  m_XrInstance: 2753315630000
+  m_XrInstance: 2767087997408
   m_XrSession: 2540052221408
   m_systemid: 1153131734666052072
 --- !u!114 &-3399406800633101090
@@ -230,7 +230,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 78a47d9a95f0613439910fb469f4ee28, type: 3}
   m_Name: VIVE_FacialTracking_OpenXR_API Standalone
   m_EditorClassIdentifier: 
-  m_enabled: 1
+  m_enabled: 0
   nameUi: Facial Tracking
   version: 0.0.1
   featureIdInternal: com.htc.openxr.facialtracking.feature

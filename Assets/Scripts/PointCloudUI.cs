@@ -162,13 +162,21 @@ public class PointCloudUI : MonoBehaviour
             {
                 if (!PointCloudManager.GetPointCloudsInScene()[0].validEPSG)
                 {
-                    refreshENCButtonText.text = "No Valid ENC";
+                    refreshENCButtonText.text = "Invalid CRS";
                     refreshENCButton.interactable = false;
                 }
                 else
                 {
-                    refreshENCButtonText.text = "Refresh ENC";
-                    refreshENCButton.interactable = true;
+                    if (FindObjectOfType<MapManager>().compatibleEPSG)
+                    {
+                        refreshENCButtonText.text = "Refresh ENC";
+                        refreshENCButton.interactable = true;
+                    }
+                    else
+                    {
+                        refreshENCButtonText.text = "Unsupported CRS";
+                        refreshENCButton.interactable = false;
+                    }
                 }
 
                 refreshingENC = false;
@@ -370,7 +378,7 @@ public class PointCloudUI : MonoBehaviour
     {
         if (PointCloudManager.commandLineMode)
         {
-            Application.Quit();
+            Application.Quit(1); // specify a success exit code for QGIS plugin
         }
         else
         {

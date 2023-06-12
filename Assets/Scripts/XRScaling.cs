@@ -1,92 +1,90 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using System.Linq;
-using System.Runtime.InteropServices;
 
 public class XRScaling : MonoBehaviour
 {
-    public InputActionProperty scale;
-    public InputActionProperty showScalingMarker;
-    public GameObject LeftHandController;
-    public GameObject RightHandController;
-    public InputActionProperty LeftControllerPosition;
-    public InputActionProperty RightControllerPosition;
+    [SerializeField] private InputActionProperty scale;
+    [SerializeField] private InputActionProperty showScalingMarker;
+    [SerializeField] private GameObject LeftHandController;
+    [SerializeField] private GameObject RightHandController;
+    [SerializeField] private InputActionProperty LeftControllerPosition;
+    [SerializeField] private InputActionProperty RightControllerPosition;
 
     public GameObject scalingRoot;
 
-    public bool scaleOnClosestPoint = false;
+    public Action PreScalingBegin;
+    public Action PreScalingEnd;
 
-    public GameObject scalePointPrefab;
+    public Action ScalingBegin;
+    public Action ScalingEnd;
 
-    public GameObject connectorPrefab;
-       
-    private bool scaling;
+    public Vector3 offsetFromController = Vector3.zero;
+
+    public enum ScalingInteractionPoint
+    {
+        CONTROLLERS_MIDPOINT,
+        LEFT_CONTROLLER,
+        RIGHT_CONTROLLER,
+        DATA_CENTER
+    }
+
+    public enum ScalingType
+    {
+        CLOSEST_POINT,
+        EXACT
+    }
+
+    public ScalingInteractionPoint interactionPointInsideDataBounds;
+    public ScalingType scalingTypeInsideDataBounds;
+
+    public ScalingInteractionPoint interactionPointOutsideDataBounds;
+    public ScalingType scalingTypeOutsideDataBounds;
+
+    private bool _preScaling;
+    private bool _scaling;
+
+    public bool IsScaling
+    {
+        get { return _scaling; }
+    }
+
+    private Vector3 scalePoint;
+    private bool scalePointUpdatedThisFrame = false;
+
+    private Vector3 interactionPoint;
+    private bool interactionPointUpdatedThisFrame = false;
+
     private float originalDistance;
     private Vector3 originalScale;
-    private Vector3 scalePoint;
     private Vector3 pivotDirection;
-    private GameObject scalingPointObject;
-    private GameObject scaleRod;
-    private GameObject leftConnector;
-    private GameObject rightConnector;
+    private Vector3 originalInteractionPoint;
 
     private GameObject closestPoint;
-
-    private bool scalingOnCenter = false;
 
     // Start is called before the first frame update
     void Start()
     {
-        scalingPointObject = Instantiate(scalePointPrefab, scalePoint, Quaternion.identity);
-        scalingPointObject.SetActive(false);
+        _scaling = _preScaling = false;
 
-        scaleRod = Instantiate(connectorPrefab);
-        var scaleRodScript = scaleRod.GetComponent<CylinderConnector>();
-        scaleRodScript.anchor = RightHandController.transform;
-        scaleRodScript.target = LeftHandController.transform;
-        scaleRodScript.thickness = 0.001f;
-        scaleRodScript.dynamic = true;
-        scaleRod.SetActive(false);
+        showScalingMarker.action.started += ctx => PreScaleStart();
+        showScalingMarker.action.started += ctx => PreScalingBegin?.Invoke();
+
+        showScalingMarker.action.canceled += ctx => PreScaleStop();
+        showScalingMarker.action.canceled += ctx => PreScalingEnd?.Invoke();
 
         scale.action.started += ctx => OnBeginScale();
+        scale.action.started += ctx => ScalingBegin?.Invoke();
         scale.action.canceled += ctx => OnEndScale();
+        scale.action.canceled += ctx => ScalingEnd?.Invoke();
 
-        scaling = false;
-
-        showScalingMarker.action.started += ctx => ShowScalingMarker();
-        showScalingMarker.action.canceled += ctx => HideScalingMarker();
 
         if (scalingRoot == null)
             scalingRoot = GameObject.Find("Scaling Root");
-    }
 
-    private void ShowScalingMarker()
-    {
-        scalingPointObject.SetActive(true);
-
-        if (scaleOnClosestPoint)
-        {
-            closestPoint = new("Closest Point");
-            closestPoint.transform.SetParent(FindObjectOfType<PointCloud>().transform);
-            closestPoint.transform.position = FindObjectOfType<PointCloud>().FindClosestPoint(GetControllerMidpoint());
-
-            CreateConnectingLinesToControllers(closestPoint.transform);
-
-            scalePoint = closestPoint.transform.position;
-            scalingPointObject.transform.position = scalePoint;
-        }
-    }
-
-    private void HideScalingMarker()
-    {
-        scalingPointObject.SetActive(false);
-
-        if (scaleOnClosestPoint)
-        {
-            Destroy(closestPoint);
-            DestroyConnectingLines();
-        }
+        if (scalingRoot == null)        
+            Debug.Log("No Scaling Root GameObject set/found!");
     }
 
     void OnEnable()
@@ -105,79 +103,97 @@ public class XRScaling : MonoBehaviour
         RightControllerPosition.action.Disable();
     }
 
+    private void PreScaleStart()
+    {
+        _preScaling = true;
+
+        interactionPoint = GetActiveInteractionPoint();
+        scalePoint = GetActiveScalingPoint();  
+    }
+
+    private void PreScaleStop()
+    {
+        _preScaling = false;
+
+        if (closestPoint != null)
+            Destroy(closestPoint);
+    }
+
     private void OnBeginScale()
     {
         // If already grabbing, ignore scale action
-        if (FindObjectOfType<XRGrabbing>() != null && FindObjectOfType<XRGrabbing>().IsGrabbing())
+        if (FindObjectOfType<XRGrabbing>() != null && FindObjectOfType<XRGrabbing>().IsGrabbing)
             return;
-
-        if (scalingRoot == null)
-        {
-            Debug.Log("No Scaling Root GameObject set/found!");
-            return;
-        }
 
         FindObjectOfType<XRGrabbing>().enabled = false;
         FindObjectOfType<ModifyPoints>().enabled = false;
         FindObjectOfType<ModifyPoints>().SetBrushVisibility(false);
 
-        scaling = true;
+        _scaling = true;
+        _preScaling = false;
 
-        scaleRod.SetActive(true);
+        ScalingBegin?.Invoke();
 
-        scalePoint = GetMidpointOrCenter();
-
-        if (scalePoint != GetControllerMidpoint())
-        {
-            scalingOnCenter = true;
-            CreateConnectingLinesToControllers(scalingPointObject.transform);
-        }
+        interactionPoint = GetActiveInteractionPoint();
+        scalePoint = GetActiveScalingPoint();
 
         pivotDirection = scalingRoot.transform.position - scalePoint;
 
         originalDistance = GetControllersDistancePhysicalSpace();
         originalScale = scalingRoot.transform.localScale;
+        originalInteractionPoint = GetActiveInteractionPoint();
     }
 
     private void OnEndScale()
     {
-        scaling = false;
+        _scaling = false;
 
-        if (scalingOnCenter)
-        {
-            DestroyConnectingLines();
-            scalingOnCenter = false;
-        }
-
+        ScalingEnd?.Invoke();
 
         FindObjectOfType<XRGrabbing>().enabled = true;
         FindObjectOfType<ModifyPoints>().enabled = true;
         FindObjectOfType<ModifyPoints>().SetBrushVisibility(!FindObjectOfType<PointCloudUI>().MenuOpen);
-
-        scaleRod.SetActive(false);
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (scalingPointObject.activeSelf && !scaleOnClosestPoint && !scalingOnCenter)
+        if (_preScaling && !_scaling)
         {
-            scalePoint = GetMidpointOrCenter();
-            scalingPointObject.transform.position = scalePoint;
+            interactionPoint = GetActiveInteractionPoint();
+            scalePoint = GetActiveScalingPoint();
+            if (closestPoint != null)
+            {
+                closestPoint.transform.position = scalePoint;
+            }
+            //Debug.Log("Prescaling but not scaling");
         }
 
-        if (scaling)
+        if (_scaling)
         {
-            float currentDistance = GetControllersDistancePhysicalSpace();
-            float delta = currentDistance - originalDistance;
-            float scaleFactor = Mathf.Exp(delta * 10f);
+            float scaleFactor = GetScaleFactor();
 
+            // Keep scaling point as pivot point in scaling root
             var pivotDelta = pivotDirection;
             pivotDelta.Scale(scaleFactor * Vector3.one);
-            scalingRoot.transform.localPosition = scalePoint + pivotDelta;
 
-            scalingRoot.transform.localScale = originalScale * scaleFactor;      
+            scalingRoot.transform.localScale = originalScale * scaleFactor;
+            scalingRoot.transform.localPosition = scalePoint + pivotDelta;
         }
+    }
+
+    void LateUpdate()
+    {
+        interactionPointUpdatedThisFrame = false;
+        scalePointUpdatedThisFrame = false;
+    }
+
+    float GetScaleFactor()
+    {
+        float currentDistance = GetControllersDistancePhysicalSpace();
+        float delta = currentDistance - originalDistance;
+
+        return Mathf.Exp(delta * 10f);
     }
 
     float GetControllersDistancePhysicalSpace()
@@ -188,58 +204,94 @@ public class XRScaling : MonoBehaviour
         return (rightPos - leftPos).magnitude;
     }
 
-    Vector3 GetControllerMidpoint()
-    {
-        return GetMidpoint(LeftHandController.transform.position, RightHandController.transform.position);
-    }
-
     Vector3 GetMidpoint(Vector3 firstPoint, Vector3 secondPoint)
     {
         return firstPoint + (secondPoint - firstPoint) * 0.5f;
     }
 
-    public bool IsScaling()
+    public Vector3 GetActiveScalingPoint()
     {
-        return scaling;
+        //Debug.Log("Get Active Scaling Point (" + scalePointUpdatedThisFrame + ")");
+        if (!scalePointUpdatedThisFrame)
+        {
+            var ip = GetActiveInteractionPoint();
+            var ipInBounds = IsPointInsideBounds(ip);
+
+            if ((ipInBounds && scalingTypeInsideDataBounds == ScalingType.CLOSEST_POINT) || 
+                (!ipInBounds && scalingTypeOutsideDataBounds == ScalingType.CLOSEST_POINT))
+            {
+                var pc = FindObjectOfType<PointCloud>();
+
+                if (closestPoint == null)
+                {
+                    closestPoint = new("Closest Point");
+                    closestPoint.transform.SetParent(pc.transform);
+                }
+
+                scalePoint = pc.FindClosestPoint(ip);
+            }
+            else
+            {
+                scalePoint = ip;
+            }
+            
+            scalePointUpdatedThisFrame = true;
+        }
+                                     
+        return scalePoint;
     }
 
-    private Vector3 GetMidpointOrCenter()
+    public Vector3 GetActiveInteractionPoint()
+    {
+        if (!interactionPointUpdatedThisFrame)        
+        {
+            var pp = GetInteractionPoint(interactionPointInsideDataBounds);
+
+            if (IsPointInsideBounds(pp))
+                interactionPoint = pp;
+            else
+                interactionPoint = GetInteractionPoint(interactionPointOutsideDataBounds);
+
+            interactionPointUpdatedThisFrame = true;
+        }
+
+        return interactionPoint;
+    }
+
+    private Vector3 GetInteractionPoint(ScalingInteractionPoint pivotType)
+    {
+        Vector3 pivot;
+
+        switch (pivotType)
+        {
+            case ScalingInteractionPoint.CONTROLLERS_MIDPOINT:
+                pivot = GetMidpoint(LeftHandController.transform.position, RightHandController.transform.position);
+                break;
+
+            case ScalingInteractionPoint.LEFT_CONTROLLER:
+                pivot = LeftHandController.transform.TransformPoint(offsetFromController);
+                break;
+
+            case ScalingInteractionPoint.RIGHT_CONTROLLER:
+                pivot = RightHandController.transform.TransformPoint(offsetFromController);
+                break;
+
+            case ScalingInteractionPoint.DATA_CENTER:
+                var pc = FindObjectOfType<PointCloud>();
+                pivot = pc.transform.TransformPoint(pc.bounds.center);
+                break;
+
+            default:
+                pivot = Vector3.zero;
+                break;
+        }
+
+        return pivot;
+    }
+
+    private bool IsPointInsideBounds(Vector3 worldPoint)
     {
         var pc = FindObjectOfType<PointCloud>();
-        var bounds = pc.bounds;
-
-        var controllerMidPoint = GetControllerMidpoint();
-
-        if (bounds.Contains(pc.transform.InverseTransformPoint(controllerMidPoint)))
-        {
-            return GetControllerMidpoint();
-        }
-        else
-        {
-            return pc.transform.TransformPoint(bounds.center);
-        }
-    }
-
-    private void CreateConnectingLinesToControllers(Transform connectedObject)
-    {
-        leftConnector = Instantiate(connectorPrefab);
-        var leftConnectorScript = leftConnector.GetComponent<CylinderConnector>();
-        leftConnectorScript.target = connectedObject;
-        leftConnectorScript.anchor = LeftHandController.transform;
-        leftConnectorScript.thickness = 0.001f;
-        leftConnectorScript.dynamic = true;
-
-        rightConnector = Instantiate(connectorPrefab);
-        var rightConnectorScript = rightConnector.GetComponent<CylinderConnector>();
-        rightConnectorScript.target = connectedObject;
-        rightConnectorScript.anchor = RightHandController.transform;
-        rightConnectorScript.thickness = 0.001f;
-        rightConnectorScript.dynamic = true;
-    }
-
-    private void DestroyConnectingLines()
-    {
-        if (leftConnector) Destroy(leftConnector);
-        if (rightConnector) Destroy(rightConnector);
+        return pc.bounds.Contains(pc.transform.InverseTransformPoint(worldPoint));
     }
 }

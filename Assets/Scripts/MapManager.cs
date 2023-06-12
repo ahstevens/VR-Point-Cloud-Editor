@@ -5,6 +5,10 @@ using UnityEngine.Networking;
 using UnityEngine.InputSystem;
 using DotSpatial.Projections;
 using System.Collections.Specialized;
+using System.Xml.Linq;
+using System.Data.SqlTypes;
+using System.Xml;
+using System;
 
 public class MapManager : MonoBehaviour
 {
@@ -55,6 +59,12 @@ public class MapManager : MonoBehaviour
         get { return _encError; }
     }
 
+    private bool _compatibleEPSG; // compatible with ENC server CRSs
+    public bool compatibleEPSG
+    {
+        get { return _compatibleEPSG; }
+    }
+
     enum MAPTYPE
     {
         NONE,
@@ -65,8 +75,10 @@ public class MapManager : MonoBehaviour
 
     MAPTYPE currentMap;
 
-    private bool validEPSG;
+    private HashSet<int> validENCEPSGs;
+    private string encURL = $"https://gis.charttools.noaa.gov/arcgis/rest/services/MCS/ENCOnline/MapServer/exts/MaritimeChartService/WMSServer?";
 
+    private bool validEPSG;
     private bool mapStuck;
 
     bool satMapInitialRefresh;
@@ -106,6 +118,7 @@ public class MapManager : MonoBehaviour
         _refreshing = false;
         _loaded = false;
         _encError = false;
+        _compatibleEPSG = false;
 
         currentMap = MAPTYPE.NONE;
 
@@ -301,6 +314,19 @@ public class MapManager : MonoBehaviour
 
     public IEnumerator CreateENC(GEOReference geoRef, PointCloud pc, bool forceRefresh = false)
     {
+        if (validENCEPSGs == null)
+        {
+            GetENCCompatibleEPSGs();
+        }
+
+        if (!validENCEPSGs.Contains(pc.EPSG))
+        {
+            _compatibleEPSG = false;
+            yield return null;
+        }
+
+        _compatibleEPSG = true;
+
         _refreshing = true;
 
         encFileLocation = Application.dataPath + "/Maps/ENCs" + "/ENC_" + pc.name + ".png";
@@ -370,8 +396,8 @@ public class MapManager : MonoBehaviour
 
             int epsg = pc.EPSG;
 
-            string url = $"https://gis.charttools.noaa.gov/arcgis/rest/services/MCS/ENCOnline/MapServer/exts/MaritimeChartService/WMSServer?";
-            
+            if (epsg == 6344) { epsg = 26915; }
+
             NameValueCollection encQueryString = System.Web.HttpUtility.ParseQueryString(string.Empty);
 
             encQueryString.Add("SERVICE", "WMS");
@@ -383,8 +409,8 @@ public class MapManager : MonoBehaviour
             encQueryString.Add("HEIGHT", encResolution.ToString());
             encQueryString.Add("BBOX", $"{minBBx},{minBBy},{maxBBx},{maxBBy}");
 
-            Debug.Log(url + encQueryString.ToString());
-            UnityWebRequest www = UnityWebRequestTexture.GetTexture(url + encQueryString.ToString());
+            Debug.Log(encURL + encQueryString.ToString());
+            UnityWebRequest www = UnityWebRequestTexture.GetTexture(encURL + encQueryString.ToString());
 
             Debug.Log("Downloading ENC image... ");
             float tick = Time.realtimeSinceStartup;
@@ -667,4 +693,23 @@ public class MapManager : MonoBehaviour
 
         return false;
     }
+
+    void GetENCCompatibleEPSGs()
+    {
+        validENCEPSGs = new();
+
+        XmlDocument xmlDoc = new();
+        xmlDoc.Load(encURL + "REQUEST=GetCapabilities&SERVICE=WMS");
+
+        var nodes = xmlDoc.GetElementsByTagName("CRS");
+
+        foreach ( XmlNode node in nodes )
+        {
+            if (node.ParentNode.ParentNode.Name == "Capability" && node.InnerText.Substring(0, node.InnerText.IndexOf(':')) == "EPSG")
+            {
+                int epsg = int.Parse(node.InnerText.Substring(node.InnerText.LastIndexOf(':') + 1));
+                validENCEPSGs.Add(epsg);
+            }
+        }
+    }    
 }

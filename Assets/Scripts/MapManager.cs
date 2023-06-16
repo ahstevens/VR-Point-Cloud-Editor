@@ -396,8 +396,6 @@ public class MapManager : MonoBehaviour
 
             int epsg = pc.EPSG;
 
-            if (epsg == 6344) { epsg = 26915; }
-
             NameValueCollection encQueryString = System.Web.HttpUtility.ParseQueryString(string.Empty);
 
             encQueryString.Add("SERVICE", "WMS");

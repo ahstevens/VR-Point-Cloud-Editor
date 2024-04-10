@@ -117,7 +117,18 @@ public class PointCloudUI : MonoBehaviour
 
     // Update is called once per frame
     void Update()
-    {        
+    {
+        if (Keyboard.current.mKey.wasPressedThisFrame)
+        {
+            if (openMenu.action.enabled)
+                openMenu.action.Disable();
+            else
+                openMenu.action.Enable();
+        }
+
+        if (Keyboard.current.bKey.wasPressedThisFrame)
+            ToggleBackingBox();
+
         if (loading)
         {
             if (PointCloudManager.isWaitingToLoad)
@@ -535,6 +546,13 @@ public class PointCloudUI : MonoBehaviour
     public void ToggleClassifiersMenu()
     {
         classifiersMenuPanel.SetActive(!classifiersMenuPanel.activeSelf);
+    }
+
+    public void ToggleBackingBox()
+    {
+        var pc = FindObjectOfType<PointCloud>();
+        var go = pc.transform.Find(pc.gameObject.name + " Backing");
+        go.gameObject.SetActive(!go.gameObject.activeInHierarchy);
     }
 
     public void ToggleBackingBox(bool onOff)

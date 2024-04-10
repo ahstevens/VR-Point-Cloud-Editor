@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.XR.Interaction.Toolkit;
 
 public class ControllerModelManager : MonoBehaviour
@@ -26,6 +27,14 @@ public class ControllerModelManager : MonoBehaviour
 
     [SerializeField] Transform m_HPReverbLeftModelPrefab;
     [SerializeField] Transform m_HPReverbRightModelPrefab;
+
+    [SerializeField] Material scaleButtonMaterial;
+    [SerializeField] Material editButtonMaterial;
+    [SerializeField] Material grabButtonMaterial;
+
+    List<HighlightMesh> scaleButtonMeshes = new();
+    List<HighlightMesh> editButtonMeshes = new();
+    List<HighlightMesh> grabButtonMeshes = new();
 
     Transform m_LeftParent;
     Transform m_RightParent;
@@ -65,26 +74,38 @@ public class ControllerModelManager : MonoBehaviour
             modelSet = true;
         }
 
-        //if (Input.GetKeyDown(KeyCode.Alpha1))
+        //if (Keyboard.current.digit1Key.wasPressedThisFrame)
         //    SetController(ControllerType.Generic);
         //
-        //if (Input.GetKeyDown(KeyCode.Alpha2))
+        //if (Keyboard.current.digit2Key.wasPressedThisFrame)
         //    SetController(ControllerType.ViveWand);
         //
-        //if (Input.GetKeyDown(KeyCode.Alpha3))
+        //if (Keyboard.current.digit3Key.wasPressedThisFrame)
         //    SetController(ControllerType.ViveFocus);
         //
-        //if (Input.GetKeyDown(KeyCode.Alpha4))
+        //if (Keyboard.current.digit4Key.wasPressedThisFrame)
         //    SetController(ControllerType.ValveIndex);
         //
-        //if (Input.GetKeyDown(KeyCode.Alpha5))
+        //if (Keyboard.current.digit5Key.wasPressedThisFrame)
         //    SetController(ControllerType.MetaQuest);
         //
-        //if (Input.GetKeyDown(KeyCode.Alpha6))
+        //if (Keyboard.current.digit6Key.wasPressedThisFrame)
         //    SetController(ControllerType.WMR);
         //
-        //if (Input.GetKeyDown(KeyCode.Alpha7))
+        //if (Keyboard.current.digit7Key.wasPressedThisFrame)
         //    SetController(ControllerType.HPReverb);
+
+        if (Keyboard.current.sKey.wasPressedThisFrame)
+            foreach (var m in scaleButtonMeshes)
+                m.enabled = !m.enabled;
+
+        if (Keyboard.current.gKey.wasPressedThisFrame)
+            foreach (var m in grabButtonMeshes)
+                m.enabled = !m.enabled;
+
+        if (Keyboard.current.eKey.wasPressedThisFrame)
+            foreach (var m in editButtonMeshes)
+                m.enabled = !m.enabled;
     }
 
     public void SetController(ControllerType type)
@@ -98,6 +119,25 @@ public class ControllerModelManager : MonoBehaviour
             case ControllerType.ViveWand:
                 AssignControllerModel(m_ViveWandModelPrefab, m_LeftController, ref m_LeftParent);
                 AssignControllerModel(m_ViveWandModelPrefab, m_RightController, ref m_RightParent);
+                var leftComponents = m_LeftParent.gameObject.GetComponentsInChildren<HighlightMesh>();
+                var rightComponents = m_RightParent.gameObject.GetComponentsInChildren<HighlightMesh>();
+                foreach (var c in leftComponents)
+                {
+                    if (c.name == "grip_left" || c.name == "grip_right")
+                        scaleButtonMeshes.Add(c);
+
+                    if (c.name == "trigger")
+                        grabButtonMeshes.Add(c);
+                }
+
+                foreach (var c in rightComponents)
+                {
+                    if (c.name == "grip_left" || c.name == "grip_right")
+                        scaleButtonMeshes.Add(c);
+
+                    if (c.name == "trigger")
+                        editButtonMeshes.Add(c);
+                }
                 break;
             case ControllerType.ViveFocus:
                 AssignControllerModel(m_ViveFocusLeftModelPrefab, m_LeftController, ref m_LeftParent);

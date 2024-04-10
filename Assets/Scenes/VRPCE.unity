@@ -1855,6 +1855,9 @@ MonoBehaviour:
     type: 3}
   m_HPReverbRightModelPrefab: {fileID: 2523278578108503497, guid: 9d8dda42bf39b3748866eb92a9e22830,
     type: 3}
+  scaleButtonMaterial: {fileID: 0}
+  editButtonMaterial: {fileID: 0}
+  grabButtonMaterial: {fileID: 0}
 --- !u!1 &383842030
 GameObject:
   m_ObjectHideFlags: 0
@@ -2108,7 +2111,7 @@ MonoBehaviour:
     m_Reference: {fileID: 5922473366525983001, guid: bc5d5383aa166484ea2f603c8a1dc8e1,
       type: 3}
   scalingRoot: {fileID: 417516343}
-  offsetFromController: {x: 0, y: 0, z: 0.01}
+  offsetFromController: {x: 0, y: 0, z: 0.1}
   interactionPointInsideDataBounds: 0
   scalingTypeInsideDataBounds: 1
   interactionPointOutsideDataBounds: 0

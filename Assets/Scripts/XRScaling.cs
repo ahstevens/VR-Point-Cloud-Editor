@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -58,8 +57,7 @@ public class XRScaling : MonoBehaviour
 
     private float originalDistance;
     private Vector3 originalScale;
-    private Vector3 pivotDirection;
-    private Vector3 originalInteractionPoint;
+    private Vector3 pivotVector;
 
     private GameObject closestPoint;
 
@@ -137,11 +135,10 @@ public class XRScaling : MonoBehaviour
         interactionPoint = GetActiveInteractionPoint();
         scalePoint = GetActiveScalingPoint();
 
-        pivotDirection = scalingRoot.transform.position - scalePoint;
+        pivotVector = scalingRoot.transform.position - scalePoint;
 
         originalDistance = GetControllersDistancePhysicalSpace();
         originalScale = scalingRoot.transform.localScale;
-        originalInteractionPoint = GetActiveInteractionPoint();
     }
 
     private void OnEndScale()
@@ -171,15 +168,16 @@ public class XRScaling : MonoBehaviour
 
         if (_scaling)
         {
-            float scaleFactor = GetScaleFactor();
-
-            // Keep scaling point as pivot point in scaling root
-            var pivotDelta = pivotDirection;
-            pivotDelta.Scale(scaleFactor * Vector3.one);
-
-            scalingRoot.transform.localScale = originalScale * scaleFactor;
-            scalingRoot.transform.localPosition = scalePoint + pivotDelta;
+            ScaleWithTranslation();
         }
+    }
+
+    void ScaleWithTranslation()
+    {
+        float scaleFactor = GetScalingFactor();
+
+        scalingRoot.transform.localScale = originalScale * scaleFactor;
+        scalingRoot.transform.localPosition = scalePoint + pivotVector * scaleFactor;
     }
 
     void LateUpdate()
@@ -188,7 +186,7 @@ public class XRScaling : MonoBehaviour
         scalePointUpdatedThisFrame = false;
     }
 
-    float GetScaleFactor()
+    float GetScalingFactor()
     {
         float currentDistance = GetControllersDistancePhysicalSpace();
         float delta = currentDistance - originalDistance;
@@ -196,12 +194,17 @@ public class XRScaling : MonoBehaviour
         return Mathf.Exp(delta * 10f);
     }
 
-    float GetControllersDistancePhysicalSpace()
+    Vector3 GetControllersVectorPhysicalSpace()
     {
         var leftPos = LeftControllerPosition.action.ReadValue<Vector3>();
         var rightPos = RightControllerPosition.action.ReadValue<Vector3>();
 
-        return (rightPos - leftPos).magnitude;
+        return (rightPos - leftPos);
+    }
+
+    float GetControllersDistancePhysicalSpace()
+    {
+        return GetControllersVectorPhysicalSpace().magnitude;
     }
 
     Vector3 GetMidpoint(Vector3 firstPoint, Vector3 secondPoint)

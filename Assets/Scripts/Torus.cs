@@ -32,25 +32,6 @@ public class Torus : MonoBehaviour
         return p;
     }
 
-    //Draw Torus
-    private void OnDrawGizmos()
-    {
-
-
-        float uStep = (2f * Mathf.PI) / curveSegmentCount;
-        float vStep = (2f * Mathf.PI) / torusSegmentCount;
-
-        for (int u = 0; u < curveSegmentCount; u++)
-        {
-            for (int v = 0; v < torusSegmentCount; v++)
-            {
-                Vector3 point = GetPointOnTorus(u * uStep, v * vStep);
-                Gizmos.color = new Color(1f, (float)v / torusSegmentCount, (float)u / curveSegmentCount);
-                Gizmos.DrawSphere(point, 0.1f);
-            }
-        }
-    }
-
     //each quad share vertices with its neighbors, or give each quad its own four vertices.
     private void SetVertices()
     {

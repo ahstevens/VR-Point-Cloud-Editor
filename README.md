@@ -26,9 +26,13 @@ This repository contains the project code for the VR Point Cloud Editor [Unity](
 
 Satellite imagery uses the [Online Maps asset](https://assetstore.unity.com/packages/tools/integration/online-maps-v3-138509), which will need to be purchased to play or compile the Unity project or removed from the code once you have cloned the repository.
 
-## 🔌 Point Cloud Plugin
+## 🔌 Unity Point Cloud Plugin
 
 The rendering and processing of point cloud data is handled by a [Unity plugin](https://github.com/Azzinoth/UnityPointCloudPlugin) written in C++.
+
+## 🌎 QGIS Plugin
+
+A plugin was created to load point cloud files directly into VRPCE from [QGIS](https://qgis.org). See the [plugin repository](https://github.com/ahstevens/VR-Point-Cloud-Editor-QGIS-Plugin) for more information.
 
 ## 👇 Other
 
